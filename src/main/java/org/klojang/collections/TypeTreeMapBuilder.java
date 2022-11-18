@@ -1,7 +1,7 @@
 package org.klojang.collections;
 
 import org.klojang.check.Check;
-import org.klojang.check.Param;
+import org.klojang.check.Tag;
 
 import java.util.Arrays;
 import java.util.TreeMap;
@@ -24,8 +24,8 @@ final class TypeTreeMapBuilder<V> implements TypeMapBuilder<V> {
 
   @Override
   public TypeTreeMapBuilder<V> add(Class<?> type, V value) {
-    Check.notNull(type, Param.TYPE).isNot(keyIn(), tmp, duplicateKey(type));
-    Check.notNull(value, Param.VALUE);
+    Check.notNull(type, Tag.TYPE).isNot(keyIn(), tmp, duplicateKey(type));
+    Check.notNull(value, Tag.VALUE);
     tmp.put(type, value);
     return this;
   }

@@ -1,7 +1,7 @@
 package org.klojang.collections;
 
 import org.klojang.check.Check;
-import org.klojang.check.Param;
+import org.klojang.check.Tag;
 import org.klojang.util.CollectionMethods;
 
 import java.util.*;
@@ -580,7 +580,7 @@ public final class WiredList<E> implements List<E> {
    */
   @SafeVarargs
   public static <E> WiredList<E> of(E e0, E e1, E e2, E... moreElems) {
-    Check.notNull(moreElems, Param.ARRAY);
+    Check.notNull(moreElems, Tag.ARRAY);
     var wl = new WiredList<E>();
     Node<E> head = new Node<>(e0);
     Node<E> tail = head;
@@ -604,7 +604,7 @@ public final class WiredList<E> implements List<E> {
    */
   @SafeVarargs
   public static <E> WiredList<E> ofElements(E... elements) {
-    Check.notNull(elements, Param.ARRAY);
+    Check.notNull(elements, Tag.ARRAY);
     var wl = new WiredList<E>();
     if (elements.length != 0) {
       Node<E> head = new Node<>(elements[0]);
@@ -813,7 +813,7 @@ public final class WiredList<E> implements List<E> {
   @SuppressWarnings("unchecked")
   public WiredList<E> setAll(int index, E... values) {
     Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));
-    Check.notNull(values, Param.VALUES).has(length(), lte(), sz - index);
+    Check.notNull(values, Tag.VALUES).has(length(), lte(), sz - index);
     Node<E> node = nodeAt(index);
     for (E e : values) {
       node.val = e;
@@ -836,7 +836,7 @@ public final class WiredList<E> implements List<E> {
    * @return The original value
    */
   public E setIf(int index, Predicate<? super E> condition, E value) {
-    Check.notNull(condition, Param.TEST);
+    Check.notNull(condition, Tag.TEST);
     var node = node(index);
     E old = node.val;
     if (condition.test(old)) {
@@ -902,7 +902,7 @@ public final class WiredList<E> implements List<E> {
   @Override
   public boolean addAll(int index, Collection<? extends E> c) {
     checkInclusive(index);
-    Check.notNull(c, Param.COLLECTION);
+    Check.notNull(c, Tag.COLLECTION);
     if (!c.isEmpty()) {
       insert(index, Chain.of(c));
     }
@@ -960,7 +960,7 @@ public final class WiredList<E> implements List<E> {
    */
   @Override
   public boolean removeIf(Predicate<? super E> filter) {
-    Check.notNull(filter, Param.TEST);
+    Check.notNull(filter, Tag.TEST);
     int size = sz;
     for (var x = head; x != null; ) {
       if (filter.test(x.val)) {
@@ -985,7 +985,7 @@ public final class WiredList<E> implements List<E> {
    */
   @Override
   public boolean removeAll(Collection<?> c) {
-    Check.notNull(c, Param.COLLECTION);
+    Check.notNull(c, Tag.COLLECTION);
     int size = this.sz;
     removeIf(c::contains);
     return size != this.sz;
@@ -1002,7 +1002,7 @@ public final class WiredList<E> implements List<E> {
    */
   @Override
   public boolean retainAll(Collection<?> c) {
-    Check.notNull(c, Param.COLLECTION);
+    Check.notNull(c, Tag.COLLECTION);
     int sz = this.sz;
     removeIf(e -> !c.contains(e));
     return sz != this.sz;
@@ -1118,7 +1118,7 @@ public final class WiredList<E> implements List<E> {
    * @return this {@code WiredList}
    */
   public WiredList<E> prependAll(Collection<? extends E> values) {
-    Check.notNull(values, Param.COLLECTION);
+    Check.notNull(values, Tag.COLLECTION);
     if (!values.isEmpty()) {
       insert(0, Chain.of(values));
     }
@@ -1134,7 +1134,7 @@ public final class WiredList<E> implements List<E> {
    * @see #attach(WiredList)
    */
   public WiredList<E> appendAll(Collection<? extends E> values) {
-    Check.notNull(values, Param.COLLECTION);
+    Check.notNull(values, Tag.COLLECTION);
     if (!values.isEmpty()) {
       insert(sz, Chain.of(values));
     }
@@ -1152,7 +1152,7 @@ public final class WiredList<E> implements List<E> {
    */
   public WiredList<E> insertAll(int index, Collection<? extends E> values) {
     checkInclusive(index);
-    Check.notNull(values, Param.COLLECTION);
+    Check.notNull(values, Tag.COLLECTION);
     if (!values.isEmpty()) {
       insert(index, Chain.of(values));
     }
@@ -1196,7 +1196,7 @@ public final class WiredList<E> implements List<E> {
       int toIndex,
       Collection<? extends E> values) {
     int len = Check.fromTo(this, fromIndex, toIndex);
-    Check.notNull(values, Param.COLLECTION);
+    Check.notNull(values, Tag.COLLECTION);
     if (len == 0) {
       if (!values.isEmpty()) {
         insert(fromIndex, Chain.of(values));

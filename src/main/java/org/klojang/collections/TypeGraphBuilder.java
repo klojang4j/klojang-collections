@@ -1,7 +1,7 @@
 package org.klojang.collections;
 
 import org.klojang.check.Check;
-import org.klojang.check.Param;
+import org.klojang.check.Tag;
 import org.klojang.check.aux.DuplicateValueException;
 
 import java.util.*;
@@ -114,9 +114,9 @@ final class TypeGraphBuilder<V> implements TypeMapBuilder<V> {
 
   @Override
   public TypeGraphBuilder<V> add(Class<?> type, V value) {
-    Check.notNull(type, Param.TYPE)
+    Check.notNull(type, Tag.TYPE)
         .isNot(in(), all, () -> new DuplicateValueException(KEY, type));
-    Check.notNull(value, Param.VALUE);
+    Check.notNull(value, Tag.VALUE);
     if (type == Object.class) {
       root.value = value;
     } else if (type.isInterface()) {
