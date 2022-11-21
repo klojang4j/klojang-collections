@@ -3,6 +3,7 @@ package org.klojang.collections;
 import org.klojang.check.Check;
 import org.klojang.check.Tag;
 import org.klojang.util.CollectionMethods;
+import org.klojang.util.InvokeMethods;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -1835,7 +1836,7 @@ public final class WiredList<E> implements List<E> {
   public <T> T[] toArray(T[] a) {
     Check.notNull(a);
     if (a.length < sz) {
-      a = (T[]) InvokeUtils.newArray(a.getClass(), sz);
+      a = (T[]) InvokeMethods.newArray(a.getClass(), sz);
     }
     int i = 0;
     Object[] result = a;

@@ -1,7 +1,8 @@
 package org.klojang.collections;
 
-import org.klojang.util.path.Path;
+import org.klojang.util.ArrayMethods;
 
+import java.util.Arrays;
 import java.util.Comparator;
 
 import static org.klojang.util.ClassMethods.*;
@@ -75,9 +76,10 @@ final class PrettyTypeComparator implements Comparator<Class<?>> {
     if (getAllInterfaces(c1).size() > getAllInterfaces(c2).size()) {
       return -1;
     }
-    Path p0 = Path.from(c1.getName()).reverse();
-    Path p1 = Path.from(c2.getName()).reverse();
-    return p0.compareTo(p1);
+    // compare by inverse class name
+    String[] s1 = ArrayMethods.reverse(c1.getName().split("\\."));
+    String[] s2 = ArrayMethods.reverse(c2.getName().split("\\."));
+    return Arrays.compare(s1, s2);
   }
 
 }

@@ -2,6 +2,7 @@ package org.klojang.collections;
 
 import org.klojang.check.Check;
 import org.klojang.util.ArrayMethods;
+import org.klojang.util.InvokeMethods;
 
 import java.util.*;
 
@@ -65,7 +66,7 @@ final class ArraySet<E> extends ImmutableSet<E> {
     Check.notNull(a);
     int sz = elems.length;
     if (a.length < sz) {
-      a = (T[]) InvokeUtils.newArray(a.getClass(), sz);
+      a = (T[]) InvokeMethods.newArray(a.getClass(), sz);
     }
     int i = 0;
     Object[] result = a;
