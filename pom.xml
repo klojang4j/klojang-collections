@@ -342,7 +342,7 @@
                         <id>attach-javadocs</id>
                         <configuration>
                             <windowtitle>Klojang Check</windowtitle>
-                            <excludePackageNames>org.klojang.check.x</excludePackageNames>
+                            <excludePackageNames>org.klojang.collections.x</excludePackageNames>
                         </configuration>
                         <goals>
                             <goal>jar</goal>
