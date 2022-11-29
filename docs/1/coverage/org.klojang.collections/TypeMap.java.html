@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TypeMap.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Klojang Collections</a> &gt; <a href="index.source.html" class="el_package">org.klojang.collections</a> &gt; <span class="el_source">TypeMap.java</span></div><h1>TypeMap.java</h1><pre class="source lang-java linenums">package org.klojang.collections;
+
+import org.klojang.check.Check;
+
+import java.util.Collection;
+import java.util.Map;
+
+/**
+ * &lt;p&gt;A specialisation of the {@code Map} interface, aimed at providing natural
+ * default values for groups of Java types via a shared supertype. The keys in a type
+ * map are always {@link Class} objects. The type of the values is user-defined. One
+ * particularly useful application of type maps is to associate types with functions
+ * (i.e. lambdas, method references) that operate on those types.
+ *
+ * &lt;h2 id=&quot;behaviour&quot;&gt;Behaviour&lt;/h2&gt;
+ *
+ * &lt;p&gt;A {@code TypeMap} behaves as follows: if the type requested via
+ * {@link #get(Object) get()} is not present in the map, but one of its supertypes
+ * is, then the type map will return the value associated with the supertype.
+ * Similarly, {@link #containsKey(Object)} containsKey()} will return {@code true} if
+ * either the specified type itself or one of its supertypes is a key in the
+ * {@code TypeMap}. For example: if the user requests the value associated with key
+ * {@code Integer.class}, but the map only contains an entry for
+ * {@code Number.class}, then the value associated with {@code Number.class} is
+ * returned. If there is no entry for {@code Number.class} either, but there is one
+ * for {@code Serializable.class}, then the value associated with that type is
+ * returned.
+ *
+ * &lt;p&gt;Regular types take precedence over interface types. If the requested type is
+ * an implementation of one type within the type map, and a subclass of another, then
+ * the value associated with the latter will be returned. The one exception is
+ * {@code Object.class}, since any instance of any interface is also an
+ * {@code Object}. If {@code Object.class} is present in the map, the {@code get()}
+ * method is guaranteed to return a non-null value. Note that this is, in fact, a
+ * deviation from Java's type hierarchy since primitive types do not extend
+ * {@code Object.class}. However, the point of the {@code TypeMap} interface is to
+ * provide natural default values for groups of types, and {@code Object.class} is
+ * the obvious candidate for providing the ultimate, last-resort, fall-back value.
+ *
+ * &lt;p&gt;Type maps are immutable. All map-altering methods throw an
+ * {@link UnsupportedOperationException}. The
+ * {@link #getOrDefault(Object, Object) getOrDefault()} method also throws an
+ * {@code UnsupportedOperationException} as it sidesteps the {@code TypeMap}
+ * paradigm. Type maps are also null-repellent &amp;#8212; neither keys nor values are
+ * allowed to be {@code null}.
+ *
+ * &lt;p&gt;You cannot instantiate a {@code TypeMap} directly. You obtain an instance
+ * through the various static factory methods on the {@code TypeMap} interface
+ * itself.
+ *
+ * &lt;h2 id=&quot;autoboxing&quot;&gt;Autoboxing&lt;/h2&gt;
+ *
+ * &lt;p&gt;A {@code TypeMap} can be configured to &quot;autobox&quot; the types requested via
+ * {@code get} and {@code containsKey}. For example, if the user makes a request for
+ * {@code double.class}, but the map only contains an entry for {@code Double.class},
+ * then the value associated with {@code Double.class} is returned. If there is no
+ * entry for {@code Double.class} either, but there is one for {@code Number.class},
+ * then the value associated with {@code Number.class} is returned. Thus, with
+ * autoboxing enabled, you need (and should) only add the wrapper types to the map,
+ * unless you want the primitive type to be associated with a different value than
+ * the wrapper type. This applies not just to primitive types, but also to arrays of
+ * a primitive type. Thus, with autoboxing enabled, {@code int[]} will be &quot;autoboxed&quot;
+ * to {@code Integer[]}. Note that, irrespective of whether autoboxing is enabled or
+ * not, the presence of {@code Object.class} in the map &lt;i&gt;always&lt;/i&gt; guarantees that
+ * a non-null value will be returned for whatever type is requested, even if it is a
+ * primitive type. Autoboxing is &lt;b&gt;enabled&lt;/b&gt; by default.
+ *
+ * &lt;h2 id=&quot;auto-expansion&quot;&gt;Auto-expansion&lt;/h2&gt;
+ *
+ * &lt;p&gt;Even though type maps are specified to be immutable to the outside world, the
+ * &quot;{@linkplain #greedyTypeMap(Map) greedy}&quot; {@code TypeMap} will
+ * automatically and tacitly absorb subtypes of the original types in the map, as and
+ * when they are requested via {@code get} or {@code containsKey}. It will look up
+ * the value for the nearest supertype and associate the subtype with that same
+ * value. Thus, the next time the subtype is requested, it will result in a direct
+ * hit. Note that an auto-expanding type map is still immutable to the outside world
+ * and that the map will still only ever contain subtypes of the types with which the
+ * map was seeded. No new branches of the Java type hierarchy will emerge - unless,
+ * of course, the original map contained {@code Object.class}.
+ *
+ * &lt;h2&gt;Implementations&lt;/h2&gt;
+ *
+ * &lt;p&gt;Through its static factory methods and {@code Builder} classes, the
+ * {@code TypeMap} interface provides access to four different implementations. Which
+ * implementation to choose strongly depends on the internal makeup of the map (the
+ * interdependencies between the types within the map), the size of the map, and the
+ * ratio between the size of the map and the total number of types it is going to be
+ * queried for. For high ratios (a small map processing a large variety of types),
+ * the &quot;{@link #typeGraph(Map, boolean) type graph}&quot; is most likely the best choice,
+ * especially if the types in the map tend to be base types (like {@code Number} and
+ * {@code CharSequence}) while the types requested from it are concrete types (like
+ * {@code Integer} and {@code String}). Otherwise any of the other implementations
+ * will do, and you will have to test which implementation performs best.
+ *
+ * @param &lt;V&gt; the type of the values in the map The type of the values in the
+ *     {@code Map}
+ * @author Ayco Holleman
+ */
+public sealed interface TypeMap&lt;V&gt; extends Map&lt;Class&lt;?&gt;, V&gt; permits TypeGraph,
+    GreedyTypeMap, NonExpandingTypeMap {
+
+  String SOURCE_MAP = &quot;source map&quot;;
+
+  /**
+   * Returns a {@code TypeMap} that is internally backed by a regular, unmodifiable
+   * {@code Map}. It performs reliably well in many cases. Autoboxing is enabled in
+   * the returned {@code TypeMap}.
+   *
+   * @param m the map to convert to a {@code TypeMap}
+   * @param &lt;V&gt; the type of the values in the map
+   * @return a {@code TypeMap} that performs reliably well in many cases
+   */
+  static &lt;V&gt; TypeMap&lt;V&gt; fixedTypeMap(Map&lt;Class&lt;?&gt;, V&gt; m) {
+<span class="fc" id="L114">    return fixedTypeMap(m, true);</span>
+  }
+
+  /**
+   * Returns a {@code TypeMap} that is internally backed by a regular, unmodifiable
+   * {@code Map}. It performs reliably well in many cases.
+   *
+   * @param m the map to convert to a {@code TypeMap}
+   * @param autobox whether to &quot;autobox&quot; the types requested via {@code get} and
+   *     {@code containsKey}
+   * @param &lt;V&gt; the type of the values in the map
+   * @return a {@code TypeMap} that performs reliably well in many cases
+   */
+  static &lt;V&gt; TypeMap&lt;V&gt; fixedTypeMap(Map&lt;Class&lt;?&gt;, V&gt; m, boolean autobox) {
+<span class="fc" id="L128">    Check.notNull(m, SOURCE_MAP);</span>
+<span class="fc" id="L129">    var builder = new FixedTypeMapBuilder&lt;V&gt;().autobox(autobox);</span>
+<span class="fc" id="L130">    m.forEach(builder::add);</span>
+<span class="fc" id="L131">    return builder.freeze();</span>
+  }
+
+  /**
+   * Returns a {@code Builder} for &quot;fixed&quot; type maps.
+   *
+   * @param &lt;V&gt; the type of the values in the map
+   * @return a {@code Builder} for &quot;fixed&quot; type maps
+   */
+  static &lt;V&gt; TypeMapBuilder&lt;V&gt; fixedTypeMapBuilder() {
+<span class="fc" id="L141">    return new FixedTypeMapBuilder&lt;&gt;();</span>
+  }
+
+  /**
+   * Returns a {@code TypeMap} that relies on a data structure similar to the Java
+   * type hierarchy itself. The {@code TypeMap} is sensitive to the insertion order
+   * of the types. Thus, if you expect a lot of requests for, say,
+   * {@code String.class}, it pays to pass a
+   * {@link java.util.LinkedHashMap LinkedHashMap} where {@code String.class} was
+   * inserted first. The keys of the returned {@code TypeMap} are sorted from more
+   * abstract to less abstract. If present, {@code Object.class} will be the first
+   * type in the key set. Autoboxing is enabled in the returned {@code TypeMap}.
+   *
+   * @param m the map to convert to a {@code TypeMap}
+   * @param &lt;V&gt; the type of the values in the map
+   * @return a {@code TypeMap} that relies on a data structure similar to the Java
+   *     type hierarchy itself
+   * @see TypeSet#greedyTypeSet(Class[])
+   */
+  static &lt;V&gt; TypeMap&lt;V&gt; typeGraph(Map&lt;Class&lt;?&gt;, V&gt; m) {
+<span class="fc" id="L161">    return typeGraph(m, true);</span>
+  }
+
+  /**
+   * Returns a {@code TypeMap} that relies on a data structure similar to the Java
+   * type hierarchy itself. The {@code TypeMap} is sensitive to the insertion order
+   * of the types. Thus, if you expect a lot of requests for, say,
+   * {@code String.class}, it pays to pass a
+   * {@link java.util.LinkedHashMap LinkedHashMap} where {@code String.class} was
+   * inserted first. The keys of the returned {@code TypeMap} are sorted from more
+   * abstract to less abstract. If present, {@code Object.class} will be the first
+   * type in the key set.
+   *
+   * @param m the map to convert to a {@code TypeMap}
+   * @param autobox whether to &quot;autobox&quot; the types requested via {@code get} and
+   *     {@code containsKey}
+   * @param &lt;V&gt; the type of the values in the map
+   * @return a {@code TypeMap} that relies on a data structure similar to the Java
+   *     type hierarchy itself
+   */
+  static &lt;V&gt; TypeMap&lt;V&gt; typeGraph(Map&lt;Class&lt;?&gt;, V&gt; m, boolean autobox) {
+<span class="fc" id="L182">    Check.notNull(m, SOURCE_MAP);</span>
+<span class="fc" id="L183">    var builder = new TypeGraphBuilder&lt;V&gt;().autobox(autobox);</span>
+<span class="fc" id="L184">    m.forEach(builder::add);</span>
+<span class="fc" id="L185">    return builder.freeze();</span>
+  }
+
+  /**
+   * Returns a {@code Builder} for type maps that rely on a data structure similar to
+   * the Java type hierarchy itself. The {@code TypeMap} is sensitive to the
+   * insertion order of the types. Thus, if you expect a lot of requests for key
+   * {@code String.class}, it pays to make it the first class you
+   * {@linkplain TypeMapBuilder#add(Class, Object) add} using the builder.
+   *
+   * @param &lt;V&gt; the type of the values in the map
+   * @return a builder for type maps that rely on a data structure similar to the
+   *     Java type hierarchy itself
+   */
+  static &lt;V&gt; TypeMapBuilder&lt;V&gt; typeGraphBuilder() {
+<span class="fc" id="L200">    return new TypeGraphBuilder&lt;&gt;();</span>
+  }
+
+  /**
+   * Returns an &lt;a href=&quot;#auto-expansion&quot;&gt;auto-expanding&lt;/a&gt; {@code TypeMap}.
+   * Autoboxing is enabled in the returned {@code TypeMap}.
+   *
+   * @param m the map to convert to a {@code TypeMap}
+   * @param &lt;V&gt; the type of the values in the map
+   * @return an auto-expanding {@code TypeMap}
+   */
+  static &lt;V&gt; TypeMap&lt;V&gt; greedyTypeMap(Map&lt;Class&lt;?&gt;, V&gt; m) {
+<span class="fc" id="L212">    return greedyTypeMap(m, true);</span>
+  }
+
+  /**
+   * Returns an &lt;a href=&quot;#auto-expansion&quot;&gt;auto-expanding&lt;/a&gt; {@code TypeMap}.
+   *
+   * @param m the map to convert to a {@code TypeMap}
+   * @param autobox whether to &quot;autobox&quot; the types requested via {@code get} and
+   *     {@code containsKey}
+   * @param &lt;V&gt; the type of the values in the map
+   * @return an auto-expanding {@code TypeMap}
+   */
+  static &lt;V&gt; TypeMap&lt;V&gt; greedyTypeMap(Map&lt;Class&lt;?&gt;, V&gt; m, boolean autobox) {
+<span class="fc" id="L225">    Check.notNull(m, SOURCE_MAP);</span>
+<span class="fc" id="L226">    var builder = new GreedyTypeMapBuilder&lt;V&gt;().autobox(autobox);</span>
+<span class="fc" id="L227">    m.forEach(builder::add);</span>
+<span class="fc" id="L228">    return builder.freeze();</span>
+  }
+
+  /**
+   * Returns a {@code Builder} for auto-expanding type maps.
+   *
+   * @param &lt;V&gt; the type of the values in the map
+   * @return a {@code Builder} for auto-expanding type maps
+   */
+  static &lt;V&gt; TypeMapBuilder&lt;V&gt; greedyTypeMapBuilder() {
+<span class="fc" id="L238">    return new GreedyTypeMapBuilder&lt;&gt;();</span>
+  }
+
+  /**
+   * Returns a {@code TypeMap} that is backed by a {@link java.util.TreeMap TreeMap}.
+   * Its keys are sorted such that for any two types in the key set, the one that
+   * comes first will never be a supertype of the one that comes second - and vice
+   * versa: the one that comes second will never be a subtype of the one that comes
+   * first. In other words, they are sorted from less abstract to more abstract. If
+   * the map contains key {@code Object.class}, it will be the last element in the
+   * key set. The {@link java.util.Comparator Comparator} used for the
+   * {@code TreeMap} is similar to the one used for
+   * {@link TypeSet#prettySort(Collection) CollectionMethods.prettyTypeSet}, but much
+   * more light-weight, and therefore more performant. Autoboxing is enabled in the
+   * returned {@code TypeMap}.
+   *
+   * @param &lt;V&gt; the type of the values in the map
+   * @param m the map to convert to a {@code TypeMap}
+   * @return a {@code TypeMap} that is itself backed by a {@code TreeMap}
+   * @see TypeSet#typeTreeSet(Class[])
+   */
+  static &lt;V&gt; TypeMap&lt;V&gt; typeTree(Map&lt;Class&lt;?&gt;, V&gt; m) {
+<span class="fc" id="L260">    return typeTree(m, true);</span>
+  }
+
+  /**
+   * Returns a {@code TypeMap} that is backed by a {@link java.util.TreeMap TreeMap}.
+   * Its keys are sorted such that for any two types in the key set, the one that
+   * comes first will never be a supertype of the one that comes second - and vice
+   * versa: the one that comes second will never be a subtype of the one that comes
+   * first. In other words, they are sorted from less abstract to more abstract. If
+   * the map contains key {@code Object.class}, it will be the last element in the
+   * key set. The {@link java.util.Comparator Comparator} used for the
+   * {@code TreeMap} is similar to the one used for
+   * {@link TypeSet#prettySort(Collection) TypeSet.prettySort()}, but more
+   * light-weight, and therefore more performant.
+   *
+   * @param m the map to convert to a {@code TypeMap}
+   * @param autobox whether to &quot;autobox&quot; the types requested via {@code get} and
+   *     {@code containsKey}
+   * @param &lt;V&gt; the type of the values in the map
+   * @return a {@code TypeMap} that is itself backed by a {@code TreeMap}
+   * @see TypeSet#typeTreeSet(Class[])
+   */
+  static &lt;V&gt; TypeMap&lt;V&gt; typeTree(Map&lt;Class&lt;?&gt;, V&gt; m, boolean autobox) {
+<span class="fc" id="L283">    Check.notNull(m, SOURCE_MAP);</span>
+<span class="fc" id="L284">    var builder = new TypeTreeMapBuilder&lt;V&gt;().autobox(autobox);</span>
+<span class="fc" id="L285">    m.forEach(builder::add);</span>
+<span class="fc" id="L286">    return builder.freeze();</span>
+  }
+
+  /**
+   * Returns a {@code Builder} for type maps that are backed by a
+   * {@linkplain java.util.TreeMap TreeMap}.
+   *
+   * @param &lt;V&gt; the type of the values in the map
+   * @return a {@code Builder} for type maps that are backed by a {@code TreeMap}
+   */
+  static &lt;V&gt; TypeMapBuilder&lt;V&gt; typeTreeBuilder() {
+<span class="fc" id="L297">    return new TypeTreeMapBuilder&lt;&gt;();</span>
+  }
+
+  /**
+   * Throws an {@linkplain UnsupportedOperationException}.
+   */
+  @Override
+  default V getOrDefault(Object key, V defaultValue) {
+<span class="nc" id="L305">    throw new UnsupportedOperationException();</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

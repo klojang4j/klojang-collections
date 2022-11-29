@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NonExpandingTypeMap.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Klojang Collections</a> &gt; <a href="index.source.html" class="el_package">org.klojang.collections</a> &gt; <span class="el_source">NonExpandingTypeMap.java</span></div><h1>NonExpandingTypeMap.java</h1><pre class="source lang-java linenums">package org.klojang.collections;
+
+import org.klojang.check.Check;
+import org.klojang.util.ArrayType;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.klojang.check.CommonChecks.instanceOf;
+import static org.klojang.util.ClassMethods.*;
+
+/*
+ * Currently only extended by TypeHashMap, but could be base class for any TypeMap
+ * that relies on a regular map to do the lookups.
+ */
+abstract sealed class NonExpandingTypeMap&lt;V&gt; extends
+    ImmutableMap&lt;Class&lt;?&gt;, V&gt; implements TypeMap&lt;V&gt; permits
+    TypeTreeMap, FixedTypeMap {
+
+  private final boolean autobox;
+
+<span class="fc" id="L23">  NonExpandingTypeMap(boolean autobox) {</span>
+<span class="fc" id="L24">    this.autobox = autobox;</span>
+<span class="fc" id="L25">  }</span>
+
+  abstract Map&lt;Class&lt;?&gt;, V&gt; backend();
+
+  @Override
+  public V get(Object key) {
+<span class="fc" id="L31">    Class&lt;?&gt; type = Check.notNull(key)</span>
+<span class="fc" id="L32">        .is(instanceOf(), Class.class)</span>
+<span class="fc" id="L33">        .ok(Class.class::cast);</span>
+<span class="fc" id="L34">    return find(type);</span>
+  }
+
+  @Override
+  public boolean containsKey(Object key) {
+<span class="fc" id="L39">    Class&lt;?&gt; type = Check.notNull(key)</span>
+<span class="fc" id="L40">        .is(instanceOf(), Class.class)</span>
+<span class="fc" id="L41">        .ok(Class.class::cast);</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">    return find(type) != null;</span>
+  }
+
+  private V find(Class&lt;?&gt; type) {
+    V val;
+<span class="fc bfc" id="L47" title="All 2 branches covered.">    if ((val = backend().get(type)) != null) {</span>
+<span class="fc" id="L48">      return val;</span>
+    }
+<span class="fc bfc" id="L50" title="All 2 branches covered.">    if (type.isArray()) {</span>
+<span class="fc" id="L51">      val = findArrayType(type);</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">    } else if (type.isPrimitive()) {</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">      if (autobox) {</span>
+<span class="fc" id="L54">        val = find(box(type));</span>
+      }
+<span class="fc bfc" id="L56" title="All 2 branches covered.">    } else if (type.isInterface()) {</span>
+<span class="fc" id="L57">      val = findInterface(type);</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">    } else if ((val = findSuperClass(type)) == null) {</span>
+<span class="fc" id="L59">      val = findInterface(type);</span>
+    }
+<span class="fc bfc" id="L61" title="All 2 branches covered.">    if (val == null) {</span>
+<span class="fc" id="L62">      return getDefaultValue();</span>
+    }
+<span class="fc" id="L64">    return val;</span>
+  }
+
+  private V findSuperClass(Class&lt;?&gt; type) {
+<span class="fc" id="L68">    List&lt;Class&lt;?&gt;&gt; supertypes = getAncestors(type);</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">    for (Class&lt;?&gt; c : supertypes) {</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">      if (c == Object.class) {</span>
+<span class="fc" id="L71">        break; // that's our last resort</span>
+      }
+<span class="fc" id="L73">      V val = backend().get(c);</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">      if (val != null) {</span>
+<span class="fc" id="L75">        return val;</span>
+      }
+<span class="fc" id="L77">    }</span>
+<span class="fc" id="L78">    return null;</span>
+  }
+
+  private V findInterface(Class&lt;?&gt; type) {
+<span class="fc" id="L82">    Set&lt;Class&lt;?&gt;&gt; supertypes = getAllInterfaces(type);</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">    for (Class&lt;?&gt; c : supertypes) {</span>
+<span class="fc" id="L84">      V val = backend().get(c);</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">      if (val != null) {</span>
+<span class="fc" id="L86">        return val;</span>
+      }
+<span class="fc" id="L88">    }</span>
+<span class="fc" id="L89">    return null;</span>
+  }
+
+  private V findArrayType(Class&lt;?&gt; type) {
+<span class="fc" id="L93">    ArrayType arrayType = ArrayType.forClass(type);</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">    if (arrayType.baseType().isPrimitive()) {</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">      if (autobox) {</span>
+<span class="fc" id="L96">        return find(arrayType.box());</span>
+      }
+    }
+    V result;
+<span class="fc bfc" id="L100" title="All 2 branches covered.">    if (arrayType.baseType().isInterface()) {</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">      if ((result = findInterfaceArray(arrayType)) != null) {</span>
+<span class="fc" id="L102">        return result;</span>
+      }
+<span class="fc bfc" id="L104" title="All 2 branches covered.">    } else if ((result = findSuperClassArray(arrayType)) != null) {</span>
+<span class="fc" id="L105">      return result;</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">    } else if ((result = findInterfaceArray(arrayType)) != null) {</span>
+<span class="fc" id="L107">      return result;</span>
+    }
+<span class="fc" id="L109">    return backend().get(Object[].class);</span>
+
+  }
+
+  private V findSuperClassArray(ArrayType arrayType) {
+<span class="fc" id="L114">    List&lt;Class&lt;?&gt;&gt; supertypes = getAncestors(arrayType.baseType());</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">    for (Class&lt;?&gt; c : supertypes) {</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">      if (c == Object.class) {</span>
+<span class="fc" id="L117">        break;</span>
+      }
+<span class="fc" id="L119">      V val = backend().get(arrayType.toClass(c));</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">      if (val != null) {</span>
+<span class="fc" id="L121">        return val;</span>
+      }
+<span class="fc" id="L123">    }</span>
+<span class="fc" id="L124">    return null;</span>
+  }
+
+  private V findInterfaceArray(ArrayType arrayType) {
+<span class="fc" id="L128">    Set&lt;Class&lt;?&gt;&gt; supertypes = getAllInterfaces(arrayType.baseType());</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">    for (Class&lt;?&gt; c : supertypes) {</span>
+<span class="fc" id="L130">      V val = backend().get(arrayType.toClass(c));</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">      if (val != null) {</span>
+<span class="fc" id="L132">        return val;</span>
+      }
+<span class="fc" id="L134">    }</span>
+<span class="fc" id="L135">    return null;</span>
+  }
+
+  private V defVal;
+
+  // The value associated with Object.class, or null if
+  // the map does not contain key Object.class
+  private V getDefaultValue() {
+<span class="fc bfc" id="L143" title="All 2 branches covered.">    if (defVal == null) {</span>
+<span class="fc" id="L144">      defVal = backend().get(Object.class);</span>
+    }
+<span class="fc" id="L146">    return defVal;</span>
+  }
+
+  @Override
+  public int size() {
+<span class="fc" id="L151">    return backend().size();</span>
+  }
+
+  @Override
+  public boolean isEmpty() {
+<span class="fc" id="L156">    return backend().isEmpty();</span>
+  }
+
+  @Override
+  public boolean containsValue(Object value) {
+<span class="fc" id="L161">    return backend().containsValue(value);</span>
+  }
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L166">    return backend().hashCode();</span>
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+<span class="nc" id="L171">    return backend().equals(obj);</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L176">    return backend().toString();</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
