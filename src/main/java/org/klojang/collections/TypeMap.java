@@ -5,44 +5,52 @@ import org.klojang.check.Check;
 import java.util.Collection;
 import java.util.Map;
 
-
 /**
- * <p>
- * A specialisation of the {@code Map} interface, aimed at providing natural default
- * values for groups of Java types via a shared supertype.
- * <p>
- * A {@code TypeMap} behaves as follows: if a type, requested via
- * {@link #get(Object) get} or {@link #containsKey(Object) containsKey}, is not
- * present in the map, but one of its supertypes is, then it will return the value
- * associated with the supertype (or {@code true} in the case of
- * {@code containsKey}). For example: if the user requests the value associated with
- * key {@code Integer.class}, but the map only contains an entry for
+ * <p>A specialisation of the {@code Map} interface, aimed at providing natural
+ * default values for groups of Java types via a shared supertype. The keys in a type
+ * map are always {@link Class} objects. The type of the values is user-defined. One
+ * particularly useful application of type maps is to associate types with functions
+ * (i.e. lambdas, method references) that operate on those types.
+ *
+ * <h2 id="behaviour">Behaviour</h2>
+ *
+ * <p>A {@code TypeMap} behaves as follows: if the type requested via
+ * {@link #get(Object) get()} is not present in the map, but one of its supertypes
+ * is, then the type map will return the value associated with the supertype.
+ * Similarly, {@link #containsKey(Object)} containsKey()} will return {@code true} if
+ * either the specified type itself or one of its supertypes is a key in the
+ * {@code TypeMap}. For example: if the user requests the value associated with key
+ * {@code Integer.class}, but the map only contains an entry for
  * {@code Number.class}, then the value associated with {@code Number.class} is
  * returned. If there is no entry for {@code Number.class} either, but there is one
  * for {@code Serializable.class}, then the value associated with that type is
- * returned. If the requested type is a regular class (rather than an interface), its
- * class hierarchy takes precedence over the interface hierarchy associated with it
- * (if any). Within the class hierarchy, the nearest supertype takes precedence over
- * supertypes further up the tree (closer to {@code Object.class}).
- * <p>
- * A {@code TypeMap} is not modifiable. All map-altering methods throw an
- * {@link UnsupportedOperationException}. The {@code getOrDefault} method also throws
- * an {@code UnsupportedOperationException} as it sidesteps the {@code TypeMap}
- * paradigm. Neither keys nor values are allowed to be {@code null}. If the map
- * contains key {@code Object.class}, it will <i>always</i> return a non-null value.
- * Note that this is, in fact, a deviation from Java's type hierarchy since primitive
- * types do not extend {@code Object.class}. However, the point of the
- * {@code TypeMap} interface is to provide natural default values for groups of
- * types, and {@code Object.class} is the obvious candidate for providing the
- * ultimate, last-resort, fall-back value.
- * <p>
- * You cannot instantiate a {@code TypeMap} directly, or even provide your own
- * implementation. You obtain an instance through the various static factory methods
- * on the {@code TypeMap} interface itself.
+ * returned.
+ *
+ * <p>Regular types take precedence over interface types. If the requested type is
+ * an implementation of one type within the type map, and a subclass of another, then
+ * the value associated with the latter will be returned. The one exception is
+ * {@code Object.class}, since any instance of any interface is also an
+ * {@code Object}. If {@code Object.class} is present in the map, the {@code get()}
+ * method is guaranteed to return a non-null value. Note that this is, in fact, a
+ * deviation from Java's type hierarchy since primitive types do not extend
+ * {@code Object.class}. However, the point of the {@code TypeMap} interface is to
+ * provide natural default values for groups of types, and {@code Object.class} is
+ * the obvious candidate for providing the ultimate, last-resort, fall-back value.
+ *
+ * <p>Type maps are immutable. All map-altering methods throw an
+ * {@link UnsupportedOperationException}. The
+ * {@link #getOrDefault(Object, Object) getOrDefault()} method also throws an
+ * {@code UnsupportedOperationException} as it sidesteps the {@code TypeMap}
+ * paradigm. Type maps are also null-repellent &#8212; neither keys nor values are
+ * allowed to be {@code null}.
+ *
+ * <p>You cannot instantiate a {@code TypeMap} directly. You obtain an instance
+ * through the various static factory methods on the {@code TypeMap} interface
+ * itself.
  *
  * <h2 id="autoboxing">Autoboxing</h2>
- * <p>
- * A {@code TypeMap} can be configured to "autobox" the types requested via
+ *
+ * <p>A {@code TypeMap} can be configured to "autobox" the types requested via
  * {@code get} and {@code containsKey}. For example, if the user makes a request for
  * {@code double.class}, but the map only contains an entry for {@code Double.class},
  * then the value associated with {@code Double.class} is returned. If there is no
@@ -59,7 +67,8 @@ import java.util.Map;
  *
  * <h2 id="auto-expansion">Auto-expansion</h2>
  *
- * <p>The "{@linkplain #greedyTypeMap(Map) greedy}" {@code TypeMap} will
+ * <p>Even though type maps are specified to be immutable to the outside world, the
+ * "{@linkplain #greedyTypeMap(Map) greedy}" {@code TypeMap} will
  * automatically and tacitly absorb subtypes of the original types in the map, as and
  * when they are requested via {@code get} or {@code containsKey}. It will look up
  * the value for the nearest supertype and associate the subtype with that same
@@ -90,8 +99,7 @@ import java.util.Map;
 public sealed interface TypeMap<V> extends Map<Class<?>, V> permits TypeGraph,
     GreedyTypeMap, NonExpandingTypeMap {
 
-  String SOURCE_MAP ="source map";
-
+  String SOURCE_MAP = "source map";
 
   /**
    * Returns a {@code TypeMap} that is internally backed by a regular, unmodifiable
@@ -296,6 +304,5 @@ public sealed interface TypeMap<V> extends Map<Class<?>, V> permits TypeGraph,
   default V getOrDefault(Object key, V defaultValue) {
     throw new UnsupportedOperationException();
   }
-
 
 }

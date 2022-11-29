@@ -1,8 +1,7 @@
 package org.klojang.collections;
 
 import org.junit.Test;
-import org.klojang.check.aux.DuplicateValueException;
-import org.klojang.util.util.MutableInt;
+import org.klojang.util.MutableInt;
 
 import java.util.*;
 
