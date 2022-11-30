@@ -13,7 +13,7 @@ public class TypeTreeTest {
   @Test
   public void noAutoExpandPlease() {
     Map<Class<?>, String> src = Map.of(Integer.class, "Integer");
-    TypeMap<String> m = TypeMap.typeTree(src);
+    TypeMap<String> m = TypeMap.treeTypeMap(src);
     assertEquals(1, m.size());
     assertTrue(m.containsKey(int.class));
     assertEquals(1, m.size());
@@ -21,7 +21,7 @@ public class TypeTreeTest {
 
   @Test
   public void entrySet00() {
-    var m = TypeMap.<String>typeTreeBuilder().add(Object.class,
+    var m = TypeMap.<String>treeTypeMapBuilder().add(Object.class,
         "Object").add(Number.class, "Number").add(Integer.class, "Integer").add(
         Double.class,
         "Double").add(Short.class, "Short").add(Iterable.class, "Iterable").add(
@@ -37,7 +37,7 @@ public class TypeTreeTest {
 
   @Test
   public void values00() {
-    var m = TypeMap.<String>typeTreeBuilder()
+    var m = TypeMap.<String>treeTypeMapBuilder()
         .add(Object.class, "Foo")
         .add(Number.class, "Bar")
         .add(Integer.class, "Integer")
@@ -66,7 +66,7 @@ public class TypeTreeTest {
   @Test
   public void copyOf00() {
     Map<Class<?>, String> src = Map.of(Number.class, "Number");
-    TypeMap<String> m = TypeMap.typeTree(src);
+    TypeMap<String> m = TypeMap.treeTypeMap(src);
     assertFalse(m.isEmpty());
     assertTrue(m.containsKey(int.class));
     assertEquals("Number", m.get(int.class));
@@ -75,7 +75,7 @@ public class TypeTreeTest {
   @Test
   public void copyOf01() {
     Map<Class<?>, String> src = Map.of(Number.class, "Number");
-    TypeMap<String> m = TypeMap.typeTree(src);
+    TypeMap<String> m = TypeMap.treeTypeMap(src);
     assertTrue(m.containsKey(int.class));
     assertEquals("Number", m.get(int.class));
   }
@@ -83,14 +83,14 @@ public class TypeTreeTest {
   @Test
   public void copyOf02() {
     Map<Class<?>, String> src = Map.of(Number.class, "Number");
-    TypeMap<String> m = TypeMap.typeTree(src, false);
+    TypeMap<String> m = TypeMap.treeTypeMap(src, false);
     assertFalse(m.containsKey(int.class));
     assertNull(m.get(int.class));
   }
 
   @Test
   public void size00() {
-    TypeMap<String> m = TypeMap.typeTree(Map.of());
+    TypeMap<String> m = TypeMap.treeTypeMap(Map.of());
     assertEquals(0, m.size());
     assertTrue(m.isEmpty());
     assertFalse(m.containsKey(Object.class));
@@ -99,7 +99,7 @@ public class TypeTreeTest {
   @Test
   public void size01() {
     Map<Class<?>, String> src = Map.of(Serializable.class, "FOO");
-    TypeMap<String> m = TypeMap.typeTree(src);
+    TypeMap<String> m = TypeMap.treeTypeMap(src);
     assertEquals(1, m.size());
     assertFalse(m.isEmpty());
     assertFalse(m.containsKey(Object.class));
@@ -119,7 +119,7 @@ public class TypeTreeTest {
         "Number",
         Integer.class,
         "Integer");
-    TypeMap<String> m = TypeMap.typeTree(src, false);
+    TypeMap<String> m = TypeMap.treeTypeMap(src, false);
     assertTrue(m.containsKey(int.class));
     assertEquals("Object", m.get(int.class));
   }
@@ -134,7 +134,7 @@ public class TypeTreeTest {
         "Number",
         Integer.class,
         "Integer");
-    TypeMap<String> m = TypeMap.typeTree(src);
+    TypeMap<String> m = TypeMap.treeTypeMap(src);
     assertTrue(m.containsKey(int.class));
     assertEquals("int", m.get(int.class));
   }
@@ -147,7 +147,7 @@ public class TypeTreeTest {
         "Number",
         Integer.class,
         "Integer");
-    TypeMap<String> m = TypeMap.typeTree(src, false);
+    TypeMap<String> m = TypeMap.treeTypeMap(src, false);
     assertFalse(m.containsKey(int.class));
     assertNull(m.get(int.class));
   }
@@ -162,7 +162,7 @@ public class TypeTreeTest {
         "Number",
         Integer.class,
         "Integer");
-    TypeMap<String> m = TypeMap.typeTree(src);
+    TypeMap<String> m = TypeMap.treeTypeMap(src);
     assertTrue(m.containsKey(int.class));
     assertEquals("Integer", m.get(int.class));
   }
@@ -175,7 +175,7 @@ public class TypeTreeTest {
         "Serializable",
         Number.class,
         "Number");
-    TypeMap<String> m = TypeMap.typeTree(src);
+    TypeMap<String> m = TypeMap.treeTypeMap(src);
     assertTrue(m.containsKey(int.class));
     assertEquals("Number", m.get(int.class));
   }
@@ -186,21 +186,21 @@ public class TypeTreeTest {
         "Object",
         Serializable.class,
         "Serializable");
-    TypeMap<String> m = TypeMap.typeTree(src);
+    TypeMap<String> m = TypeMap.treeTypeMap(src);
     assertTrue(m.containsKey(int.class));
     assertEquals("Serializable", m.get(int.class));
   }
 
   @Test
   public void autobox06() {
-    TypeMap<String> m = TypeMap.typeTree(Map.of(Object.class, "Object"));
+    TypeMap<String> m = TypeMap.treeTypeMap(Map.of(Object.class, "Object"));
     assertTrue(m.containsKey(int.class));
     assertEquals("Object", m.get(int.class));
   }
 
   @Test
   public void autobox07() {
-    TypeMap<String> m = TypeMap.typeTree(Map.of());
+    TypeMap<String> m = TypeMap.treeTypeMap(Map.of());
     assertFalse(m.containsKey(int.class));
     assertNull(m.get(int.class));
   }
@@ -208,7 +208,7 @@ public class TypeTreeTest {
   @Test
   public void autobox08() {
     Map<Class<?>, String> src = Map.of(int[][][].class, "int[][][]");
-    TypeMap<String> m = TypeMap.typeTree(src);
+    TypeMap<String> m = TypeMap.treeTypeMap(src);
     assertTrue(m.containsKey(int[][][].class));
     assertEquals("int[][][]", m.get(int[][][].class));
   }
@@ -216,14 +216,14 @@ public class TypeTreeTest {
   @Test
   public void autobox09() {
     Map<Class<?>, String> src = Map.of(Integer[][][].class, "Integer[][][]");
-    TypeMap<String> m = TypeMap.typeTree(src);
+    TypeMap<String> m = TypeMap.treeTypeMap(src);
     assertTrue(m.containsKey(int[][][].class));
     assertEquals("Integer[][][]", m.get(int[][][].class));
   }
 
   @Test
   public void test00() {
-    var m = TypeMap.<String>typeTreeBuilder().add(String.class,
+    var m = TypeMap.<String>treeTypeMapBuilder().add(String.class,
         "String").add(Number.class, "Number").add(Short.class, "Short").freeze();
     assertEquals(3, m.size());
     assertTrue(m.containsValue("String"));
@@ -239,7 +239,7 @@ public class TypeTreeTest {
 
   @Test
   public void test01() {
-    var m = TypeMap.<String>typeTreeBuilder().add(Object.class,
+    var m = TypeMap.<String>treeTypeMapBuilder().add(Object.class,
         "Object").freeze();
     assertEquals(1, m.size());
     assertTrue(m.containsKey(Integer.class));
@@ -247,7 +247,7 @@ public class TypeTreeTest {
 
   @Test
   public void test02() {
-    var m = TypeMap.<String>typeTreeBuilder().add(Object.class,
+    var m = TypeMap.<String>treeTypeMapBuilder().add(Object.class,
         "Object").freeze();
     assertEquals(1, m.size());
     assertTrue(m.containsKey(Collection.class));
@@ -255,7 +255,7 @@ public class TypeTreeTest {
 
   @Test
   public void test03() {
-    var m = TypeMap.<String>typeTreeBuilder().add(Object.class,
+    var m = TypeMap.<String>treeTypeMapBuilder().add(Object.class,
         "Object").freeze();
     assertEquals(1, m.size());
     assertTrue(m.containsKey(Collection.class));
@@ -267,7 +267,7 @@ public class TypeTreeTest {
 
   @Test
   public void test04() {
-    var m = TypeMap.<String>typeTreeBuilder()
+    var m = TypeMap.<String>treeTypeMapBuilder()
         .add(ArrayList.class,
             "ArrayList")
         .add(List.class, "List")
@@ -278,14 +278,14 @@ public class TypeTreeTest {
 
   @Test
   public void test05() {
-    var m = TypeMap.<String>typeTreeBuilder().add(ArrayList.class,
+    var m = TypeMap.<String>treeTypeMapBuilder().add(ArrayList.class,
         "ArrayList").add(MyListInterface.class, "MyListInterface").freeze();
     assertEquals("ArrayList", m.get(MyArrayList.class));
   }
 
   @Test
   public void test06() {
-    var m = TypeMap.<String>typeTreeBuilder()
+    var m = TypeMap.<String>treeTypeMapBuilder()
         .add(List.class, "List")
         .add(Object.class, "Object")
         .freeze();
@@ -294,14 +294,14 @@ public class TypeTreeTest {
 
   @Test
   public void test07() {
-    var m = TypeMap.<String>typeTreeBuilder().add(List[].class,
+    var m = TypeMap.<String>treeTypeMapBuilder().add(List[].class,
         "List[]").add(Object.class, "Object").freeze();
     assertEquals("List[]", m.get(ArrayList[].class));
   }
 
   @Test
   public void test08() {
-    var m = TypeMap.<String>typeTreeBuilder().add(Object[].class,
+    var m = TypeMap.<String>treeTypeMapBuilder().add(Object[].class,
         "Object[]").add(Object.class, "Object").freeze();
     assertEquals(2, m.size());
     assertEquals("Object[]", m.get(ArrayList[].class));
@@ -309,14 +309,14 @@ public class TypeTreeTest {
 
   @Test
   public void test09() {
-    var m = TypeMap.<String>typeTreeBuilder().add(Object[].class,
+    var m = TypeMap.<String>treeTypeMapBuilder().add(Object[].class,
         "Object[]").add(Object.class, "Object").freeze();
     assertEquals("Object", m.get(Object.class));
   }
 
   @Test
   public void test10() {
-    var m = TypeMap.<String>typeTreeBuilder()
+    var m = TypeMap.<String>treeTypeMapBuilder()
         .autobox(true)
         .add(Object.class, "Object")
         .freeze();
@@ -325,7 +325,7 @@ public class TypeTreeTest {
 
   @Test
   public void test11() {
-    var m = TypeMap.<String>typeTreeBuilder()
+    var m = TypeMap.<String>treeTypeMapBuilder()
         .autobox(false)
         .add(Object.class, "Object")
         .freeze();
@@ -334,7 +334,7 @@ public class TypeTreeTest {
 
   @Test
   public void test12() {
-    var m = TypeMap.<String>typeTreeBuilder()
+    var m = TypeMap.<String>treeTypeMapBuilder()
         .autobox(false)
         .add(Object.class, "Object")
         .freeze();
@@ -343,7 +343,7 @@ public class TypeTreeTest {
 
   @Test
   public void test13() {
-    var m = TypeMap.<String>typeTreeBuilder()
+    var m = TypeMap.<String>treeTypeMapBuilder()
         .add(Iterable.class,
             "Iterable")
         .add(Collection.class, "Collection")
@@ -375,7 +375,7 @@ public class TypeTreeTest {
 
   @Test
   public void test14() {
-    var m = TypeMap.<String>typeTreeBuilder().add(A0.class, "A0").add(
+    var m = TypeMap.<String>treeTypeMapBuilder().add(A0.class, "A0").add(
         Serializable.class,
         "Serializable").freeze();
     assertTrue(m.containsKey(A000.class));
@@ -385,7 +385,7 @@ public class TypeTreeTest {
 
   @Test
   public void test15() {
-    var m = TypeMap.<String>typeTreeBuilder().add(A0.class, "A0").add(
+    var m = TypeMap.<String>treeTypeMapBuilder().add(A0.class, "A0").add(
         A000.class,
         "A000").add(Serializable.class, "Serializable").freeze();
     assertTrue(m.containsKey(A000.class));
@@ -395,7 +395,7 @@ public class TypeTreeTest {
 
   @Test
   public void test16() {
-    var m = TypeMap.<String>typeTreeBuilder().add(A0.class, "A0").add(
+    var m = TypeMap.<String>treeTypeMapBuilder().add(A0.class, "A0").add(
         A0000.class,
         "A0000").add(Serializable.class, "Serializable").freeze();
     assertFalse(m.containsKey(Object.class));
@@ -405,7 +405,7 @@ public class TypeTreeTest {
 
   @Test(expected = DuplicateValueException.class)
   public void test17() {
-    var m = TypeMap.<String>typeTreeBuilder()
+    var m = TypeMap.<String>treeTypeMapBuilder()
         .add(A01.class, "A01")
         .add(A0.class, "A0")
         .add(A01.class, "FOO")
@@ -414,14 +414,14 @@ public class TypeTreeTest {
 
   @Test(expected = DuplicateValueException.class)
   public void test18() {
-    var m = TypeMap.<String>typeTreeBuilder().add(A0.class, "A0").add(
+    var m = TypeMap.<String>treeTypeMapBuilder().add(A0.class, "A0").add(
         A01.class,
         "A01").add(A01.class, "A01").freeze();
   }
 
   @Test(expected = DuplicateValueException.class)
   public void test19() {
-    var m = TypeMap.<String>typeTreeBuilder()
+    var m = TypeMap.<String>treeTypeMapBuilder()
         .add(Object.class, "FOO")
         .add(A0.class, "A0")
         .add(Object.class, "BAR")
@@ -430,7 +430,7 @@ public class TypeTreeTest {
 
   @Test
   public void test20() {
-    var m = TypeMap.<String>typeTreeBuilder()
+    var m = TypeMap.<String>treeTypeMapBuilder()
         .add(Object[].class,
             "Object[]")
         .add(Collection[].class, "Collection[]")

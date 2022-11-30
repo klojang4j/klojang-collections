@@ -10,10 +10,6 @@ import java.util.Set;
 import static org.klojang.check.CommonChecks.instanceOf;
 import static org.klojang.util.ClassMethods.*;
 
-/*
- * Currently only extended by TypeHashMap, but could be base class for any TypeMap
- * that relies on a regular map to do the lookups.
- */
 abstract sealed class NonExpandingTypeMap<V> extends
     ImmutableMap<Class<?>, V> implements TypeMap<V> permits
     TypeTreeMap, FixedTypeMap {

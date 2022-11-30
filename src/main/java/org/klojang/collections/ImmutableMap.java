@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-abstract sealed class ImmutableMap<K, V> implements Map<K, V> permits TypeGraph,
+abstract sealed class ImmutableMap<K, V> implements Map<K, V> permits NativeTypeMap,
     GreedyTypeMap, NonExpandingTypeMap {
 
   @Override

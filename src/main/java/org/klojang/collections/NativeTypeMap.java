@@ -10,7 +10,7 @@ import static org.klojang.check.CommonChecks.instanceOf;
 import static org.klojang.util.ClassMethods.*;
 import static org.klojang.util.CollectionMethods.implode;
 
-final class TypeGraph<V> extends ImmutableMap<Class<?>, V> implements TypeMap<V> {
+final class NativeTypeMap<V> extends ImmutableMap<Class<?>, V> implements TypeMap<V> {
 
   private final boolean autobox;
   private final TypeNode root;
@@ -20,7 +20,7 @@ final class TypeGraph<V> extends ImmutableMap<Class<?>, V> implements TypeMap<V>
   private Collection<V> values;
   private Set<Entry<Class<?>, V>> entries;
 
-  TypeGraph(TypeNode root, int size, boolean autobox) {
+  NativeTypeMap(TypeNode root, int size, boolean autobox) {
     this.autobox = autobox;
     this.root = root;
     this.size = size;

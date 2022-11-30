@@ -14,7 +14,7 @@ public class TypeGraphTest {
   @Test
   public void noAutoExpandPlease() {
     Map<Class<?>, String> src = Map.of(Integer.class, "Integer");
-    TypeMap<String> m = TypeMap.typeGraph(src);
+    TypeMap<String> m = TypeMap.nativeTypeMap(src);
     assertEquals(1, m.size());
     assertTrue(m.containsKey(int.class));
     assertEquals(1, m.size());
@@ -22,7 +22,7 @@ public class TypeGraphTest {
 
   @Test
   public void keySet00() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .add(Byte.class, "Byte")
         .add(Integer.class, "Integer")
         .add(Double.class, "Double")
@@ -45,7 +45,7 @@ public class TypeGraphTest {
 
   @Test
   public void keySet01() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .add(Integer.class, "Integer")
         .add(Byte.class, "Byte")
         .add(Double.class, "Double")
@@ -68,7 +68,7 @@ public class TypeGraphTest {
 
   @Test
   public void keySet02() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .add(CharSequence.class, "CharSequence")
         .add(Integer.class, "Integer")
         .add(Number.class, "Number")
@@ -89,7 +89,7 @@ public class TypeGraphTest {
 
   @Test
   public void entrySet00() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .add(Object.class, "Object")
         .add(Number.class, "Number")
         .add(Integer.class, "Integer")
@@ -110,7 +110,7 @@ public class TypeGraphTest {
 
   @Test
   public void values00() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .add(Object.class, "Foo")
         .add(Number.class, "Bar")
         .add(Integer.class, "Integer")
@@ -139,7 +139,7 @@ public class TypeGraphTest {
   @Test
   public void copyOf00() {
     Map<Class<?>, String> src = Map.of(Number.class, "Number");
-    TypeMap<String> m = TypeMap.typeGraph(src);
+    TypeMap<String> m = TypeMap.nativeTypeMap(src);
     assertFalse(m.isEmpty());
     assertTrue(m.containsKey(int.class));
     assertEquals("Number", m.get(int.class));
@@ -148,7 +148,7 @@ public class TypeGraphTest {
   @Test
   public void copyOf01() {
     Map<Class<?>, String> src = Map.of(Number.class, "Number");
-    TypeMap<String> m = TypeMap.typeGraph(src);
+    TypeMap<String> m = TypeMap.nativeTypeMap(src);
     assertTrue(m.containsKey(int.class));
     assertEquals("Number", m.get(int.class));
   }
@@ -156,14 +156,14 @@ public class TypeGraphTest {
   @Test
   public void copyOf02() {
     Map<Class<?>, String> src = Map.of(Number.class, "Number");
-    TypeMap<String> m = TypeMap.typeGraph(src, false);
+    TypeMap<String> m = TypeMap.nativeTypeMap(src, false);
     assertFalse(m.containsKey(int.class));
     assertNull(m.get(int.class));
   }
 
   @Test
   public void size00() {
-    TypeMap<String> m = TypeMap.typeGraph(Map.of());
+    TypeMap<String> m = TypeMap.nativeTypeMap(Map.of());
     assertEquals(0, m.size());
     assertTrue(m.isEmpty());
     assertFalse(m.containsKey(Object.class));
@@ -172,7 +172,7 @@ public class TypeGraphTest {
   @Test
   public void size01() {
     Map<Class<?>, String> src = Map.of(Serializable.class, "FOO");
-    TypeMap<String> m = TypeMap.typeGraph(src);
+    TypeMap<String> m = TypeMap.nativeTypeMap(src);
     assertEquals(1, m.size());
     assertFalse(m.isEmpty());
     assertFalse(m.containsKey(Object.class));
@@ -192,7 +192,7 @@ public class TypeGraphTest {
         "Number",
         Integer.class,
         "Integer");
-    TypeMap<String> m = TypeMap.typeGraph(src, false);
+    TypeMap<String> m = TypeMap.nativeTypeMap(src, false);
     assertTrue(m.containsKey(int.class));
     assertEquals("Object", m.get(int.class));
   }
@@ -207,7 +207,7 @@ public class TypeGraphTest {
         "Number",
         Integer.class,
         "Integer");
-    TypeMap<String> m = TypeMap.typeGraph(src);
+    TypeMap<String> m = TypeMap.nativeTypeMap(src);
     assertTrue(m.containsKey(int.class));
     assertEquals("int", m.get(int.class));
   }
@@ -220,7 +220,7 @@ public class TypeGraphTest {
         "Number",
         Integer.class,
         "Integer");
-    TypeMap<String> m = TypeMap.typeGraph(src, false);
+    TypeMap<String> m = TypeMap.nativeTypeMap(src, false);
     assertFalse(m.containsKey(int.class));
     assertNull(m.get(int.class));
   }
@@ -235,7 +235,7 @@ public class TypeGraphTest {
         "Number",
         Integer.class,
         "Integer");
-    TypeMap<String> m = TypeMap.typeGraph(src);
+    TypeMap<String> m = TypeMap.nativeTypeMap(src);
     assertTrue(m.containsKey(int.class));
     assertEquals("Integer", m.get(int.class));
   }
@@ -248,7 +248,7 @@ public class TypeGraphTest {
         "Serializable",
         Number.class,
         "Number");
-    TypeMap<String> m = TypeMap.typeGraph(src);
+    TypeMap<String> m = TypeMap.nativeTypeMap(src);
     assertTrue(m.containsKey(int.class));
     assertEquals("Number", m.get(int.class));
   }
@@ -259,21 +259,21 @@ public class TypeGraphTest {
         "Object",
         Serializable.class,
         "Serializable");
-    TypeMap<String> m = TypeMap.typeGraph(src);
+    TypeMap<String> m = TypeMap.nativeTypeMap(src);
     assertTrue(m.containsKey(int.class));
     assertEquals("Serializable", m.get(int.class));
   }
 
   @Test
   public void autobox06() {
-    TypeMap<String> m = TypeMap.typeGraph(Map.of(Object.class, "Object"));
+    TypeMap<String> m = TypeMap.nativeTypeMap(Map.of(Object.class, "Object"));
     assertTrue(m.containsKey(int.class));
     assertEquals("Object", m.get(int.class));
   }
 
   @Test
   public void autobox07() {
-    TypeMap<String> m = TypeMap.typeGraph(Map.of());
+    TypeMap<String> m = TypeMap.nativeTypeMap(Map.of());
     assertFalse(m.containsKey(int.class));
     assertNull(m.get(int.class));
   }
@@ -281,7 +281,7 @@ public class TypeGraphTest {
   @Test
   public void autobox08() {
     Map<Class<?>, String> src = Map.of(int[][][].class, "int[][][]");
-    TypeMap<String> m = TypeMap.typeGraph(src);
+    TypeMap<String> m = TypeMap.nativeTypeMap(src);
     assertTrue(m.containsKey(int[][][].class));
     assertEquals("int[][][]", m.get(int[][][].class));
   }
@@ -289,14 +289,14 @@ public class TypeGraphTest {
   @Test
   public void autobox09() {
     Map<Class<?>, String> src = Map.of(Integer[][][].class, "Integer[][][]");
-    TypeMap<String> m = TypeMap.typeGraph(src);
+    TypeMap<String> m = TypeMap.nativeTypeMap(src);
     assertTrue(m.containsKey(int[][][].class));
     assertEquals("Integer[][][]", m.get(int[][][].class));
   }
 
   @Test
   public void test00() {
-    var m = TypeMap.<String>typeGraphBuilder().add(String.class,
+    var m = TypeMap.<String>nativeTypeMapBuilder().add(String.class,
         "String").add(Number.class, "Number").add(Short.class, "Short").freeze();
     assertEquals(3, m.size());
     assertTrue(m.containsValue("String"));
@@ -312,7 +312,7 @@ public class TypeGraphTest {
 
   @Test
   public void test01() {
-    var m = TypeMap.<String>typeGraphBuilder().add(Object.class,
+    var m = TypeMap.<String>nativeTypeMapBuilder().add(Object.class,
         "Object").freeze();
     assertEquals(1, m.size());
     assertTrue(m.containsKey(Integer.class));
@@ -320,7 +320,7 @@ public class TypeGraphTest {
 
   @Test
   public void test02() {
-    var m = TypeMap.<String>typeGraphBuilder().add(Object.class,
+    var m = TypeMap.<String>nativeTypeMapBuilder().add(Object.class,
         "Object").freeze();
     assertEquals(1, m.size());
     assertTrue(m.containsKey(Collection.class));
@@ -328,7 +328,7 @@ public class TypeGraphTest {
 
   @Test
   public void test03() {
-    var m = TypeMap.<String>typeGraphBuilder().add(Object.class,
+    var m = TypeMap.<String>nativeTypeMapBuilder().add(Object.class,
         "Object").freeze();
     assertEquals(1, m.size());
     assertTrue(m.containsKey(Collection.class));
@@ -341,7 +341,7 @@ public class TypeGraphTest {
 
   @Test
   public void test04() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .add(ArrayList.class,
             "ArrayList")
         .add(List.class, "List")
@@ -352,7 +352,7 @@ public class TypeGraphTest {
 
   @Test
   public void test05() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .add(ArrayList.class,
             "ArrayList")
         .add(TypeTreeTest.MyListInterface.class, "MyListInterface")
@@ -362,7 +362,7 @@ public class TypeGraphTest {
 
   @Test
   public void test06() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .add(List.class, "List")
         .add(Object.class, "Object")
         .freeze();
@@ -371,14 +371,14 @@ public class TypeGraphTest {
 
   @Test
   public void test07() {
-    var m = TypeMap.<String>typeGraphBuilder().add(List[].class,
+    var m = TypeMap.<String>nativeTypeMapBuilder().add(List[].class,
         "List[]").add(Object.class, "Object").freeze();
     assertEquals("List[]", m.get(ArrayList[].class));
   }
 
   @Test
   public void test08() {
-    var m = TypeMap.<String>typeGraphBuilder().add(Object[].class,
+    var m = TypeMap.<String>nativeTypeMapBuilder().add(Object[].class,
         "Object[]").add(Object.class, "Object").freeze();
     assertEquals(2, m.size());
     assertEquals("Object[]", m.get(ArrayList[].class));
@@ -386,14 +386,14 @@ public class TypeGraphTest {
 
   @Test
   public void test09() {
-    var m = TypeMap.<String>typeGraphBuilder().add(Object[].class,
+    var m = TypeMap.<String>nativeTypeMapBuilder().add(Object[].class,
         "Object[]").add(Object.class, "Object").freeze();
     assertEquals("Object", m.get(Object.class));
   }
 
   @Test
   public void test10() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .autobox(true)
         .add(Object.class, "Object")
         .freeze();
@@ -402,7 +402,7 @@ public class TypeGraphTest {
 
   @Test
   public void test11() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .autobox(false)
         .add(Object.class, "Object")
         .freeze();
@@ -411,7 +411,7 @@ public class TypeGraphTest {
 
   @Test
   public void test12() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .autobox(false)
         .add(Object.class, "Object")
         .freeze();
@@ -420,7 +420,7 @@ public class TypeGraphTest {
 
   @Test
   public void test13() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .add(Iterable.class,
             "Iterable")
         .add(Collection.class, "Collection")
@@ -452,7 +452,7 @@ public class TypeGraphTest {
 
   @Test
   public void test14() {
-    var m = TypeMap.<String>typeGraphBuilder().add(A0.class, "A0").add(
+    var m = TypeMap.<String>nativeTypeMapBuilder().add(A0.class, "A0").add(
         Serializable.class,
         "Serializable").freeze();
     assertTrue(m.containsKey(A000.class));
@@ -462,7 +462,7 @@ public class TypeGraphTest {
 
   @Test
   public void test15() {
-    var m = TypeMap.<String>typeGraphBuilder().add(A0.class, "A0").add(
+    var m = TypeMap.<String>nativeTypeMapBuilder().add(A0.class, "A0").add(
         A000.class,
         "A000").add(Serializable.class, "Serializable").freeze();
     assertTrue(m.containsKey(A000.class));
@@ -472,7 +472,7 @@ public class TypeGraphTest {
 
   @Test
   public void test16() {
-    var m = TypeMap.<String>typeGraphBuilder().add(A0.class, "A0").add(
+    var m = TypeMap.<String>nativeTypeMapBuilder().add(A0.class, "A0").add(
         A0000.class,
         "A0000").add(Serializable.class, "Serializable").freeze();
     assertFalse(m.containsKey(Object.class));
@@ -482,7 +482,7 @@ public class TypeGraphTest {
 
   @Test(expected = DuplicateValueException.class)
   public void test17() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .add(A01.class, "A01")
         .add(A0.class, "A0")
         .add(A01.class, "FOO")
@@ -491,14 +491,14 @@ public class TypeGraphTest {
 
   @Test(expected = DuplicateValueException.class)
   public void test18() {
-    var m = TypeMap.<String>typeGraphBuilder().add(A0.class, "A0").add(
+    var m = TypeMap.<String>nativeTypeMapBuilder().add(A0.class, "A0").add(
         A01.class,
         "A01").add(A01.class, "A01").freeze();
   }
 
   @Test(expected = DuplicateValueException.class)
   public void test19() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .add(Object.class, "FOO")
         .add(A0.class, "A0")
         .add(Object.class, "BAR")
@@ -507,7 +507,7 @@ public class TypeGraphTest {
 
   @Test
   public void test20() {
-    var m = TypeMap.<String>typeGraphBuilder()
+    var m = TypeMap.<String>nativeTypeMapBuilder()
         .add(Object[].class,
             "Object[]")
         .add(Collection[].class, "Collection[]")

@@ -4,7 +4,8 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.function.Predicate;
 
-abstract class ImmutableSet<E> implements Set<E> {
+abstract sealed class ImmutableSet<E> implements Set<E> permits ArraySet,
+    AbstractTypeSet {
 
   @Override
   public boolean add(E e) {

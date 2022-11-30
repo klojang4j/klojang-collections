@@ -12,7 +12,7 @@ import static org.klojang.collections.TypeNode.NO_SUBTYPES;
 import static org.klojang.util.ClassMethods.isSubtype;
 import static org.klojang.util.ClassMethods.isSupertype;
 
-final class TypeGraphBuilder<V> implements TypeMapBuilder<V> {
+final class NativeTypeMapBuilder<V> implements TypeMapBuilder<V> {
 
   // ================================================================== //
   // ======================= [ WritableTypeNode ] ===================== //
@@ -102,18 +102,18 @@ final class TypeGraphBuilder<V> implements TypeMapBuilder<V> {
 
   private boolean autobox = true;
 
-  TypeGraphBuilder() {
+  NativeTypeMapBuilder() {
     this.root = new WritableTypeNode(Object.class, null);
   }
 
   @Override
-  public TypeGraphBuilder<V> autobox(boolean autobox) {
+  public NativeTypeMapBuilder<V> autobox(boolean autobox) {
     this.autobox = autobox;
     return this;
   }
 
   @Override
-  public TypeGraphBuilder<V> add(Class<?> type, V value) {
+  public NativeTypeMapBuilder<V> add(Class<?> type, V value) {
     Check.notNull(type, Tag.TYPE)
         .isNot(in(), all, () -> new DuplicateValueException(KEY, type));
     Check.notNull(value, Tag.VALUE);
@@ -129,21 +129,21 @@ final class TypeGraphBuilder<V> implements TypeMapBuilder<V> {
   }
 
   @Override
-  public TypeGraphBuilder<V> addMultiple(V value, Class<?>... types) {
+  public NativeTypeMapBuilder<V> addMultiple(V value, Class<?>... types) {
     Check.notNull(types, "types");
     Arrays.stream(types).forEach(t -> add(t, value));
     return this;
   }
 
   @Override
-  public TypeGraph<V> freeze() {
+  public NativeTypeMap<V> freeze() {
     for (var node : classes) {
       root.addClass(node);
     }
     for (var node : interfaces) {
       root.addInterface(node);
     }
-    return new TypeGraph<>(root.toTypeNode(), all.size(), autobox);
+    return new NativeTypeMap<>(root.toTypeNode(), all.size(), autobox);
   }
 
 }

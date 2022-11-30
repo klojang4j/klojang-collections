@@ -6,13 +6,13 @@ package org.klojang.collections;
  * {@code TypeMap} interface.
  *
  * @param <V> The type of the values in the {@code TypeMap}.
- * @see TypeMap#typeGraphBuilder()
+ * @see TypeMap#nativeTypeMapBuilder()
  * @see TypeMap#fixedTypeMapBuilder()
  * @see TypeMap#greedyTypeMapBuilder()
- * @see TypeMap#typeTreeBuilder()
+ * @see TypeMap#treeTypeMapBuilder()
  */
-public sealed interface TypeMapBuilder<V> permits TypeTreeMapBuilder,
-    TypeGraphBuilder,
+public sealed interface TypeMapBuilder<V> permits TreeTypeMapBuilder,
+    NativeTypeMapBuilder,
     FixedTypeMapBuilder,
     GreedyTypeMapBuilder {
 
