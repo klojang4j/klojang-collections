@@ -79,11 +79,6 @@ public class WiredListTest {
   */
 
   @Test
-  public void test000() {
-    //System.out.println(">>>>>>>>>>>>>>>>> " + InvokeUtils.getArrayLength("foo"));
-  }
-
-  @Test
   public void join() {
     var wl0 = WiredList.of("a");
     var wl1 = WiredList.<String>of(null);
@@ -178,7 +173,7 @@ public class WiredListTest {
     wl.prepend("John");
     wl.prepend(null);
     wl.prepend("Jim");
-    wl.prepend(null);
+    wl.prepend((String) null);
     assertEquals(4, wl.size());
     assertNull(wl.get(0));
     assertEquals("Jim", wl.get(1));
@@ -879,35 +874,35 @@ public class WiredListTest {
   @Test
   public void set01() {
     var wl = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl.setAll(7, 77, 88, 99);
+    wl.set(7, 77, 88, 99);
     assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 77, 88, 99), wl);
   }
 
   @Test
   public void set02() {
     var wl = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl.setAll(0, -11, 11);
+    wl.set(0, -11, 11);
     assertEquals(List.of(-11, 11, 2, 3, 4, 5, 6, 7, 8, 9), wl);
   }
 
   @Test
   public void set03() {
     var wl = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl.setAll(0, -11, 11, 22);
+    wl.set(0, -11, 11, 22);
     assertEquals(List.of(-11, 11, 22, 3, 4, 5, 6, 7, 8, 9), wl);
   }
 
   @Test
   public void set04() {
     var wl = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl.setAll(2, 22, 33, 44, 55, 66, 77, 88, 99);
+    wl.set(2, 22, 33, 44, 55, 66, 77, 88, 99);
     assertEquals(List.of(0, 1, 22, 33, 44, 55, 66, 77, 88, 99), wl);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void set05() {
     var wl = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl.setAll(2, 22, 33, 44, 55, 66, 77, 88, 99, 1010);
+    wl.set(2, 22, 33, 44, 55, 66, 77, 88, 99, 1010);
   }
 
   @Test
@@ -2017,56 +2012,56 @@ public class WiredListTest {
   @Test
   public void replaceAll00() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replaceSegment(0, 4, List.of("a", "b", "c"));
+    wl0.replace(0, 4, List.of("a", "b", "c"));
     assertEquals(List.of("a", "b", "c", 4, 5, 6, 7, 8, 9), wl0);
   }
 
   @Test
   public void replaceAll01() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replaceSegment(0, 10, List.of("a", "b", "c"));
+    wl0.replace(0, 10, List.of("a", "b", "c"));
     assertEquals(List.of("a", "b", "c"), wl0);
   }
 
   @Test
   public void replaceAll02() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replaceSegment(4, 10, List.of("a", "b", "c"));
+    wl0.replace(4, 10, List.of("a", "b", "c"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c"), wl0);
   }
 
   @Test
   public void replaceAll04() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replaceSegment(4, 8, List.of("a", "b", "c"));
+    wl0.replace(4, 8, List.of("a", "b", "c"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c", 8, 9), wl0);
   }
 
   @Test
   public void replaceAll05() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replaceSegment(4, 8, List.of("a", "b", "c", "d"));
+    wl0.replace(4, 8, List.of("a", "b", "c", "d"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c", "d", 8, 9), wl0);
   }
 
   @Test
   public void replaceAll06() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replaceSegment(4, 4, List.of("a", "b", "c", "d"));
+    wl0.replace(4, 4, List.of("a", "b", "c", "d"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c", "d", 4, 5, 6, 7, 8, 9), wl0);
   }
 
   @Test
   public void replaceAll07() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replaceSegment(9, 10, List.of("a"));
+    wl0.replace(9, 10, List.of("a"));
     assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, "a"), wl0);
   }
 
   @Test
   public void replaceAll08() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replaceSegment(9, 9, List.of());
+    wl0.replace(9, 9, List.of());
     assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), wl0);
   }
 

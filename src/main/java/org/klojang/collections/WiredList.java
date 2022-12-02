@@ -51,7 +51,6 @@ import static org.klojang.util.MathMethods.divUp;
  * implemented exactly alike, so there is intrinsic reason to prefer one over the
  * other.
  *
- *
  * <h2>Thread safety</h2>
  * <p>
  * List edits are always destructive, and nearly always don't just change the values
@@ -133,16 +132,6 @@ public final class WiredList<E> implements List<E> {
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   private static final class Chain {
-
-    // must (and will) only be called if values.length > 0
-    static <V> Chain of(V[] values) {
-      var head = new Node(values[0]);
-      var tail = head;
-      for (int i = 1; i < values.length; ++i) {
-        tail = new Node(tail, values[i]);
-      }
-      return new Chain(head, tail, values.length);
-    }
 
     // must (and will) only be called if values.size() > 0
     static <V> Chain of(Collection<V> values) {
@@ -663,7 +652,7 @@ public final class WiredList<E> implements List<E> {
   }
 
   /**
-   * Returns the number of elements in this list.  If this list contains more than
+   * Returns the number of elements in this list. If this list contains more than
    * {@code Integer.MAX_VALUE} elements, returns {@code Integer.MAX_VALUE}.
    *
    * @return the number of elements in this list
@@ -809,16 +798,25 @@ public final class WiredList<E> implements List<E> {
    * the lists. The number of values must not exceed {@code list.size() - index}.
    *
    * @param index the index of the first element the set
-   * @param values the values at and following the specified index
+   * @param e0 the first value to write
+   * @param e1 the second value to write
+   * @param moreElems more values to write
+   * @return this {@code WiredList}
    */
   @SuppressWarnings("unchecked")
-  public WiredList<E> setAll(int index, E... values) {
+  public WiredList<E> set(int index, E e0, E e1, E... moreElems) {
     Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));
-    Check.notNull(values, Tag.VALUES).has(length(), lte(), sz - index);
+    Check.notNull(moreElems, Tag.VARARGS).has(length(), lte(), sz - index - 2);
     Node<E> node = nodeAt(index);
-    for (E e : values) {
-      node.val = e;
+    node.val = e0;
+    node = node.next;
+    node.val = e1;
+    if (moreElems.length != 0) {
       node = node.next;
+      for (E e : moreElems) {
+        node.val = e;
+        node = node.next;
+      }
     }
     return this;
   }
@@ -829,7 +827,7 @@ public final class WiredList<E> implements List<E> {
    * large cost of index-based retrieval with linked lists, which would double if you
    * had to execute a get-compare-set sequence.
    *
-   * @param index The index of the element to set
+   * @param index the index of the element to set
    * @param condition The test that the original value has to pass in order to be
    *     replaced with the new value. The original value is passed to the predicate's
    *     {@code test} method.
@@ -1051,6 +1049,21 @@ public final class WiredList<E> implements List<E> {
   }
 
   /**
+   * Inserts the specified collection at the start of the list, right-shifting the
+   * original elements.
+   *
+   * @param values The values to prepend to the list
+   * @return this {@code WiredList}
+   */
+  public WiredList<E> prependAll(Collection<? extends E> values) {
+    Check.notNull(values, Tag.COLLECTION);
+    if (!values.isEmpty()) {
+      insert(0, Chain.of(values));
+    }
+    return this;
+  }
+
+  /**
    * Appends the specified value to the end of the list. Equivalent to
    * {@link #add(Object) add(value)}.
    *
@@ -1066,6 +1079,58 @@ public final class WiredList<E> implements List<E> {
       tail = n;
     }
     ++sz;
+    return this;
+  }
+
+  /**
+   * Appends the specified collection to this {@code WiredList}.
+   *
+   * @param values The values to append to the list
+   * @return this {@code WiredList}
+   * @see #addAll(Collection)
+   * @see #attach(WiredList)
+   */
+  public WiredList<E> appendAll(Collection<? extends E> values) {
+    Check.notNull(values, Tag.COLLECTION);
+    if (!values.isEmpty()) {
+      insert(sz, Chain.of(values));
+    }
+    return this;
+  }
+
+  /**
+   * Inserts a value into the list. All elements <i>at and following</i> the
+   * specified index will be right-shifted. The index value must be {@code >= 0} and
+   * {@code <= list.size()}. Specifying 0 (zero) is equivalent to
+   * {@link #prepend(Object) prepend(value)}. Specifying {@code list.size()} is
+   * equivalent to {@link #append(Object) append(value} and
+   * {@link #add(Object) add(value)}.
+   *
+   * @param index the index at which to insert the value
+   * @param value the value
+   * @return this {@code WiredList}
+   */
+  public WiredList<E> insert(int index, E value) {
+    checkInclusive(index);
+    insert(index, new Node<>(value));
+    return this;
+  }
+
+  /**
+   * Inserts the specified collection at the specified index, right-shifting the
+   * elements at and following the index.
+   *
+   * @param index the index at which to insert the collection
+   * @param values The collection to insert into the list
+   * @return this {@code WiredList}
+   * @see #addAll(int, Collection)
+   */
+  public WiredList<E> insertAll(int index, Collection<? extends E> values) {
+    checkInclusive(index);
+    Check.notNull(values, Tag.COLLECTION);
+    if (!values.isEmpty()) {
+      insert(index, Chain.of(values));
+    }
     return this;
   }
 
@@ -1094,73 +1159,6 @@ public final class WiredList<E> implements List<E> {
   }
 
   /**
-   * Inserts a value into the list. All elements <i>at and following</i> the
-   * specified index will be right-shifted. The index value must be {@code >= 0} and
-   * {@code <= list.size()}. Specifying 0 (zero) is equivalent to
-   * {@link #prepend(Object) prepend(value)}. Specifying {@code list.size()} is
-   * equivalent to {@link #append(Object) append(value} and
-   * {@link #add(Object) add(value)}.
-   *
-   * @param index the index at which to insert the value
-   * @param value the value
-   * @return this {@code WiredList}
-   */
-  public WiredList<E> insert(int index, E value) {
-    checkInclusive(index);
-    insert(index, new Node<>(value));
-    return this;
-  }
-
-  /**
-   * Inserts the specified collection at the start of this {@code WiredList},
-   * right-shifting the original elements.
-   *
-   * @param values The values to prepend to the list
-   * @return this {@code WiredList}
-   */
-  public WiredList<E> prependAll(Collection<? extends E> values) {
-    Check.notNull(values, Tag.COLLECTION);
-    if (!values.isEmpty()) {
-      insert(0, Chain.of(values));
-    }
-    return this;
-  }
-
-  /**
-   * Appends the specified collection to this {@code WiredList}.
-   *
-   * @param values The values to append to the list
-   * @return this {@code WiredList}
-   * @see #addAll(Collection)
-   * @see #attach(WiredList)
-   */
-  public WiredList<E> appendAll(Collection<? extends E> values) {
-    Check.notNull(values, Tag.COLLECTION);
-    if (!values.isEmpty()) {
-      insert(sz, Chain.of(values));
-    }
-    return this;
-  }
-
-  /**
-   * Inserts the specified collection at the specified index, right-shifting the
-   * elements at and following the index.
-   *
-   * @param index The index at which to insert the collection
-   * @param values The collection to insert into the list
-   * @return this {@code WiredList}
-   * @see #addAll(int, Collection)
-   */
-  public WiredList<E> insertAll(int index, Collection<? extends E> values) {
-    checkInclusive(index);
-    Check.notNull(values, Tag.COLLECTION);
-    if (!values.isEmpty()) {
-      insert(index, Chain.of(values));
-    }
-    return this;
-  }
-
-  /**
    * Replaces each element of this list with the result of applying the operator to
    * that element.  Errors or runtime exceptions thrown by the operator are relayed
    * to the caller.
@@ -1184,16 +1182,15 @@ public final class WiredList<E> implements List<E> {
 
   /**
    * Replaces the segment between {@code fromIndex} and {@code toIndex} with the
-   * values from the specified collection.
+   * elements in the specified collection.
    *
    * @param fromIndex the start index (inclusive) of the segment to replace
    * @param toIndex the end index (exclusive) of
    * @param values The values to replace the segment with
    * @return this {@code WiredList}
-   * @see #setAll(int, Object[])
    * @see #rewire(int, int, WiredList)
    */
-  public WiredList<E> replaceSegment(int fromIndex,
+  public WiredList<E> replace(int fromIndex,
       int toIndex,
       Collection<? extends E> values) {
     int len = Check.fromTo(this, fromIndex, toIndex);
@@ -1213,6 +1210,32 @@ public final class WiredList<E> implements List<E> {
       if (!values.isEmpty()) {
         insert(fromIndex, Chain.of(values));
       }
+    }
+    return this;
+  }
+
+  /**
+   * Replaces the segment between {@code fromIndex} and {@code toIndex} with the
+   * elements in the specified list. This method is functionally equivalent to
+   * {@link #replace(int, int, Collection) replace}, but more efficient. However, it
+   * will leave the specified list empty. If you don't want this to happen, use
+   * {@code replace}.
+   *
+   * @param fromIndex the start index (inclusive) of the segment to replace
+   * @param toIndex the end index (exclusive) of
+   * @param other the values to replace the segment with
+   * @return this {@code WiredList}
+   */
+  public WiredList<E> rewire(int fromIndex,
+      int toIndex,
+      WiredList<? extends E> other) {
+    int len = Check.fromTo(this, fromIndex, toIndex);
+    Check.notNull(other, WIRED_LIST).isNot(sameAs(), this, autoEmbedNotAllowed());
+    if (len != 0) {
+      cut(fromIndex, toIndex).clear();
+    }
+    if (!other.isEmpty()) {
+      insert(fromIndex, other.unlink(0, other.sz));
     }
     return this;
   }
@@ -1243,7 +1266,9 @@ public final class WiredList<E> implements List<E> {
   }
 
   /**
-   * Shrinks the list to between the specified boundaries.
+   * Shrinks the list to between the specified boundaries. If {@code toIndex} is
+   * equal to {@code fromIndex}, the list will, in effect, be
+   * {@link #clear() cleared}.
    *
    * @param fromIndex the index (inclusive) of the new start of the list
    * @param toIndex the index (exclusive) of the new end of the list
@@ -1291,7 +1316,7 @@ public final class WiredList<E> implements List<E> {
   }
 
   /**
-   * Inserts this list into the provided list at the specified position. Equivalent
+   * Inserts this list into the specified list at the specified position. Equivalent
    * to {@link #embed(int, WiredList) into.embed(index, this)}. This list will be
    * empty afterwards. Note that this method does not return this list but the
    * paste-into list.
@@ -1305,40 +1330,13 @@ public final class WiredList<E> implements List<E> {
   }
 
   /**
-   * Replaces the segment between {@code fromIndex} and {@code toIndex} with the
-   * values in the specified list. This method is functionally equivalent to
-   * {@link #replaceSegment(int, int, Collection) replaceAll}, but much more
-   * efficient for large segments. However, it is a destructive operation for the
-   * provided list. It will be empty afterwards. If you don't want this to happen,
-   * use {@code replaceSegment}.
-   *
-   * @param fromIndex the start index (inclusive) of the segment to replace
-   * @param toIndex the end index (exclusive) of
-   * @param other the values to replace the segment with
-   * @return this {@code WiredList}
-   */
-  public WiredList<E> rewire(int fromIndex,
-      int toIndex,
-      WiredList<? extends E> other) {
-    int len = Check.fromTo(this, fromIndex, toIndex);
-    Check.notNull(other, WIRED_LIST).isNot(sameAs(), this, autoEmbedNotAllowed());
-    if (len != 0) {
-      cut(fromIndex, toIndex).clear();
-    }
-    if (!other.isEmpty()) {
-      insert(fromIndex, other.unlink(0, other.sz));
-    }
-    return this;
-  }
-
-  /**
    * Embeds the specified list in this list. This method is functionally equivalent
    * to {@link #insertAll(int, Collection) insertAll} and
-   * {@link #addAll(int, Collection) addAll}, but much more efficient. However, it is
-   * a destructive operation for the provided list. It will be empty afterwards. If
-   * you don't want this to happen, use {@code insertAll} or {@code addAll}.
+   * {@link #addAll(int, Collection) addAll}, but more efficient. However, it is a
+   * destructive operation for the provided list. It will be empty afterwards. If you
+   * don't want this to happen, use {@code insertAll} or {@code addAll}.
    *
-   * @param index The index at which to embed the list
+   * @param index the index at which to embed the list
    * @param other the list to embed
    * @return this {@code WiredList}
    */
@@ -1452,15 +1450,13 @@ public final class WiredList<E> implements List<E> {
   /**
    * Appends the specified list to this list. This method is functionally equivalent
    * {@link #appendAll(Collection) appendAll} and {@link #addAll(Collection) addAll},
-   * but much more efficient. However, it is a destructive operation for the provided
-   * list. It will be empty afterwards. If you don't want this to happen, use
-   * {@code appendAll} or {@code addAll}.
+   * but more efficient. However, it will leave the specified list empty. If you
+   * don't want this to happen, use {@code appendAll} or {@code addAll}.
    *
    * @param other the list to embed
    * @return this {@code WiredList}
    * @see #join(List)
    */
-  @SuppressWarnings({"rawtypes", "unchecked"})
   public WiredList<E> attach(WiredList<? extends E> other) {
     Check.notNull(other).isNot(sameAs(), this, autoEmbedNotAllowed());
     if (other.sz != 0) {
@@ -1469,10 +1465,10 @@ public final class WiredList<E> implements List<E> {
     return this;
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   private void attach0(WiredList other) {
     if (sz == 0) {
       head = other.head;
-      tail = other.tail;
     } else {
       join(tail, other.head);
     }
@@ -1502,7 +1498,7 @@ public final class WiredList<E> implements List<E> {
    * elements satisfying the second criterion (if any) will come second, etc.
    *
    * @param keepRemainder whether to keep the elements that did not satisfy any
-   *     criterion, and append them to the end of the list
+   *     criterion, and move them to the end of the list
    * @param criteria the criteria used to group the elements
    * @return this {@code WiredList}
    */
@@ -1541,7 +1537,7 @@ public final class WiredList<E> implements List<E> {
   /**
    * <p>
    * Groups the elements according to the provided criteria. The return value is a
-   * list-of-lists where each inner {@code List} constitutes a group. This
+   * list-of-lists where each inner {@code List} constitutes a group. <i>This</i>
    * {@code WiredList} is left with all elements that did not satisfy any criterion,
    * and it will be the last element in the returned list-of-lists. In other words,
    * the size of the returned list-of-lists is the number of criteria plus one. You
@@ -1552,9 +1548,9 @@ public final class WiredList<E> implements List<E> {
    * found to satisfy a criterion it is placed in the corresponding group and the
    * remaining criteria are skipped.
    * <p>
-   * The runtime type of the return value is {@code WiredList<WiredList<E>>}. If you
-   * don't care about the exact type of the returned {@code List}, you can simply
-   * write:
+   * The runtime type of the returned list-of-lists {@code WiredList<WiredList<E>>}.
+   * If you don't care about the exact type of the returned {@code List}, you can
+   * simply write:
    *
    * <blockquote><pre>{@code
    * WiredList<String> wl = ...;
@@ -1599,10 +1595,10 @@ public final class WiredList<E> implements List<E> {
 
   /**
    * Splits this {@code WiredList} into multiple {@code WiredList} instances of the
-   * specified size. This method is destructive for the {@code WiredList} it operates
-   * on. The partitions are chopped off from the {@code WiredList} and then placed in
-   * a separate {@code WiredList}. The last element in the returned list-of-lists is
-   * this {@code WiredList}, and it may contain less than {@code size} elements.
+   * specified size. The partitions are chopped off from the {@code WiredList} and
+   * then placed in a separate {@code WiredList}. The last element in the returned
+   * list-of-lists is <i>this</i> {@code WiredList}, and it will now contain at most
+   * {@code size} elements.
    * <p>
    * The runtime type of the return value is {@code WiredList<WiredList<E>>}. If you
    * don't care about the exact type of the returned {@code List}, you can simply
@@ -1621,6 +1617,7 @@ public final class WiredList<E> implements List<E> {
    * @param <L1> the type of returned list
    * @return a list of {@code WiredList} instances of the specified size
    */
+  @SuppressWarnings("unchecked")
   public <L0 extends List<E>, L1 extends List<L0>> L1 partition(int size) {
     Check.that(size).is(gt(), 0);
     WiredList<WiredList<E>> partitions = new WiredList<>();
@@ -1661,11 +1658,11 @@ public final class WiredList<E> implements List<E> {
 
   /**
    * Removes and returns a segment from the start of the list. The segment includes
-   * all elements up to the first element that does not satisfy the specified
-   * condition. In other words, all elements in the returned list <i>will</i> satisfy
-   * the condition. If the condition is never satisfied, this list remains unchanged
-   * and an empty list is returned. If <i>all</i> elements satisfy the condition, the
-   * list remains unchanged and is itself returned.
+   * all elements up to (and not including) the first element that does not satisfy
+   * the specified condition. In other words, all elements in the returned list
+   * <i>will</i> satisfy the condition. If the condition is never satisfied, this
+   * list remains unchanged and an empty list is returned. If <i>all</i> elements
+   * satisfy the condition, the list remains unchanged and is itself returned.
    *
    * @param condition The condition that the elements in the returned segment
    *     will satisfy
@@ -1690,26 +1687,26 @@ public final class WiredList<E> implements List<E> {
 
   /**
    * Removes and returns a segment from the end of the list. The segment includes all
-   * elements following the last element that does not satisfy the specified
-   * condition. In other words, all elements in the returned list <i>will</i> satisfy
-   * the condition. If the condition is never satisfied, the list remains unchanged
-   * and an empty list is returned. If <i>all</i> elements satisfy the condition, the
-   * list remains unchanged and is itself returned.
+   * elements following the <i>last</i> element that does <i>not</i> satisfy the
+   * specified condition. In other words, all elements in the returned list
+   * <i>will</i> satisfy the condition. If the condition is never satisfied, the list
+   * remains unchanged and an empty list is returned. If <i>all</i> elements satisfy
+   * the condition, the list remains unchanged and is itself returned.
    *
-   * @param condition The condition that the elements in the returned segment
+   * @param criterion the criterion that the elements in the returned segment
    *     will satisfy
    * @return a {@code WiredList} containing all elements following the last element
    *     that does not satisfy the condition
    */
-  public WiredList<E> rchop(Predicate<? super E> condition) {
-    Check.notNull(condition);
+  public WiredList<E> rchop(Predicate<? super E> criterion) {
+    Check.notNull(criterion);
     if (sz == 0) {
       return this;
     }
     Node<E> last = tail;
     Node<E> first = justAfterTail();
     int len = 0;
-    for (; condition.test(first.prev.val) && ++len != sz; first = first.prev)
+    for (; criterion.test(first.prev.val) && ++len != sz; first = first.prev)
       ;
     if (len == sz) {
       return this;
