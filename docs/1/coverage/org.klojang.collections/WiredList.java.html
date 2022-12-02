@@ -130,8 +130,8 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
   //
   //
 
-  @SuppressWarnings({&quot;unchecked&quot;, &quot;rawtypes&quot;})
-  private static final class Chain {
+<span class="nc" id="L133">  @SuppressWarnings({&quot;unchecked&quot;, &quot;rawtypes&quot;})</span>
+<span class="fc" id="L134">  private record Chain(Node head, Node tail, int length) {</span>
 
     // must (and will) only be called if values.size() &gt; 0
     static &lt;V&gt; Chain of(Collection&lt;V&gt; values) {
@@ -156,16 +156,6 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
 <span class="fc" id="L156">      return new Chain(head, tail, len);</span>
     }
 
-    final Node head;
-    final Node tail;
-    final int length;
-
-<span class="fc" id="L163">    Chain(Node head, Node tail, int length) {</span>
-<span class="fc" id="L164">      this.head = head;</span>
-<span class="fc" id="L165">      this.tail = tail;</span>
-<span class="fc" id="L166">      this.length = length;</span>
-<span class="fc" id="L167">    }</span>
-
   }
 
   //
@@ -183,116 +173,116 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
     private Node&lt;E&gt; beforeHead;
     private Node&lt;E&gt; curr;
 
-<span class="fc" id="L186">    private ForwardWiredIterator() {</span>
-<span class="fc" id="L187">      curr = beforeHead = justBeforeHead();</span>
-<span class="fc" id="L188">    }</span>
+<span class="fc" id="L176">    private ForwardWiredIterator() {</span>
+<span class="fc" id="L177">      curr = beforeHead = justBeforeHead();</span>
+<span class="fc" id="L178">    }</span>
 
-<span class="fc" id="L190">    private ForwardWiredIterator(Node&lt;E&gt; curr) {</span>
-<span class="fc" id="L191">      this.curr = curr;</span>
-<span class="fc" id="L192">    }</span>
+<span class="fc" id="L180">    private ForwardWiredIterator(Node&lt;E&gt; curr) {</span>
+<span class="fc" id="L181">      this.curr = curr;</span>
+<span class="fc" id="L182">    }</span>
 
     @Override
     public boolean hasNext() {
-<span class="fc bfc" id="L196" title="All 4 branches covered.">      return sz != 0 &amp;&amp; curr != tail;</span>
+<span class="fc bfc" id="L186" title="All 4 branches covered.">      return sz != 0 &amp;&amp; curr != tail;</span>
     }
 
     @Override
     public E value() {
-<span class="fc" id="L201">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
-<span class="fc" id="L202">      Check.that(sz).isNot(zero(), emptyList());</span>
-<span class="fc" id="L203">      return curr.val;</span>
+<span class="fc" id="L191">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
+<span class="fc" id="L192">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="fc" id="L193">      return curr.val;</span>
     }
 
     @Override
     public E peek() {
-<span class="fc" id="L208">      Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
-<span class="fc" id="L209">      Check.that(sz).isNot(zero(), noSuchElement());</span>
-<span class="fc" id="L210">      return Check.that(curr.next)</span>
-<span class="fc" id="L211">          .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L212">          .ok(Node::value);</span>
+<span class="fc" id="L198">      Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
+<span class="fc" id="L199">      Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="fc" id="L200">      return Check.that(curr.next)</span>
+<span class="fc" id="L201">          .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L202">          .ok(Node::value);</span>
     }
 
     @Override
     public E next() {
-<span class="fc" id="L217">      Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
-<span class="fc" id="L218">      Check.that(sz).isNot(zero(), noSuchElement());</span>
-<span class="fc" id="L219">      return Check.that(curr = curr.next)</span>
-<span class="fc" id="L220">          .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L221">          .ok(Node::value);</span>
+<span class="fc" id="L207">      Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
+<span class="fc" id="L208">      Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="fc" id="L209">      return Check.that(curr = curr.next)</span>
+<span class="fc" id="L210">          .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L211">          .ok(Node::value);</span>
     }
 
     @Override
     public void set(E newVal) {
-<span class="fc" id="L226">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
-<span class="fc" id="L227">      Check.that(sz).isNot(zero(), emptyList());</span>
-<span class="fc" id="L228">      curr.val = newVal;</span>
-<span class="fc" id="L229">    }</span>
+<span class="fc" id="L216">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
+<span class="fc" id="L217">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="fc" id="L218">      curr.val = newVal;</span>
+<span class="fc" id="L219">    }</span>
 
     @Override
     public void insertBefore(E value) {
-<span class="fc" id="L233">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
-<span class="fc" id="L234">      Check.that(sz).isNot(zero(), emptyList());</span>
-<span class="fc" id="L235">      Node&lt;E&gt; node = new Node&lt;&gt;(value);</span>
-<span class="fc bfc" id="L236" title="All 2 branches covered.">      if (curr == head) {</span>
-<span class="fc" id="L237">        join(head = node, curr);</span>
+<span class="fc" id="L223">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
+<span class="fc" id="L224">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="fc" id="L225">      Node&lt;E&gt; node = new Node&lt;&gt;(value);</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">      if (curr == head) {</span>
+<span class="fc" id="L227">        join(head = node, curr);</span>
       } else {
-<span class="fc" id="L239">        Check.that(curr.prev).is(notNull(), concurrentModification());</span>
-<span class="fc" id="L240">        join(curr.prev, node);</span>
-<span class="fc" id="L241">        join(node, curr);</span>
+<span class="fc" id="L229">        Check.that(curr.prev).is(notNull(), concurrentModification());</span>
+<span class="fc" id="L230">        join(curr.prev, node);</span>
+<span class="fc" id="L231">        join(node, curr);</span>
       }
-<span class="fc" id="L243">      ++sz;</span>
-<span class="fc" id="L244">    }</span>
+<span class="fc" id="L233">      ++sz;</span>
+<span class="fc" id="L234">    }</span>
 
     @Override
     public void insertAfter(E value) {
-<span class="fc" id="L248">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
-<span class="fc" id="L249">      Check.that(sz).isNot(zero(), emptyList());</span>
-<span class="fc" id="L250">      Node&lt;E&gt; node = new Node&lt;&gt;(value);</span>
-<span class="fc bfc" id="L251" title="All 2 branches covered.">      if (curr == tail) {</span>
-<span class="fc" id="L252">        join(curr, tail = node);</span>
+<span class="fc" id="L238">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
+<span class="fc" id="L239">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="fc" id="L240">      Node&lt;E&gt; node = new Node&lt;&gt;(value);</span>
+<span class="fc bfc" id="L241" title="All 2 branches covered.">      if (curr == tail) {</span>
+<span class="fc" id="L242">        join(curr, tail = node);</span>
       } else {
-<span class="fc" id="L254">        Check.that(curr.next).is(notNull(), concurrentModification());</span>
-<span class="fc" id="L255">        join(node, curr.next);</span>
-<span class="fc" id="L256">        join(curr, node);</span>
+<span class="fc" id="L244">        Check.that(curr.next).is(notNull(), concurrentModification());</span>
+<span class="fc" id="L245">        join(node, curr.next);</span>
+<span class="fc" id="L246">        join(curr, node);</span>
       }
-<span class="fc" id="L258">      ++sz;</span>
-<span class="fc" id="L259">    }</span>
+<span class="fc" id="L248">      ++sz;</span>
+<span class="fc" id="L249">    }</span>
 
     @Override
     public void remove() {
-<span class="fc" id="L263">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
-<span class="fc" id="L264">      Check.that(sz).isNot(zero(), emptyList());</span>
-<span class="fc bfc" id="L265" title="All 2 branches covered.">      if (curr == head) {</span>
-<span class="fc" id="L266">        destroy(curr);</span>
-<span class="fc" id="L267">        curr = beforeHead = justBeforeHead();</span>
+<span class="fc" id="L253">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
+<span class="fc" id="L254">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="fc bfc" id="L255" title="All 2 branches covered.">      if (curr == head) {</span>
+<span class="fc" id="L256">        destroy(curr);</span>
+<span class="fc" id="L257">        curr = beforeHead = justBeforeHead();</span>
       } else {
-<span class="fc" id="L269">        Check.that(curr = curr.prev)</span>
-<span class="fc" id="L270">            .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L271">            .then(prev -&gt; destroy(prev.next));</span>
+<span class="fc" id="L259">        Check.that(curr = curr.prev)</span>
+<span class="fc" id="L260">            .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L261">            .then(prev -&gt; destroy(prev.next));</span>
       }
-<span class="fc" id="L273">    }</span>
+<span class="fc" id="L263">    }</span>
 
     @Override
     public int index() {
-<span class="fc" id="L277">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
-<span class="fc" id="L278">      Check.that(sz).isNot(zero(), emptyList());</span>
-<span class="fc" id="L279">      int idx = 0;</span>
-<span class="fc" id="L280">      for (var node = head; ; ++idx) {</span>
-<span class="fc bfc" id="L281" title="All 2 branches covered.">        if (node == curr) {</span>
-<span class="fc" id="L282">          return idx;</span>
+<span class="fc" id="L267">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
+<span class="fc" id="L268">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="fc" id="L269">      int idx = 0;</span>
+<span class="fc" id="L270">      for (var node = head; ; ++idx) {</span>
+<span class="fc bfc" id="L271" title="All 2 branches covered.">        if (node == curr) {</span>
+<span class="fc" id="L272">          return idx;</span>
         }
-<span class="fc" id="L284">        node = Check.that(node)</span>
-<span class="fc" id="L285">            .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L286">            .isNot(sameAs(), tail, concurrentModification())</span>
-<span class="fc" id="L287">            .ok(x -&gt; x.next);</span>
+<span class="fc" id="L274">        node = Check.that(node)</span>
+<span class="fc" id="L275">            .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L276">            .isNot(sameAs(), tail, concurrentModification())</span>
+<span class="fc" id="L277">            .ok(x -&gt; x.next);</span>
       }
     }
 
     @Override
     public WiredIterator&lt;E&gt; turn() {
-<span class="fc" id="L293">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
-<span class="fc" id="L294">      Check.that(sz).isNot(zero(), emptyList());</span>
-<span class="fc" id="L295">      return new ReverseWiredIterator(curr);</span>
+<span class="fc" id="L283">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
+<span class="fc" id="L284">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="fc" id="L285">      return new ReverseWiredIterator(curr);</span>
     }
 
   }
@@ -302,116 +292,116 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
     private Node&lt;E&gt; afterTail;
     private Node&lt;E&gt; curr;
 
-<span class="fc" id="L305">    private ReverseWiredIterator() {</span>
-<span class="fc" id="L306">      curr = afterTail = justAfterTail();</span>
-<span class="fc" id="L307">    }</span>
+<span class="fc" id="L295">    private ReverseWiredIterator() {</span>
+<span class="fc" id="L296">      curr = afterTail = justAfterTail();</span>
+<span class="fc" id="L297">    }</span>
 
-<span class="fc" id="L309">    private ReverseWiredIterator(Node&lt;E&gt; curr) {</span>
-<span class="fc" id="L310">      this.curr = curr;</span>
-<span class="fc" id="L311">    }</span>
+<span class="fc" id="L299">    private ReverseWiredIterator(Node&lt;E&gt; curr) {</span>
+<span class="fc" id="L300">      this.curr = curr;</span>
+<span class="fc" id="L301">    }</span>
 
     @Override
     public boolean hasNext() {
-<span class="fc bfc" id="L315" title="All 4 branches covered.">      return sz != 0 &amp;&amp; curr != head;</span>
+<span class="fc bfc" id="L305" title="All 4 branches covered.">      return sz != 0 &amp;&amp; curr != head;</span>
     }
 
     @Override
     public E value() {
-<span class="fc" id="L320">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
-<span class="fc" id="L321">      Check.that(sz).isNot(zero(), emptyList());</span>
-<span class="fc" id="L322">      return curr.val;</span>
+<span class="fc" id="L310">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
+<span class="fc" id="L311">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="fc" id="L312">      return curr.val;</span>
     }
 
     @Override
     public E peek() {
-<span class="fc" id="L327">      Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
-<span class="fc" id="L328">      Check.that(sz).isNot(zero(), noSuchElement());</span>
-<span class="fc" id="L329">      return Check.that(curr.prev)</span>
-<span class="fc" id="L330">          .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L331">          .ok(Node::value);</span>
+<span class="fc" id="L317">      Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
+<span class="fc" id="L318">      Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="fc" id="L319">      return Check.that(curr.prev)</span>
+<span class="fc" id="L320">          .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L321">          .ok(Node::value);</span>
     }
 
     @Override
     public E next() {
-<span class="fc" id="L336">      Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
-<span class="fc" id="L337">      Check.that(sz).isNot(zero(), noSuchElement());</span>
-<span class="fc" id="L338">      return Check.that(curr = curr.prev)</span>
-<span class="fc" id="L339">          .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L340">          .ok(Node::value);</span>
+<span class="fc" id="L326">      Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
+<span class="fc" id="L327">      Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="fc" id="L328">      return Check.that(curr = curr.prev)</span>
+<span class="fc" id="L329">          .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L330">          .ok(Node::value);</span>
     }
 
     @Override
     public void set(E newVal) {
-<span class="fc" id="L345">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
-<span class="fc" id="L346">      Check.that(sz).isNot(zero(), emptyList());</span>
-<span class="fc" id="L347">      curr.val = newVal;</span>
-<span class="fc" id="L348">    }</span>
+<span class="fc" id="L335">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
+<span class="fc" id="L336">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="fc" id="L337">      curr.val = newVal;</span>
+<span class="fc" id="L338">    }</span>
 
     @Override
     public void insertBefore(E value) {
-<span class="fc" id="L352">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
-<span class="fc" id="L353">      Check.that(sz).isNot(zero(), emptyList());</span>
-<span class="fc" id="L354">      Node&lt;E&gt; node = new Node&lt;&gt;(value);</span>
-<span class="fc bfc" id="L355" title="All 2 branches covered.">      if (curr == tail) {</span>
-<span class="fc" id="L356">        join(curr, tail = node);</span>
+<span class="fc" id="L342">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
+<span class="fc" id="L343">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="fc" id="L344">      Node&lt;E&gt; node = new Node&lt;&gt;(value);</span>
+<span class="fc bfc" id="L345" title="All 2 branches covered.">      if (curr == tail) {</span>
+<span class="fc" id="L346">        join(curr, tail = node);</span>
       } else {
-<span class="fc" id="L358">        Check.that(curr.next).is(notNull(), concurrentModification());</span>
-<span class="fc" id="L359">        join(node, curr.next);</span>
-<span class="fc" id="L360">        join(curr, node);</span>
+<span class="fc" id="L348">        Check.that(curr.next).is(notNull(), concurrentModification());</span>
+<span class="fc" id="L349">        join(node, curr.next);</span>
+<span class="fc" id="L350">        join(curr, node);</span>
       }
-<span class="fc" id="L362">      ++sz;</span>
-<span class="fc" id="L363">    }</span>
+<span class="fc" id="L352">      ++sz;</span>
+<span class="fc" id="L353">    }</span>
 
     @Override
     public void insertAfter(E value) {
-<span class="fc" id="L367">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
-<span class="fc" id="L368">      Check.that(sz).isNot(zero(), emptyList());</span>
-<span class="fc" id="L369">      Node&lt;E&gt; node = new Node&lt;&gt;(value);</span>
-<span class="fc bfc" id="L370" title="All 2 branches covered.">      if (curr == head) {</span>
-<span class="fc" id="L371">        join(head = node, curr);</span>
+<span class="fc" id="L357">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
+<span class="fc" id="L358">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="fc" id="L359">      Node&lt;E&gt; node = new Node&lt;&gt;(value);</span>
+<span class="fc bfc" id="L360" title="All 2 branches covered.">      if (curr == head) {</span>
+<span class="fc" id="L361">        join(head = node, curr);</span>
       } else {
-<span class="fc" id="L373">        Check.that(curr.prev).is(notNull(), concurrentModification());</span>
-<span class="fc" id="L374">        join(curr.prev, node);</span>
-<span class="fc" id="L375">        join(node, curr);</span>
+<span class="fc" id="L363">        Check.that(curr.prev).is(notNull(), concurrentModification());</span>
+<span class="fc" id="L364">        join(curr.prev, node);</span>
+<span class="fc" id="L365">        join(node, curr);</span>
       }
-<span class="fc" id="L377">      ++sz;</span>
-<span class="fc" id="L378">    }</span>
+<span class="fc" id="L367">      ++sz;</span>
+<span class="fc" id="L368">    }</span>
 
     @Override
     public void remove() {
-<span class="fc" id="L382">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
-<span class="fc" id="L383">      Check.that(sz).isNot(zero(), emptyList());</span>
-<span class="fc bfc" id="L384" title="All 2 branches covered.">      if (curr == tail) {</span>
-<span class="fc" id="L385">        destroy(curr);</span>
-<span class="fc" id="L386">        curr = afterTail = justAfterTail();</span>
+<span class="fc" id="L372">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
+<span class="fc" id="L373">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="fc bfc" id="L374" title="All 2 branches covered.">      if (curr == tail) {</span>
+<span class="fc" id="L375">        destroy(curr);</span>
+<span class="fc" id="L376">        curr = afterTail = justAfterTail();</span>
       } else {
-<span class="fc" id="L388">        Check.that(curr = curr.next)</span>
-<span class="fc" id="L389">            .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L390">            .then(next -&gt; destroy(next.prev));</span>
+<span class="fc" id="L378">        Check.that(curr = curr.next)</span>
+<span class="fc" id="L379">            .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L380">            .then(next -&gt; destroy(next.prev));</span>
       }
-<span class="fc" id="L392">    }</span>
+<span class="fc" id="L382">    }</span>
 
     @Override
     public int index() {
-<span class="fc" id="L396">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
-<span class="fc" id="L397">      Check.that(sz).isNot(zero(), emptyList());</span>
-<span class="fc" id="L398">      int idx = sz - 1;</span>
-<span class="fc" id="L399">      for (var node = tail; ; --idx) {</span>
-<span class="fc bfc" id="L400" title="All 2 branches covered.">        if (node == curr) {</span>
-<span class="fc" id="L401">          return idx;</span>
+<span class="fc" id="L386">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
+<span class="fc" id="L387">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="fc" id="L388">      int idx = sz - 1;</span>
+<span class="fc" id="L389">      for (var node = tail; ; --idx) {</span>
+<span class="fc bfc" id="L390" title="All 2 branches covered.">        if (node == curr) {</span>
+<span class="fc" id="L391">          return idx;</span>
         }
-<span class="fc" id="L403">        node = Check.that(node)</span>
-<span class="fc" id="L404">            .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L405">            .isNot(sameAs(), head, concurrentModification())</span>
-<span class="fc" id="L406">            .ok(x -&gt; x.prev);</span>
+<span class="fc" id="L393">        node = Check.that(node)</span>
+<span class="fc" id="L394">            .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L395">            .isNot(sameAs(), head, concurrentModification())</span>
+<span class="fc" id="L396">            .ok(x -&gt; x.prev);</span>
       }
     }
 
     @Override
     public WiredIterator&lt;E&gt; turn() {
-<span class="fc" id="L412">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
-<span class="fc" id="L413">      Check.that(sz).isNot(zero(), emptyList());</span>
-<span class="fc" id="L414">      return new ForwardWiredIterator(curr);</span>
+<span class="fc" id="L402">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
+<span class="fc" id="L403">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="fc" id="L404">      return new ForwardWiredIterator(curr);</span>
     }
 
   }
@@ -427,88 +417,88 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
     Boolean forward;
     int idx;
 
-<span class="fc" id="L430">    ListItr() {</span>
-<span class="fc" id="L431">      curr = head;</span>
-<span class="fc" id="L432">      idx = 0;</span>
-<span class="fc" id="L433">    }</span>
+<span class="fc" id="L420">    ListItr() {</span>
+<span class="fc" id="L421">      curr = head;</span>
+<span class="fc" id="L422">      idx = 0;</span>
+<span class="fc" id="L423">    }</span>
 
-<span class="fc" id="L435">    ListItr(int index) {</span>
-<span class="fc bfc" id="L436" title="All 2 branches covered.">      if ((idx = index) == sz) {</span>
-<span class="fc" id="L437">        curr = null;</span>
+<span class="fc" id="L425">    ListItr(int index) {</span>
+<span class="fc bfc" id="L426" title="All 2 branches covered.">      if ((idx = index) == sz) {</span>
+<span class="fc" id="L427">        curr = null;</span>
       } else {
-<span class="fc" id="L439">        curr = nodeAt(index);</span>
+<span class="fc" id="L429">        curr = nodeAt(index);</span>
       }
-<span class="fc" id="L441">    }</span>
+<span class="fc" id="L431">    }</span>
 
     @Override
     public boolean hasNext() {
-<span class="pc bpc" id="L445" title="1 of 6 branches missed.">      return (forward == null &amp;&amp; sz != 0) || curr != tail;</span>
+<span class="pc bpc" id="L435" title="1 of 6 branches missed.">      return (forward == null &amp;&amp; sz != 0) || curr != tail;</span>
     }
 
     @Override
     public E next() {
-<span class="fc bfc" id="L450" title="All 2 branches covered.">      if (forward == TRUE) {</span>
-<span class="fc" id="L451">        Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
-<span class="fc" id="L452">        Check.that(++idx).is(lt(), sz, concurrentModification());</span>
-<span class="fc" id="L453">        return Check.that(curr = curr.next)</span>
-<span class="fc" id="L454">            .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L455">            .ok(Node::value);</span>
+<span class="fc bfc" id="L440" title="All 2 branches covered.">      if (forward == TRUE) {</span>
+<span class="fc" id="L441">        Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
+<span class="fc" id="L442">        Check.that(++idx).is(lt(), sz, concurrentModification());</span>
+<span class="fc" id="L443">        return Check.that(curr = curr.next)</span>
+<span class="fc" id="L444">            .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L445">            .ok(Node::value);</span>
       }
-<span class="fc" id="L457">      forward = TRUE;</span>
-<span class="fc" id="L458">      return curr.val;</span>
+<span class="fc" id="L447">      forward = TRUE;</span>
+<span class="fc" id="L448">      return curr.val;</span>
     }
 
     @Override
     public boolean hasPrevious() {
-<span class="fc bfc" id="L463" title="All 2 branches covered.">      return curr != head;</span>
+<span class="fc bfc" id="L453" title="All 2 branches covered.">      return curr != head;</span>
     }
 
     @Override
     public E previous() {
       E val;
-<span class="fc bfc" id="L469" title="All 2 branches covered.">      if (idx == sz) {</span>
-<span class="fc" id="L470">        Check.that(--idx).is(gte(), 0, concurrentModification());</span>
-<span class="fc" id="L471">        val = Check.that(curr = tail)</span>
-<span class="fc" id="L472">            .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L473">            .ok(Node::value);</span>
-<span class="pc bpc" id="L474" title="1 of 2 branches missed.">      } else if (forward != TRUE) {</span>
-<span class="fc" id="L475">        Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
-<span class="fc" id="L476">        Check.that(--idx).is(gte(), 0, concurrentModification());</span>
-<span class="fc" id="L477">        val = Check.that(curr = curr.prev)</span>
-<span class="fc" id="L478">            .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L479">            .ok(Node::value);</span>
+<span class="fc bfc" id="L459" title="All 2 branches covered.">      if (idx == sz) {</span>
+<span class="fc" id="L460">        Check.that(--idx).is(gte(), 0, concurrentModification());</span>
+<span class="fc" id="L461">        val = Check.that(curr = tail)</span>
+<span class="fc" id="L462">            .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L463">            .ok(Node::value);</span>
+<span class="pc bpc" id="L464" title="1 of 2 branches missed.">      } else if (forward != TRUE) {</span>
+<span class="fc" id="L465">        Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
+<span class="fc" id="L466">        Check.that(--idx).is(gte(), 0, concurrentModification());</span>
+<span class="fc" id="L467">        val = Check.that(curr = curr.prev)</span>
+<span class="fc" id="L468">            .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L469">            .ok(Node::value);</span>
       } else {
-<span class="nc" id="L481">        val = curr.val;</span>
+<span class="nc" id="L471">        val = curr.val;</span>
       }
-<span class="fc" id="L483">      forward = FALSE;</span>
-<span class="fc" id="L484">      return val;</span>
+<span class="fc" id="L473">      forward = FALSE;</span>
+<span class="fc" id="L474">      return val;</span>
     }
 
     @Override
     public int nextIndex() {
-<span class="fc bfc" id="L489" title="All 2 branches covered.">      return forward == TRUE ? idx + 1 : idx;</span>
+<span class="fc bfc" id="L479" title="All 2 branches covered.">      return forward == TRUE ? idx + 1 : idx;</span>
     }
 
     @Override
     public int previousIndex() {
-<span class="pc bpc" id="L494" title="1 of 2 branches missed.">      return forward == TRUE ? idx : idx - 1;</span>
+<span class="pc bpc" id="L484" title="1 of 2 branches missed.">      return forward == TRUE ? idx : idx - 1;</span>
     }
 
     @Override
     public void remove() {
-<span class="fc" id="L499">      throw new UnsupportedOperationException();</span>
+<span class="fc" id="L489">      throw new UnsupportedOperationException();</span>
     }
 
     @Override
     @SuppressWarnings({&quot;unused&quot;})
     public void set(E value) {
-<span class="fc" id="L505">      throw new UnsupportedOperationException();</span>
+<span class="fc" id="L495">      throw new UnsupportedOperationException();</span>
     }
 
     @Override
     @SuppressWarnings({&quot;unused&quot;})
     public void add(E value) {
-<span class="fc" id="L511">      throw new UnsupportedOperationException();</span>
+<span class="fc" id="L501">      throw new UnsupportedOperationException();</span>
     }
 
   }
@@ -532,7 +522,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return a new, empty {@code WiredList}
    */
   public static &lt;E&gt; WiredList&lt;E&gt; of() {
-<span class="fc" id="L535">    return new WiredList&lt;&gt;();</span>
+<span class="fc" id="L525">    return new WiredList&lt;&gt;();</span>
   }
 
   /**
@@ -543,7 +533,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return a new {@code WiredList} containing the specified elements
    */
   public static &lt;E&gt; WiredList&lt;E&gt; of(E e) {
-<span class="fc" id="L546">    return new WiredList&lt;E&gt;().append(e);</span>
+<span class="fc" id="L536">    return new WiredList&lt;E&gt;().append(e);</span>
   }
 
   /**
@@ -555,7 +545,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return a new {@code WiredList} containing the specified elements
    */
   public static &lt;E&gt; WiredList&lt;E&gt; of(E e0, E e1) {
-<span class="fc" id="L558">    return new WiredList&lt;E&gt;().append(e0).append(e1);</span>
+<span class="fc" id="L548">    return new WiredList&lt;E&gt;().append(e0).append(e1);</span>
   }
 
   /**
@@ -570,19 +560,19 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @SafeVarargs
   public static &lt;E&gt; WiredList&lt;E&gt; of(E e0, E e1, E e2, E... moreElems) {
-<span class="fc" id="L573">    Check.notNull(moreElems, Tag.ARRAY);</span>
-<span class="fc" id="L574">    var wl = new WiredList&lt;E&gt;();</span>
-<span class="fc" id="L575">    Node&lt;E&gt; head = new Node&lt;&gt;(e0);</span>
-<span class="fc" id="L576">    Node&lt;E&gt; tail = head;</span>
-<span class="fc" id="L577">    tail = new Node&lt;&gt;(tail, e1);</span>
-<span class="fc" id="L578">    tail = new Node&lt;&gt;(tail, e2);</span>
-<span class="fc bfc" id="L579" title="All 2 branches covered.">    for (E e : moreElems) {</span>
-<span class="fc" id="L580">      tail = new Node&lt;&gt;(tail, e);</span>
+<span class="fc" id="L563">    Check.notNull(moreElems, Tag.ARRAY);</span>
+<span class="fc" id="L564">    var wl = new WiredList&lt;E&gt;();</span>
+<span class="fc" id="L565">    Node&lt;E&gt; head = new Node&lt;&gt;(e0);</span>
+<span class="fc" id="L566">    Node&lt;E&gt; tail = head;</span>
+<span class="fc" id="L567">    tail = new Node&lt;&gt;(tail, e1);</span>
+<span class="fc" id="L568">    tail = new Node&lt;&gt;(tail, e2);</span>
+<span class="fc bfc" id="L569" title="All 2 branches covered.">    for (E e : moreElems) {</span>
+<span class="fc" id="L570">      tail = new Node&lt;&gt;(tail, e);</span>
     }
-<span class="fc" id="L582">    wl.head = head;</span>
-<span class="fc" id="L583">    wl.tail = tail;</span>
-<span class="fc" id="L584">    wl.sz = moreElems.length + 3;</span>
-<span class="fc" id="L585">    return wl;</span>
+<span class="fc" id="L572">    wl.head = head;</span>
+<span class="fc" id="L573">    wl.tail = tail;</span>
+<span class="fc" id="L574">    wl.sz = moreElems.length + 3;</span>
+<span class="fc" id="L575">    return wl;</span>
   }
 
   /**
@@ -594,19 +584,19 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @SafeVarargs
   public static &lt;E&gt; WiredList&lt;E&gt; ofElements(E... elements) {
-<span class="fc" id="L597">    Check.notNull(elements, Tag.ARRAY);</span>
-<span class="fc" id="L598">    var wl = new WiredList&lt;E&gt;();</span>
-<span class="pc bpc" id="L599" title="1 of 2 branches missed.">    if (elements.length != 0) {</span>
-<span class="fc" id="L600">      Node&lt;E&gt; head = new Node&lt;&gt;(elements[0]);</span>
-<span class="fc" id="L601">      Node&lt;E&gt; tail = head;</span>
-<span class="fc bfc" id="L602" title="All 2 branches covered.">      for (int i = 1; i &lt; elements.length; ++i) {</span>
-<span class="fc" id="L603">        tail = new Node&lt;&gt;(tail, elements[i]);</span>
+<span class="fc" id="L587">    Check.notNull(elements, Tag.ARRAY);</span>
+<span class="fc" id="L588">    var wl = new WiredList&lt;E&gt;();</span>
+<span class="pc bpc" id="L589" title="1 of 2 branches missed.">    if (elements.length != 0) {</span>
+<span class="fc" id="L590">      Node&lt;E&gt; head = new Node&lt;&gt;(elements[0]);</span>
+<span class="fc" id="L591">      Node&lt;E&gt; tail = head;</span>
+<span class="fc bfc" id="L592" title="All 2 branches covered.">      for (int i = 1; i &lt; elements.length; ++i) {</span>
+<span class="fc" id="L593">        tail = new Node&lt;&gt;(tail, elements[i]);</span>
       }
-<span class="fc" id="L605">      wl.head = head;</span>
-<span class="fc" id="L606">      wl.tail = tail;</span>
-<span class="fc" id="L607">      wl.sz = elements.length;</span>
+<span class="fc" id="L595">      wl.head = head;</span>
+<span class="fc" id="L596">      wl.tail = tail;</span>
+<span class="fc" id="L597">      wl.sz = elements.length;</span>
     }
-<span class="fc" id="L609">    return wl;</span>
+<span class="fc" id="L599">    return wl;</span>
   }
 
   /**
@@ -620,9 +610,9 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    *     {@code WiredList} instances
    */
   public static &lt;E&gt; WiredList&lt;E&gt; join(List&lt;WiredList&lt;E&gt;&gt; lists) {
-<span class="fc" id="L623">    WiredList&lt;E&gt; wl = new WiredList&lt;&gt;();</span>
-<span class="fc" id="L624">    Check.notNull(lists).ok().forEach(wl::attach);</span>
-<span class="fc" id="L625">    return wl;</span>
+<span class="fc" id="L613">    WiredList&lt;E&gt; wl = new WiredList&lt;&gt;();</span>
+<span class="fc" id="L614">    Check.notNull(lists).ok().forEach(wl::attach);</span>
+<span class="fc" id="L615">    return wl;</span>
   }
 
   private Node&lt;E&gt; head;
@@ -632,7 +622,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
   /**
    * Creates a new, empty {@code WiredList}.
    */
-<span class="fc" id="L635">  public WiredList() {}</span>
+<span class="fc" id="L625">  public WiredList() {}</span>
 
   /**
    * Creates a new {@code WiredList} containing the elements in the specified
@@ -640,16 +630,16 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    *
    * @param c the collection whose elements to copy to this {@code WiredList}
    */
-<span class="fc" id="L643">  public WiredList(Collection&lt;? extends E&gt; c) {</span>
-<span class="fc" id="L644">    addAll(0, c);</span>
-<span class="fc" id="L645">  }</span>
+<span class="fc" id="L633">  public WiredList(Collection&lt;? extends E&gt; c) {</span>
+<span class="fc" id="L634">    addAll(0, c);</span>
+<span class="fc" id="L635">  }</span>
 
   @SuppressWarnings({&quot;unchecked&quot;})
-<span class="fc" id="L648">  private WiredList(Chain chain) {</span>
-<span class="fc" id="L649">    makeHead(chain.head);</span>
-<span class="fc" id="L650">    makeTail(chain.tail);</span>
-<span class="fc" id="L651">    sz = chain.length;</span>
-<span class="fc" id="L652">  }</span>
+<span class="fc" id="L638">  private WiredList(Chain chain) {</span>
+<span class="fc" id="L639">    makeHead(chain.head);</span>
+<span class="fc" id="L640">    makeTail(chain.tail);</span>
+<span class="fc" id="L641">    sz = chain.length;</span>
+<span class="fc" id="L642">  }</span>
 
   /**
    * Returns the number of elements in this list. If this list contains more than
@@ -659,7 +649,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public int size() {
-<span class="fc" id="L662">    return sz;</span>
+<span class="fc" id="L652">    return sz;</span>
   }
 
   /**
@@ -669,7 +659,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public boolean isEmpty() {
-<span class="fc bfc" id="L672" title="All 2 branches covered.">    return sz == 0;</span>
+<span class="fc bfc" id="L662" title="All 2 branches covered.">    return sz == 0;</span>
   }
 
   /**
@@ -682,7 +672,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public boolean contains(Object o) {
-<span class="pc bpc" id="L685" title="1 of 2 branches missed.">    return indexOf(o) != -1;</span>
+<span class="pc bpc" id="L675" title="1 of 2 branches missed.">    return indexOf(o) != -1;</span>
   }
 
   /**
@@ -696,8 +686,8 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public boolean containsAll(Collection&lt;?&gt; c) {
-<span class="fc" id="L699">    Check.notNull(c);</span>
-<span class="fc" id="L700">    return new HashSet&lt;&gt;(this).containsAll(c);</span>
+<span class="fc" id="L689">    Check.notNull(c);</span>
+<span class="fc" id="L690">    return new HashSet&lt;&gt;(this).containsAll(c);</span>
   }
 
   /**
@@ -712,23 +702,23 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public int indexOf(Object o) {
-<span class="fc" id="L715">    var n = head;</span>
-<span class="fc bfc" id="L716" title="All 2 branches covered.">    if (o == null) {</span>
-<span class="pc bpc" id="L717" title="1 of 2 branches missed.">      for (int i = 0; i &lt; sz; ++i) {</span>
-<span class="fc bfc" id="L718" title="All 2 branches covered.">        if (n.val == null) {</span>
-<span class="fc" id="L719">          return i;</span>
+<span class="fc" id="L705">    var n = head;</span>
+<span class="fc bfc" id="L706" title="All 2 branches covered.">    if (o == null) {</span>
+<span class="pc bpc" id="L707" title="1 of 2 branches missed.">      for (int i = 0; i &lt; sz; ++i) {</span>
+<span class="fc bfc" id="L708" title="All 2 branches covered.">        if (n.val == null) {</span>
+<span class="fc" id="L709">          return i;</span>
         }
-<span class="fc" id="L721">        n = n.next;</span>
+<span class="fc" id="L711">        n = n.next;</span>
       }
     } else {
-<span class="fc bfc" id="L724" title="All 2 branches covered.">      for (int i = 0; i &lt; sz; ++i) {</span>
-<span class="fc bfc" id="L725" title="All 2 branches covered.">        if (o.equals(n.val)) {</span>
-<span class="fc" id="L726">          return i;</span>
+<span class="fc bfc" id="L714" title="All 2 branches covered.">      for (int i = 0; i &lt; sz; ++i) {</span>
+<span class="fc bfc" id="L715" title="All 2 branches covered.">        if (o.equals(n.val)) {</span>
+<span class="fc" id="L716">          return i;</span>
         }
-<span class="fc" id="L728">        n = n.next;</span>
+<span class="fc" id="L718">        n = n.next;</span>
       }
     }
-<span class="fc" id="L731">    return -1;</span>
+<span class="fc" id="L721">    return -1;</span>
   }
 
   /**
@@ -743,23 +733,23 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public int lastIndexOf(Object o) {
-<span class="fc" id="L746">    var n = tail;</span>
-<span class="fc bfc" id="L747" title="All 2 branches covered.">    if (o == null) {</span>
-<span class="pc bpc" id="L748" title="1 of 2 branches missed.">      for (int i = sz - 1; i &gt;= 0; --i) {</span>
-<span class="fc bfc" id="L749" title="All 2 branches covered.">        if (n.val == null) {</span>
-<span class="fc" id="L750">          return i;</span>
+<span class="fc" id="L736">    var n = tail;</span>
+<span class="fc bfc" id="L737" title="All 2 branches covered.">    if (o == null) {</span>
+<span class="pc bpc" id="L738" title="1 of 2 branches missed.">      for (int i = sz - 1; i &gt;= 0; --i) {</span>
+<span class="fc bfc" id="L739" title="All 2 branches covered.">        if (n.val == null) {</span>
+<span class="fc" id="L740">          return i;</span>
         }
-<span class="fc" id="L752">        n = n.prev;</span>
+<span class="fc" id="L742">        n = n.prev;</span>
       }
     } else {
-<span class="fc bfc" id="L755" title="All 2 branches covered.">      for (int i = sz - 1; i &gt;= 0; --i) {</span>
-<span class="fc bfc" id="L756" title="All 2 branches covered.">        if (o.equals(n.val)) {</span>
-<span class="fc" id="L757">          return i;</span>
+<span class="fc bfc" id="L745" title="All 2 branches covered.">      for (int i = sz - 1; i &gt;= 0; --i) {</span>
+<span class="fc bfc" id="L746" title="All 2 branches covered.">        if (o.equals(n.val)) {</span>
+<span class="fc" id="L747">          return i;</span>
         }
-<span class="fc" id="L759">        n = n.prev;</span>
+<span class="fc" id="L749">        n = n.prev;</span>
       }
     }
-<span class="fc" id="L762">    return -1;</span>
+<span class="fc" id="L752">    return -1;</span>
   }
 
   /**
@@ -772,7 +762,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public E get(int index) {
-<span class="fc" id="L775">    return node(index).val;</span>
+<span class="fc" id="L765">    return node(index).val;</span>
   }
 
   /**
@@ -785,10 +775,10 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public E set(int index, E element) {
-<span class="fc" id="L788">    var node = node(index);</span>
-<span class="fc" id="L789">    E old = node.val;</span>
-<span class="fc" id="L790">    node.val = element;</span>
-<span class="fc" id="L791">    return old;</span>
+<span class="fc" id="L778">    var node = node(index);</span>
+<span class="fc" id="L779">    E old = node.val;</span>
+<span class="fc" id="L780">    node.val = element;</span>
+<span class="fc" id="L781">    return old;</span>
   }
 
   /**
@@ -805,20 +795,20 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @SuppressWarnings(&quot;unchecked&quot;)
   public WiredList&lt;E&gt; set(int index, E e0, E e1, E... moreElems) {
-<span class="fc" id="L808">    Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));</span>
-<span class="fc" id="L809">    Check.notNull(moreElems, Tag.VARARGS).has(length(), lte(), sz - index - 2);</span>
-<span class="fc" id="L810">    Node&lt;E&gt; node = nodeAt(index);</span>
-<span class="fc" id="L811">    node.val = e0;</span>
-<span class="fc" id="L812">    node = node.next;</span>
-<span class="fc" id="L813">    node.val = e1;</span>
-<span class="fc bfc" id="L814" title="All 2 branches covered.">    if (moreElems.length != 0) {</span>
-<span class="fc" id="L815">      node = node.next;</span>
-<span class="fc bfc" id="L816" title="All 2 branches covered.">      for (E e : moreElems) {</span>
-<span class="fc" id="L817">        node.val = e;</span>
-<span class="fc" id="L818">        node = node.next;</span>
+<span class="fc" id="L798">    Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));</span>
+<span class="fc" id="L799">    Check.notNull(moreElems, Tag.VARARGS).has(length(), lte(), sz - index - 2);</span>
+<span class="fc" id="L800">    Node&lt;E&gt; node = nodeAt(index);</span>
+<span class="fc" id="L801">    node.val = e0;</span>
+<span class="fc" id="L802">    node = node.next;</span>
+<span class="fc" id="L803">    node.val = e1;</span>
+<span class="fc bfc" id="L804" title="All 2 branches covered.">    if (moreElems.length != 0) {</span>
+<span class="fc" id="L805">      node = node.next;</span>
+<span class="fc bfc" id="L806" title="All 2 branches covered.">      for (E e : moreElems) {</span>
+<span class="fc" id="L807">        node.val = e;</span>
+<span class="fc" id="L808">        node = node.next;</span>
       }
     }
-<span class="fc" id="L821">    return this;</span>
+<span class="fc" id="L811">    return this;</span>
   }
 
   /**
@@ -835,13 +825,13 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return The original value
    */
   public E setIf(int index, Predicate&lt;? super E&gt; condition, E value) {
-<span class="fc" id="L838">    Check.notNull(condition, Tag.TEST);</span>
-<span class="fc" id="L839">    var node = node(index);</span>
-<span class="fc" id="L840">    E old = node.val;</span>
-<span class="fc bfc" id="L841" title="All 2 branches covered.">    if (condition.test(old)) {</span>
-<span class="fc" id="L842">      node.val = value;</span>
+<span class="fc" id="L828">    Check.notNull(condition, Tag.TEST);</span>
+<span class="fc" id="L829">    var node = node(index);</span>
+<span class="fc" id="L830">    E old = node.val;</span>
+<span class="fc bfc" id="L831" title="All 2 branches covered.">    if (condition.test(old)) {</span>
+<span class="fc" id="L832">      node.val = value;</span>
     }
-<span class="fc" id="L844">    return old;</span>
+<span class="fc" id="L834">    return old;</span>
   }
 
   /**
@@ -853,8 +843,8 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public boolean add(E e) {
-<span class="fc" id="L856">    append(e);</span>
-<span class="fc" id="L857">    return true;</span>
+<span class="fc" id="L846">    append(e);</span>
+<span class="fc" id="L847">    return true;</span>
   }
 
   /**
@@ -868,9 +858,9 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public void add(int index, E element) {
-<span class="fc" id="L871">    checkInclusive(index);</span>
-<span class="fc" id="L872">    insert(index, new Node&lt;&gt;(element));</span>
-<span class="fc" id="L873">  }</span>
+<span class="fc" id="L861">    checkInclusive(index);</span>
+<span class="fc" id="L862">    insert(index, new Node&lt;&gt;(element));</span>
+<span class="fc" id="L863">  }</span>
 
   /**
    * Appends all elements in the specified collection to the end of this list, in the
@@ -884,7 +874,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public boolean addAll(Collection&lt;? extends E&gt; c) {
-<span class="fc" id="L887">    return addAll(sz, c);</span>
+<span class="fc" id="L877">    return addAll(sz, c);</span>
   }
 
   /**
@@ -900,12 +890,12 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public boolean addAll(int index, Collection&lt;? extends E&gt; c) {
-<span class="fc" id="L903">    checkInclusive(index);</span>
-<span class="fc" id="L904">    Check.notNull(c, Tag.COLLECTION);</span>
-<span class="fc bfc" id="L905" title="All 2 branches covered.">    if (!c.isEmpty()) {</span>
-<span class="fc" id="L906">      insert(index, Chain.of(c));</span>
+<span class="fc" id="L893">    checkInclusive(index);</span>
+<span class="fc" id="L894">    Check.notNull(c, Tag.COLLECTION);</span>
+<span class="fc bfc" id="L895" title="All 2 branches covered.">    if (!c.isEmpty()) {</span>
+<span class="fc" id="L896">      insert(index, Chain.of(c));</span>
     }
-<span class="fc bfc" id="L908" title="All 2 branches covered.">    return !c.isEmpty();</span>
+<span class="fc bfc" id="L898" title="All 2 branches covered.">    return !c.isEmpty();</span>
   }
 
   /**
@@ -918,7 +908,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public E remove(int index) {
-<span class="fc" id="L921">    return destroy(node(index));</span>
+<span class="fc" id="L911">    return destroy(node(index));</span>
   }
 
   /**
@@ -930,24 +920,24 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public boolean remove(Object o) {
-<span class="fc bfc" id="L933" title="All 2 branches covered.">    if (o == null) {</span>
-<span class="pc bpc" id="L934" title="1 of 2 branches missed.">      for (var x = head; x != null; ) {</span>
-<span class="fc bfc" id="L935" title="All 2 branches covered.">        if (x.val == null) {</span>
-<span class="fc" id="L936">          unlink(x);</span>
-<span class="fc" id="L937">          return true;</span>
+<span class="fc bfc" id="L923" title="All 2 branches covered.">    if (o == null) {</span>
+<span class="pc bpc" id="L924" title="1 of 2 branches missed.">      for (var x = head; x != null; ) {</span>
+<span class="fc bfc" id="L925" title="All 2 branches covered.">        if (x.val == null) {</span>
+<span class="fc" id="L926">          unlink(x);</span>
+<span class="fc" id="L927">          return true;</span>
         }
-<span class="pc" id="L939">        x = x.next;</span>
+<span class="pc" id="L929">        x = x.next;</span>
       }
     } else {
-<span class="fc bfc" id="L942" title="All 2 branches covered.">      for (var x = head; x != null; ) {</span>
-<span class="fc bfc" id="L943" title="All 2 branches covered.">        if (o.equals(x.val)) {</span>
-<span class="fc" id="L944">          destroy(x);</span>
-<span class="fc" id="L945">          return true;</span>
+<span class="fc bfc" id="L932" title="All 2 branches covered.">      for (var x = head; x != null; ) {</span>
+<span class="fc bfc" id="L933" title="All 2 branches covered.">        if (o.equals(x.val)) {</span>
+<span class="fc" id="L934">          destroy(x);</span>
+<span class="fc" id="L935">          return true;</span>
         }
-<span class="fc" id="L947">        x = x.next;</span>
+<span class="fc" id="L937">        x = x.next;</span>
       }
     }
-<span class="fc" id="L950">    return false;</span>
+<span class="fc" id="L940">    return false;</span>
   }
 
   /**
@@ -959,18 +949,18 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public boolean removeIf(Predicate&lt;? super E&gt; filter) {
-<span class="fc" id="L962">    Check.notNull(filter, Tag.TEST);</span>
-<span class="fc" id="L963">    int size = sz;</span>
-<span class="fc bfc" id="L964" title="All 2 branches covered.">    for (var x = head; x != null; ) {</span>
-<span class="fc bfc" id="L965" title="All 2 branches covered.">      if (filter.test(x.val)) {</span>
-<span class="fc" id="L966">        var next = x.next;</span>
-<span class="fc" id="L967">        destroy(x);</span>
-<span class="fc" id="L968">        x = next;</span>
-<span class="fc" id="L969">      } else {</span>
-<span class="fc" id="L970">        x = x.next;</span>
+<span class="fc" id="L952">    Check.notNull(filter, Tag.TEST);</span>
+<span class="fc" id="L953">    int size = sz;</span>
+<span class="fc bfc" id="L954" title="All 2 branches covered.">    for (var x = head; x != null; ) {</span>
+<span class="fc bfc" id="L955" title="All 2 branches covered.">      if (filter.test(x.val)) {</span>
+<span class="fc" id="L956">        var next = x.next;</span>
+<span class="fc" id="L957">        destroy(x);</span>
+<span class="fc" id="L958">        x = next;</span>
+<span class="fc" id="L959">      } else {</span>
+<span class="fc" id="L960">        x = x.next;</span>
       }
     }
-<span class="fc bfc" id="L973" title="All 2 branches covered.">    return size != this.sz;</span>
+<span class="fc bfc" id="L963" title="All 2 branches covered.">    return size != this.sz;</span>
   }
 
   /**
@@ -984,10 +974,10 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public boolean removeAll(Collection&lt;?&gt; c) {
-<span class="fc" id="L987">    Check.notNull(c, Tag.COLLECTION);</span>
-<span class="fc" id="L988">    int size = this.sz;</span>
-<span class="fc" id="L989">    removeIf(c::contains);</span>
-<span class="fc bfc" id="L990" title="All 2 branches covered.">    return size != this.sz;</span>
+<span class="fc" id="L977">    Check.notNull(c, Tag.COLLECTION);</span>
+<span class="fc" id="L978">    int size = this.sz;</span>
+<span class="fc" id="L979">    removeIf(c::contains);</span>
+<span class="fc bfc" id="L980" title="All 2 branches covered.">    return size != this.sz;</span>
   }
 
   /**
@@ -1001,10 +991,10 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public boolean retainAll(Collection&lt;?&gt; c) {
-<span class="fc" id="L1004">    Check.notNull(c, Tag.COLLECTION);</span>
-<span class="fc" id="L1005">    int sz = this.sz;</span>
-<span class="fc bfc" id="L1006" title="All 2 branches covered.">    removeIf(e -&gt; !c.contains(e));</span>
-<span class="fc bfc" id="L1007" title="All 2 branches covered.">    return sz != this.sz;</span>
+<span class="fc" id="L994">    Check.notNull(c, Tag.COLLECTION);</span>
+<span class="fc" id="L995">    int sz = this.sz;</span>
+<span class="fc bfc" id="L996" title="All 2 branches covered.">    removeIf(e -&gt; !c.contains(e));</span>
+<span class="fc bfc" id="L997" title="All 2 branches covered.">    return sz != this.sz;</span>
   }
 
   /**
@@ -1014,8 +1004,8 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return the first element of the list
    */
   public E first() {
-<span class="fc" id="L1017">    Check.that(sz).isNot(zero(), noSuchElement());</span>
-<span class="fc" id="L1018">    return head.val;</span>
+<span class="fc" id="L1007">    Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="fc" id="L1008">    return head.val;</span>
   }
 
   /**
@@ -1025,8 +1015,8 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return the last element of the list
    */
   public E last() {
-<span class="fc" id="L1028">    Check.that(sz).isNot(zero(), noSuchElement());</span>
-<span class="fc" id="L1029">    return tail.val;</span>
+<span class="fc" id="L1018">    Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="fc" id="L1019">    return tail.val;</span>
   }
 
   /**
@@ -1037,15 +1027,15 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; prepend(E value) {
-<span class="fc" id="L1040">    Node&lt;E&gt; n = new Node&lt;&gt;(value);</span>
-<span class="fc bfc" id="L1041" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L1042">      head = tail = n;</span>
+<span class="fc" id="L1030">    Node&lt;E&gt; n = new Node&lt;&gt;(value);</span>
+<span class="fc bfc" id="L1031" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L1032">      head = tail = n;</span>
     } else {
-<span class="fc" id="L1044">      join(n, head);</span>
-<span class="fc" id="L1045">      head = n;</span>
+<span class="fc" id="L1034">      join(n, head);</span>
+<span class="fc" id="L1035">      head = n;</span>
     }
-<span class="fc" id="L1047">    ++sz;</span>
-<span class="fc" id="L1048">    return this;</span>
+<span class="fc" id="L1037">    ++sz;</span>
+<span class="fc" id="L1038">    return this;</span>
   }
 
   /**
@@ -1056,11 +1046,11 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; prependAll(Collection&lt;? extends E&gt; values) {
-<span class="fc" id="L1059">    Check.notNull(values, Tag.COLLECTION);</span>
-<span class="fc bfc" id="L1060" title="All 2 branches covered.">    if (!values.isEmpty()) {</span>
-<span class="fc" id="L1061">      insert(0, Chain.of(values));</span>
+<span class="fc" id="L1049">    Check.notNull(values, Tag.COLLECTION);</span>
+<span class="fc bfc" id="L1050" title="All 2 branches covered.">    if (!values.isEmpty()) {</span>
+<span class="fc" id="L1051">      insert(0, Chain.of(values));</span>
     }
-<span class="fc" id="L1063">    return this;</span>
+<span class="fc" id="L1053">    return this;</span>
   }
 
   /**
@@ -1071,15 +1061,15 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; append(E value) {
-<span class="fc" id="L1074">    Node&lt;E&gt; n = new Node&lt;&gt;(value);</span>
-<span class="fc bfc" id="L1075" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L1076">      head = tail = n;</span>
+<span class="fc" id="L1064">    Node&lt;E&gt; n = new Node&lt;&gt;(value);</span>
+<span class="fc bfc" id="L1065" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L1066">      head = tail = n;</span>
     } else {
-<span class="fc" id="L1078">      join(tail, n);</span>
-<span class="fc" id="L1079">      tail = n;</span>
+<span class="fc" id="L1068">      join(tail, n);</span>
+<span class="fc" id="L1069">      tail = n;</span>
     }
-<span class="fc" id="L1081">    ++sz;</span>
-<span class="fc" id="L1082">    return this;</span>
+<span class="fc" id="L1071">    ++sz;</span>
+<span class="fc" id="L1072">    return this;</span>
   }
 
   /**
@@ -1091,11 +1081,11 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @see #attach(WiredList)
    */
   public WiredList&lt;E&gt; appendAll(Collection&lt;? extends E&gt; values) {
-<span class="fc" id="L1094">    Check.notNull(values, Tag.COLLECTION);</span>
-<span class="fc bfc" id="L1095" title="All 2 branches covered.">    if (!values.isEmpty()) {</span>
-<span class="fc" id="L1096">      insert(sz, Chain.of(values));</span>
+<span class="fc" id="L1084">    Check.notNull(values, Tag.COLLECTION);</span>
+<span class="fc bfc" id="L1085" title="All 2 branches covered.">    if (!values.isEmpty()) {</span>
+<span class="fc" id="L1086">      insert(sz, Chain.of(values));</span>
     }
-<span class="fc" id="L1098">    return this;</span>
+<span class="fc" id="L1088">    return this;</span>
   }
 
   /**
@@ -1111,9 +1101,9 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; insert(int index, E value) {
-<span class="fc" id="L1114">    checkInclusive(index);</span>
-<span class="fc" id="L1115">    insert(index, new Node&lt;&gt;(value));</span>
-<span class="fc" id="L1116">    return this;</span>
+<span class="fc" id="L1104">    checkInclusive(index);</span>
+<span class="fc" id="L1105">    insert(index, new Node&lt;&gt;(value));</span>
+<span class="fc" id="L1106">    return this;</span>
   }
 
   /**
@@ -1126,12 +1116,12 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @see #addAll(int, Collection)
    */
   public WiredList&lt;E&gt; insertAll(int index, Collection&lt;? extends E&gt; values) {
-<span class="fc" id="L1129">    checkInclusive(index);</span>
-<span class="fc" id="L1130">    Check.notNull(values, Tag.COLLECTION);</span>
-<span class="fc bfc" id="L1131" title="All 2 branches covered.">    if (!values.isEmpty()) {</span>
-<span class="fc" id="L1132">      insert(index, Chain.of(values));</span>
+<span class="fc" id="L1119">    checkInclusive(index);</span>
+<span class="fc" id="L1120">    Check.notNull(values, Tag.COLLECTION);</span>
+<span class="fc bfc" id="L1121" title="All 2 branches covered.">    if (!values.isEmpty()) {</span>
+<span class="fc" id="L1122">      insert(index, Chain.of(values));</span>
     }
-<span class="fc" id="L1134">    return this;</span>
+<span class="fc" id="L1124">    return this;</span>
   }
 
   /**
@@ -1141,9 +1131,9 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; deleteFirst() {
-<span class="fc" id="L1144">    Check.that(sz).isNot(zero(), noSuchElement());</span>
-<span class="fc" id="L1145">    destroy(head);</span>
-<span class="fc" id="L1146">    return this;</span>
+<span class="fc" id="L1134">    Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="fc" id="L1135">    destroy(head);</span>
+<span class="fc" id="L1136">    return this;</span>
   }
 
   /**
@@ -1153,9 +1143,9 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; deleteLast() {
-<span class="fc" id="L1156">    Check.that(sz).isNot(zero(), noSuchElement());</span>
-<span class="fc" id="L1157">    destroy(tail);</span>
-<span class="fc" id="L1158">    return this;</span>
+<span class="fc" id="L1146">    Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="fc" id="L1147">    destroy(tail);</span>
+<span class="fc" id="L1148">    return this;</span>
   }
 
   /**
@@ -1170,15 +1160,15 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public void replaceAll(UnaryOperator&lt;E&gt; operator) {
-<span class="fc bfc" id="L1173" title="All 2 branches covered.">    if (sz != 0) {</span>
-<span class="fc" id="L1174">      for (var x = head; ; x = x.next) {</span>
-<span class="fc" id="L1175">        x.val = operator.apply(x.val);</span>
-<span class="fc bfc" id="L1176" title="All 2 branches covered.">        if (x == tail) {</span>
-<span class="fc" id="L1177">          break;</span>
+<span class="fc bfc" id="L1163" title="All 2 branches covered.">    if (sz != 0) {</span>
+<span class="fc" id="L1164">      for (var x = head; ; x = x.next) {</span>
+<span class="fc" id="L1165">        x.val = operator.apply(x.val);</span>
+<span class="fc bfc" id="L1166" title="All 2 branches covered.">        if (x == tail) {</span>
+<span class="fc" id="L1167">          break;</span>
         }
       }
     }
-<span class="fc" id="L1181">  }</span>
+<span class="fc" id="L1171">  }</span>
 
   /**
    * Replaces the segment between {@code fromIndex} and {@code toIndex} with the
@@ -1193,25 +1183,25 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
   public WiredList&lt;E&gt; replace(int fromIndex,
       int toIndex,
       Collection&lt;? extends E&gt; values) {
-<span class="fc" id="L1196">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
-<span class="fc" id="L1197">    Check.notNull(values, Tag.COLLECTION);</span>
-<span class="fc bfc" id="L1198" title="All 2 branches covered.">    if (len == 0) {</span>
-<span class="fc bfc" id="L1199" title="All 2 branches covered.">      if (!values.isEmpty()) {</span>
-<span class="fc" id="L1200">        insert(fromIndex, Chain.of(values));</span>
+<span class="fc" id="L1186">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="fc" id="L1187">    Check.notNull(values, Tag.COLLECTION);</span>
+<span class="fc bfc" id="L1188" title="All 2 branches covered.">    if (len == 0) {</span>
+<span class="fc bfc" id="L1189" title="All 2 branches covered.">      if (!values.isEmpty()) {</span>
+<span class="fc" id="L1190">        insert(fromIndex, Chain.of(values));</span>
       }
-<span class="fc bfc" id="L1202" title="All 2 branches covered.">    } else if (len == values.size()) {</span>
-<span class="fc" id="L1203">      var node = nodeAt(fromIndex);</span>
-<span class="fc bfc" id="L1204" title="All 2 branches covered.">      for (E e : values) {</span>
-<span class="fc" id="L1205">        node.val = e;</span>
-<span class="fc" id="L1206">        node = node.next;</span>
-<span class="fc" id="L1207">      }</span>
-<span class="fc" id="L1208">    } else {</span>
-<span class="fc" id="L1209">      unlink(fromIndex, toIndex);</span>
-<span class="pc bpc" id="L1210" title="1 of 2 branches missed.">      if (!values.isEmpty()) {</span>
-<span class="fc" id="L1211">        insert(fromIndex, Chain.of(values));</span>
+<span class="fc bfc" id="L1192" title="All 2 branches covered.">    } else if (len == values.size()) {</span>
+<span class="fc" id="L1193">      var node = nodeAt(fromIndex);</span>
+<span class="fc bfc" id="L1194" title="All 2 branches covered.">      for (E e : values) {</span>
+<span class="fc" id="L1195">        node.val = e;</span>
+<span class="fc" id="L1196">        node = node.next;</span>
+<span class="fc" id="L1197">      }</span>
+<span class="fc" id="L1198">    } else {</span>
+<span class="fc" id="L1199">      unlink(fromIndex, toIndex);</span>
+<span class="pc bpc" id="L1200" title="1 of 2 branches missed.">      if (!values.isEmpty()) {</span>
+<span class="fc" id="L1201">        insert(fromIndex, Chain.of(values));</span>
       }
     }
-<span class="fc" id="L1214">    return this;</span>
+<span class="fc" id="L1204">    return this;</span>
   }
 
   /**
@@ -1229,15 +1219,15 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
   public WiredList&lt;E&gt; rewire(int fromIndex,
       int toIndex,
       WiredList&lt;? extends E&gt; other) {
-<span class="fc" id="L1232">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
-<span class="fc" id="L1233">    Check.notNull(other, WIRED_LIST).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
-<span class="pc bpc" id="L1234" title="1 of 2 branches missed.">    if (len != 0) {</span>
-<span class="fc" id="L1235">      cut(fromIndex, toIndex).clear();</span>
+<span class="fc" id="L1222">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="fc" id="L1223">    Check.notNull(other, WIRED_LIST).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="pc bpc" id="L1224" title="1 of 2 branches missed.">    if (len != 0) {</span>
+<span class="fc" id="L1225">      cut(fromIndex, toIndex).clear();</span>
     }
-<span class="fc bfc" id="L1237" title="All 2 branches covered.">    if (!other.isEmpty()) {</span>
-<span class="fc" id="L1238">      insert(fromIndex, other.unlink(0, other.sz));</span>
+<span class="fc bfc" id="L1227" title="All 2 branches covered.">    if (!other.isEmpty()) {</span>
+<span class="fc" id="L1228">      insert(fromIndex, other.unlink(0, other.sz));</span>
     }
-<span class="fc" id="L1240">    return this;</span>
+<span class="fc" id="L1230">    return this;</span>
   }
 
   /**
@@ -1247,7 +1237,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return a deep copy of this {@code WiredList}
    */
   public WiredList&lt;E&gt; copy() {
-<span class="fc bfc" id="L1250" title="All 2 branches covered.">    return sz &gt; 0 ? new WiredList&lt;&gt;(Chain.copyOf(head, sz)) : WiredList.of();</span>
+<span class="fc bfc" id="L1240" title="All 2 branches covered.">    return sz &gt; 0 ? new WiredList&lt;&gt;(Chain.copyOf(head, sz)) : WiredList.of();</span>
   }
 
   /**
@@ -1259,10 +1249,10 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return a deep copy of the specified segment
    */
   public WiredList&lt;E&gt; copy(int fromIndex, int toIndex) {
-<span class="fc" id="L1262">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
-<span class="fc bfc" id="L1263" title="All 2 branches covered.">    return len &gt; 0</span>
-<span class="fc" id="L1264">        ? new WiredList&lt;&gt;(Chain.copyOf(nodeAt(fromIndex), len))</span>
-<span class="fc" id="L1265">        : WiredList.of();</span>
+<span class="fc" id="L1252">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="fc bfc" id="L1253" title="All 2 branches covered.">    return len &gt; 0</span>
+<span class="fc" id="L1254">        ? new WiredList&lt;&gt;(Chain.copyOf(nodeAt(fromIndex), len))</span>
+<span class="fc" id="L1255">        : WiredList.of();</span>
   }
 
   /**
@@ -1276,29 +1266,29 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @SuppressWarnings(&quot;SuspiciousNameCombination&quot;)
   public WiredList&lt;E&gt; shrink(int fromIndex, int toIndex) {
-<span class="fc" id="L1279">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
-<span class="fc bfc" id="L1280" title="All 2 branches covered.">    if (len == 0) {</span>
-<span class="fc" id="L1281">      clear();</span>
-<span class="fc bfc" id="L1282" title="All 2 branches covered.">    } else if (len != sz) {</span>
-<span class="fc" id="L1283">      Node&lt;E&gt; x = head;</span>
-<span class="fc bfc" id="L1284" title="All 2 branches covered.">      for (int i = 0; i &lt; fromIndex; ++i) { // make gc happy</span>
-<span class="fc" id="L1285">        Node&lt;E&gt; y = x.next;</span>
-<span class="fc" id="L1286">        x.next = x.prev = null;</span>
-<span class="fc" id="L1287">        x.val = null;</span>
-<span class="fc" id="L1288">        x = y;</span>
+<span class="fc" id="L1269">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="fc bfc" id="L1270" title="All 2 branches covered.">    if (len == 0) {</span>
+<span class="fc" id="L1271">      clear();</span>
+<span class="fc bfc" id="L1272" title="All 2 branches covered.">    } else if (len != sz) {</span>
+<span class="fc" id="L1273">      Node&lt;E&gt; x = head;</span>
+<span class="fc bfc" id="L1274" title="All 2 branches covered.">      for (int i = 0; i &lt; fromIndex; ++i) { // make gc happy</span>
+<span class="fc" id="L1275">        Node&lt;E&gt; y = x.next;</span>
+<span class="fc" id="L1276">        x.next = x.prev = null;</span>
+<span class="fc" id="L1277">        x.val = null;</span>
+<span class="fc" id="L1278">        x = y;</span>
       }
-<span class="fc" id="L1290">      head = x;</span>
-<span class="fc" id="L1291">      x = tail;</span>
-<span class="fc bfc" id="L1292" title="All 2 branches covered.">      for (int i = toIndex; i &lt; sz; ++i) {</span>
-<span class="fc" id="L1293">        Node&lt;E&gt; y = x.prev;</span>
-<span class="fc" id="L1294">        x.next = x.prev = null;</span>
-<span class="fc" id="L1295">        x.val = null;</span>
-<span class="fc" id="L1296">        x = y;</span>
+<span class="fc" id="L1280">      head = x;</span>
+<span class="fc" id="L1281">      x = tail;</span>
+<span class="fc bfc" id="L1282" title="All 2 branches covered.">      for (int i = toIndex; i &lt; sz; ++i) {</span>
+<span class="fc" id="L1283">        Node&lt;E&gt; y = x.prev;</span>
+<span class="fc" id="L1284">        x.next = x.prev = null;</span>
+<span class="fc" id="L1285">        x.val = null;</span>
+<span class="fc" id="L1286">        x = y;</span>
       }
-<span class="fc" id="L1298">      tail = x;</span>
-<span class="fc" id="L1299">      sz -= len;</span>
+<span class="fc" id="L1288">      tail = x;</span>
+<span class="fc" id="L1289">      sz -= len;</span>
     }
-<span class="fc" id="L1301">    return this;</span>
+<span class="fc" id="L1291">    return this;</span>
   }
 
   /**
@@ -1309,10 +1299,10 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return the deleted segment
    */
   public WiredList&lt;E&gt; cut(int fromIndex, int toIndex) {
-<span class="fc bfc" id="L1312" title="All 2 branches covered.">    if (Check.fromTo(this, fromIndex, toIndex) &gt; 0) {</span>
-<span class="fc" id="L1313">      return new WiredList&lt;&gt;(unlink(fromIndex, toIndex));</span>
+<span class="fc bfc" id="L1302" title="All 2 branches covered.">    if (Check.fromTo(this, fromIndex, toIndex) &gt; 0) {</span>
+<span class="fc" id="L1303">      return new WiredList&lt;&gt;(unlink(fromIndex, toIndex));</span>
     }
-<span class="fc" id="L1315">    return WiredList.of();</span>
+<span class="fc" id="L1305">    return WiredList.of();</span>
   }
 
   /**
@@ -1326,7 +1316,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return the target list
    */
   public WiredList&lt;? super E&gt; paste(WiredList&lt;? super E&gt; into, int index) {
-<span class="fc" id="L1329">    return into.embed(index, this);</span>
+<span class="fc" id="L1319">    return into.embed(index, this);</span>
   }
 
   /**
@@ -1341,17 +1331,17 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; embed(int index, WiredList&lt;? extends E&gt; other) {
-<span class="fc" id="L1344">    checkInclusive(index);</span>
-<span class="fc" id="L1345">    Check.notNull(other, WIRED_LIST).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
-<span class="fc bfc" id="L1346" title="All 2 branches covered.">    if (!other.isEmpty()) {</span>
-<span class="fc" id="L1347">      insert(index, new Chain(other.head, other.tail, other.sz));</span>
+<span class="fc" id="L1334">    checkInclusive(index);</span>
+<span class="fc" id="L1335">    Check.notNull(other, WIRED_LIST).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="fc bfc" id="L1336" title="All 2 branches covered.">    if (!other.isEmpty()) {</span>
+<span class="fc" id="L1337">      insert(index, new Chain(other.head, other.tail, other.sz));</span>
       // Reset but don't clear the embedded list, because that
       // would nullify the nodes we just embedded in this list
-<span class="fc" id="L1350">      other.head = null;</span>
-<span class="fc" id="L1351">      other.tail = null;</span>
-<span class="fc" id="L1352">      other.sz = 0;</span>
+<span class="fc" id="L1340">      other.head = null;</span>
+<span class="fc" id="L1341">      other.tail = null;</span>
+<span class="fc" id="L1342">      other.sz = 0;</span>
     }
-<span class="fc" id="L1354">    return this;</span>
+<span class="fc" id="L1344">    return this;</span>
   }
 
   /**
@@ -1372,57 +1362,57 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
       WiredList&lt;E&gt; other,
       int itsFromIndex,
       int itsToIndex) {
-<span class="fc" id="L1375">    int len0 = Check.fromTo(this, myFromIndex, myToIndex);</span>
-<span class="fc" id="L1376">    int len1 = Check.fromTo(other, itsFromIndex, itsToIndex);</span>
-<span class="fc" id="L1377">    Check.that(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
-<span class="fc bfc" id="L1378" title="All 2 branches covered.">    if (len0 == 0) {</span>
-<span class="fc bfc" id="L1379" title="All 2 branches covered.">      if (len1 != 0) {</span>
-<span class="fc" id="L1380">        insert(myFromIndex, other.unlink(itsFromIndex, itsToIndex));</span>
+<span class="fc" id="L1365">    int len0 = Check.fromTo(this, myFromIndex, myToIndex);</span>
+<span class="fc" id="L1366">    int len1 = Check.fromTo(other, itsFromIndex, itsToIndex);</span>
+<span class="fc" id="L1367">    Check.that(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="fc bfc" id="L1368" title="All 2 branches covered.">    if (len0 == 0) {</span>
+<span class="fc bfc" id="L1369" title="All 2 branches covered.">      if (len1 != 0) {</span>
+<span class="fc" id="L1370">        insert(myFromIndex, other.unlink(itsFromIndex, itsToIndex));</span>
       }
-<span class="fc" id="L1382">      return this;</span>
-<span class="fc bfc" id="L1383" title="All 2 branches covered.">    } else if (len1 == 0) {</span>
-<span class="fc" id="L1384">      other.insert(itsFromIndex, unlink(myFromIndex, myToIndex));</span>
-<span class="fc" id="L1385">      return this;</span>
+<span class="fc" id="L1372">      return this;</span>
+<span class="fc bfc" id="L1373" title="All 2 branches covered.">    } else if (len1 == 0) {</span>
+<span class="fc" id="L1374">      other.insert(itsFromIndex, unlink(myFromIndex, myToIndex));</span>
+<span class="fc" id="L1375">      return this;</span>
     }
 
     // segment boundary nodes
-<span class="fc" id="L1389">    var seg0L = nodeAt(myFromIndex);</span>
-<span class="fc" id="L1390">    var seg0R = nodeAfter(seg0L, myFromIndex, myToIndex - 1);</span>
-<span class="fc" id="L1391">    var seg1L = other.nodeAt(itsFromIndex);</span>
-<span class="fc" id="L1392">    var seg1R = other.nodeAfter(seg1L, itsFromIndex, itsToIndex - 1);</span>
+<span class="fc" id="L1379">    var seg0L = nodeAt(myFromIndex);</span>
+<span class="fc" id="L1380">    var seg0R = nodeAfter(seg0L, myFromIndex, myToIndex - 1);</span>
+<span class="fc" id="L1381">    var seg1L = other.nodeAt(itsFromIndex);</span>
+<span class="fc" id="L1382">    var seg1R = other.nodeAfter(seg1L, itsFromIndex, itsToIndex - 1);</span>
 
     // attach-to nodes
-<span class="fc" id="L1395">    var att0L = seg0L.prev;</span>
-<span class="fc" id="L1396">    var att0R = seg0R.next;</span>
-<span class="fc" id="L1397">    var att1L = seg1L.prev;</span>
-<span class="fc" id="L1398">    var att1R = seg1R.next;</span>
+<span class="fc" id="L1385">    var att0L = seg0L.prev;</span>
+<span class="fc" id="L1386">    var att0R = seg0R.next;</span>
+<span class="fc" id="L1387">    var att1L = seg1L.prev;</span>
+<span class="fc" id="L1388">    var att1R = seg1R.next;</span>
 
-<span class="fc bfc" id="L1400" title="All 2 branches covered.">    if (att0L == null) {</span>
-<span class="fc" id="L1401">      makeHead(seg1L);</span>
+<span class="fc bfc" id="L1390" title="All 2 branches covered.">    if (att0L == null) {</span>
+<span class="fc" id="L1391">      makeHead(seg1L);</span>
     } else {
-<span class="fc" id="L1403">      join(att0L, seg1L);</span>
+<span class="fc" id="L1393">      join(att0L, seg1L);</span>
     }
-<span class="fc bfc" id="L1405" title="All 2 branches covered.">    if (att0R == null) {</span>
-<span class="fc" id="L1406">      makeTail(seg1R);</span>
+<span class="fc bfc" id="L1395" title="All 2 branches covered.">    if (att0R == null) {</span>
+<span class="fc" id="L1396">      makeTail(seg1R);</span>
     } else {
-<span class="fc" id="L1408">      join(seg1R, att0R);</span>
-    }
-
-<span class="fc bfc" id="L1411" title="All 2 branches covered.">    if (att1L == null) {</span>
-<span class="fc" id="L1412">      other.makeHead(seg0L);</span>
-    } else {
-<span class="fc" id="L1414">      join(att1L, seg0L);</span>
-    }
-<span class="fc bfc" id="L1416" title="All 2 branches covered.">    if (att1R == null) {</span>
-<span class="fc" id="L1417">      other.makeTail(seg0R);</span>
-    } else {
-<span class="fc" id="L1419">      join(seg0R, att1R);</span>
+<span class="fc" id="L1398">      join(seg1R, att0R);</span>
     }
 
-<span class="fc" id="L1422">    sz = sz - len0 + len1;</span>
-<span class="fc" id="L1423">    other.sz = other.sz - len1 + len0;</span>
+<span class="fc bfc" id="L1401" title="All 2 branches covered.">    if (att1L == null) {</span>
+<span class="fc" id="L1402">      other.makeHead(seg0L);</span>
+    } else {
+<span class="fc" id="L1404">      join(att1L, seg0L);</span>
+    }
+<span class="fc bfc" id="L1406" title="All 2 branches covered.">    if (att1R == null) {</span>
+<span class="fc" id="L1407">      other.makeTail(seg0R);</span>
+    } else {
+<span class="fc" id="L1409">      join(seg0R, att1R);</span>
+    }
 
-<span class="fc" id="L1425">    return this;</span>
+<span class="fc" id="L1412">    sz = sz - len0 + len1;</span>
+<span class="fc" id="L1413">    other.sz = other.sz - len1 + len0;</span>
+
+<span class="fc" id="L1415">    return this;</span>
   }
 
   /**
@@ -1438,13 +1428,13 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
       WiredList&lt;? extends E&gt; other,
       int itsFromIndex,
       int itsToIndex) {
-<span class="fc" id="L1441">    checkInclusive(myIndex);</span>
-<span class="fc" id="L1442">    int len = Check.fromTo(other, itsFromIndex, itsToIndex);</span>
-<span class="fc" id="L1443">    Check.that(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
-<span class="fc bfc" id="L1444" title="All 2 branches covered.">    if (len &gt; 0) {</span>
-<span class="fc" id="L1445">      insert(myIndex, other.unlink(itsFromIndex, itsToIndex));</span>
+<span class="fc" id="L1431">    checkInclusive(myIndex);</span>
+<span class="fc" id="L1432">    int len = Check.fromTo(other, itsFromIndex, itsToIndex);</span>
+<span class="fc" id="L1433">    Check.that(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="fc bfc" id="L1434" title="All 2 branches covered.">    if (len &gt; 0) {</span>
+<span class="fc" id="L1435">      insert(myIndex, other.unlink(itsFromIndex, itsToIndex));</span>
     }
-<span class="fc" id="L1447">    return this;</span>
+<span class="fc" id="L1437">    return this;</span>
   }
 
   /**
@@ -1458,26 +1448,26 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @see #join(List)
    */
   public WiredList&lt;E&gt; attach(WiredList&lt;? extends E&gt; other) {
-<span class="fc" id="L1461">    Check.notNull(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
-<span class="fc bfc" id="L1462" title="All 2 branches covered.">    if (other.sz != 0) {</span>
-<span class="fc" id="L1463">      attach0(other);</span>
+<span class="fc" id="L1451">    Check.notNull(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="fc bfc" id="L1452" title="All 2 branches covered.">    if (other.sz != 0) {</span>
+<span class="fc" id="L1453">      attach0(other);</span>
     }
-<span class="fc" id="L1465">    return this;</span>
+<span class="fc" id="L1455">    return this;</span>
   }
 
   @SuppressWarnings({&quot;rawtypes&quot;, &quot;unchecked&quot;})
   private void attach0(WiredList other) {
-<span class="fc bfc" id="L1470" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L1471">      head = other.head;</span>
+<span class="fc bfc" id="L1460" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L1461">      head = other.head;</span>
     } else {
-<span class="fc" id="L1473">      join(tail, other.head);</span>
+<span class="fc" id="L1463">      join(tail, other.head);</span>
     }
-<span class="fc" id="L1475">    tail = other.tail;</span>
-<span class="fc" id="L1476">    sz += other.sz;</span>
-<span class="fc" id="L1477">    other.head = null;</span>
-<span class="fc" id="L1478">    other.tail = null;</span>
-<span class="fc" id="L1479">    other.sz = 0;</span>
-<span class="fc" id="L1480">  }</span>
+<span class="fc" id="L1465">    tail = other.tail;</span>
+<span class="fc" id="L1466">    sz += other.sz;</span>
+<span class="fc" id="L1467">    other.head = null;</span>
+<span class="fc" id="L1468">    other.tail = null;</span>
+<span class="fc" id="L1469">    other.sz = 0;</span>
+<span class="fc" id="L1470">  }</span>
 
   /**
    * Reorders the elements according to the specified criteria. The elements
@@ -1489,7 +1479,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; defragment(List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
-<span class="fc" id="L1492">    return defragment(true, criteria);</span>
+<span class="fc" id="L1482">    return defragment(true, criteria);</span>
   }
 
   /**
@@ -1505,19 +1495,19 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
   @SuppressWarnings({&quot;rawtypes&quot;})
   public WiredList&lt;E&gt; defragment(boolean keepRemainder,
       List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
-<span class="fc" id="L1508">    Check.that(criteria).is(deepNotEmpty());</span>
-<span class="fc" id="L1509">    List&lt;WiredList&lt;E&gt;&gt; groups = createGroups(criteria);</span>
-<span class="fc" id="L1510">    Chain rest = new Chain(head, tail, sz);</span>
-<span class="fc" id="L1511">    sz = 0;</span>
-<span class="fc bfc" id="L1512" title="All 2 branches covered.">    for (WiredList wl : groups) {</span>
-<span class="fc bfc" id="L1513" title="All 2 branches covered.">      if (!wl.isEmpty()) {</span>
-<span class="fc" id="L1514">        attach0(wl);</span>
+<span class="fc" id="L1498">    Check.that(criteria).is(deepNotEmpty());</span>
+<span class="fc" id="L1499">    List&lt;WiredList&lt;E&gt;&gt; groups = createGroups(criteria);</span>
+<span class="fc" id="L1500">    Chain rest = new Chain(head, tail, sz);</span>
+<span class="fc" id="L1501">    sz = 0;</span>
+<span class="fc bfc" id="L1502" title="All 2 branches covered.">    for (WiredList wl : groups) {</span>
+<span class="fc bfc" id="L1503" title="All 2 branches covered.">      if (!wl.isEmpty()) {</span>
+<span class="fc" id="L1504">        attach0(wl);</span>
       }
-<span class="fc" id="L1516">    }</span>
-<span class="fc bfc" id="L1517" title="All 4 branches covered.">    if (keepRemainder &amp;&amp; rest.length != 0) {</span>
-<span class="fc" id="L1518">      insert(sz, rest);</span>
+<span class="fc" id="L1506">    }</span>
+<span class="fc bfc" id="L1507" title="All 4 branches covered.">    if (keepRemainder &amp;&amp; rest.length != 0) {</span>
+<span class="fc" id="L1508">      insert(sz, rest);</span>
     }
-<span class="fc" id="L1520">    return this;</span>
+<span class="fc" id="L1510">    return this;</span>
   }
 
   /**
@@ -1531,7 +1521,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @see #group(List)
    */
   public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 group(Predicate&lt;? super E&gt; criterion) {
-<span class="nc" id="L1534">    return group(singletonList(criterion));</span>
+<span class="nc" id="L1524">    return group(singletonList(criterion));</span>
   }
 
   /**
@@ -1567,30 +1557,30 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @SuppressWarnings({&quot;unchecked&quot;})
   public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 group(List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
-<span class="fc" id="L1570">    Check.that(criteria).is(deepNotEmpty());</span>
-<span class="fc" id="L1571">    List&lt;WiredList&lt;E&gt;&gt; groups = createGroups(criteria);</span>
-<span class="fc" id="L1572">    var result = new WiredList&lt;&gt;(groups);</span>
-<span class="fc" id="L1573">    result.add(this);</span>
-<span class="fc" id="L1574">    return (L1) result;</span>
+<span class="fc" id="L1560">    Check.that(criteria).is(deepNotEmpty());</span>
+<span class="fc" id="L1561">    List&lt;WiredList&lt;E&gt;&gt; groups = createGroups(criteria);</span>
+<span class="fc" id="L1562">    var result = new WiredList&lt;&gt;(groups);</span>
+<span class="fc" id="L1563">    result.add(this);</span>
+<span class="fc" id="L1564">    return (L1) result;</span>
   }
 
   @SuppressWarnings({&quot;rawtypes&quot;})
   private WiredList&lt;WiredList&lt;E&gt;&gt; createGroups(List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
-<span class="fc" id="L1579">    WiredList&lt;WiredList&lt;E&gt;&gt; groups = new WiredList&lt;&gt;();</span>
-<span class="fc" id="L1580">    criteria.forEach(c -&gt; groups.append(new WiredList&lt;&gt;()));</span>
-<span class="fc bfc" id="L1581" title="All 2 branches covered.">    for (Node&lt;E&gt; node = head; node != null; ) {</span>
-<span class="fc" id="L1582">      var next = node.next;</span>
-<span class="fc bfc" id="L1583" title="All 2 branches covered.">      for (int i = 0; i &lt; criteria.size(); ++i) {</span>
-<span class="fc bfc" id="L1584" title="All 2 branches covered.">        if (criteria.get(i).test(node.val)) {</span>
-<span class="fc" id="L1585">          unlink(node);</span>
-<span class="fc" id="L1586">          WiredList wl = groups.get(i);</span>
-<span class="fc" id="L1587">          wl.insert(wl.size(), node);</span>
-<span class="fc" id="L1588">          break;</span>
+<span class="fc" id="L1569">    WiredList&lt;WiredList&lt;E&gt;&gt; groups = new WiredList&lt;&gt;();</span>
+<span class="fc" id="L1570">    criteria.forEach(c -&gt; groups.append(new WiredList&lt;&gt;()));</span>
+<span class="fc bfc" id="L1571" title="All 2 branches covered.">    for (Node&lt;E&gt; node = head; node != null; ) {</span>
+<span class="fc" id="L1572">      var next = node.next;</span>
+<span class="fc bfc" id="L1573" title="All 2 branches covered.">      for (int i = 0; i &lt; criteria.size(); ++i) {</span>
+<span class="fc bfc" id="L1574" title="All 2 branches covered.">        if (criteria.get(i).test(node.val)) {</span>
+<span class="fc" id="L1575">          unlink(node);</span>
+<span class="fc" id="L1576">          WiredList wl = groups.get(i);</span>
+<span class="fc" id="L1577">          wl.insert(wl.size(), node);</span>
+<span class="fc" id="L1578">          break;</span>
         }
       }
-<span class="fc" id="L1591">      node = next;</span>
-<span class="fc" id="L1592">    }</span>
-<span class="fc" id="L1593">    return groups;</span>
+<span class="fc" id="L1581">      node = next;</span>
+<span class="fc" id="L1582">    }</span>
+<span class="fc" id="L1583">    return groups;</span>
   }
 
   /**
@@ -1619,14 +1609,14 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @SuppressWarnings(&quot;unchecked&quot;)
   public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 partition(int size) {
-<span class="fc" id="L1622">    Check.that(size).is(gt(), 0);</span>
-<span class="fc" id="L1623">    WiredList&lt;WiredList&lt;E&gt;&gt; partitions = new WiredList&lt;&gt;();</span>
-<span class="fc bfc" id="L1624" title="All 2 branches covered.">    while (sz &gt; size) {</span>
-<span class="fc" id="L1625">      Chain chain = new Chain(head, nodeAt(size - 1), size);</span>
-<span class="fc" id="L1626">      partitions.append(new WiredList&lt;&gt;(unlink(chain)));</span>
-<span class="fc" id="L1627">    }</span>
-<span class="fc" id="L1628">    partitions.append(this);</span>
-<span class="fc" id="L1629">    return (L1) partitions;</span>
+<span class="fc" id="L1612">    Check.that(size).is(gt(), 0);</span>
+<span class="fc" id="L1613">    WiredList&lt;WiredList&lt;E&gt;&gt; partitions = new WiredList&lt;&gt;();</span>
+<span class="fc bfc" id="L1614" title="All 2 branches covered.">    while (sz &gt; size) {</span>
+<span class="fc" id="L1615">      Chain chain = new Chain(head, nodeAt(size - 1), size);</span>
+<span class="fc" id="L1616">      partitions.append(new WiredList&lt;&gt;(unlink(chain)));</span>
+<span class="fc" id="L1617">    }</span>
+<span class="fc" id="L1618">    partitions.append(this);</span>
+<span class="fc" id="L1619">    return (L1) partitions;</span>
   }
 
   /**
@@ -1652,8 +1642,8 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return a list containing the specified number of {@code WiredList} instances
    */
   public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 split(int numPartitions) {
-<span class="fc" id="L1655">    Check.that(numPartitions).is(gt(), 0);</span>
-<span class="fc" id="L1656">    return partition(divUp(sz, numPartitions));</span>
+<span class="fc" id="L1645">    Check.that(numPartitions).is(gt(), 0);</span>
+<span class="fc" id="L1646">    return partition(divUp(sz, numPartitions));</span>
   }
 
   /**
@@ -1670,26 +1660,27 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    *     that does not satisfy the condition
    */
   public WiredList&lt;E&gt; lchop(Predicate&lt;? super E&gt; condition) {
-<span class="fc" id="L1673">    Check.notNull(condition);</span>
-<span class="fc bfc" id="L1674" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L1675">      return this;</span>
+<span class="fc" id="L1663">    Check.notNull(condition);</span>
+<span class="fc bfc" id="L1664" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L1665">      return this;</span>
     }
-<span class="fc" id="L1677">    Node&lt;E&gt; first = head;</span>
-<span class="fc" id="L1678">    Node&lt;E&gt; last = justBeforeHead();</span>
-<span class="fc" id="L1679">    int len = 0;</span>
-<span class="fc bfc" id="L1680" title="All 4 branches covered.">    for (; condition.test(last.next.val) &amp;&amp; ++len != sz; last = last.next)</span>
+<span class="fc" id="L1667">    Node&lt;E&gt; first = head;</span>
+<span class="fc" id="L1668">    Node&lt;E&gt; last = justBeforeHead();</span>
+<span class="fc" id="L1669">    int len = 0;</span>
+<span class="fc bfc" id="L1670" title="All 4 branches covered.">    for (; condition.test(last.next.val) &amp;&amp; ++len != sz; last = last.next)</span>
       ;
-<span class="fc bfc" id="L1682" title="All 2 branches covered.">    if (len == sz) {</span>
-<span class="fc" id="L1683">      return this;</span>
+<span class="fc bfc" id="L1672" title="All 2 branches covered.">    if (len == sz) {</span>
+<span class="fc" id="L1673">      return this;</span>
     }
-<span class="fc" id="L1685">    return new WiredList&lt;&gt;(unlink(new Chain(first, last, len)));</span>
+<span class="fc" id="L1675">    return new WiredList&lt;&gt;(unlink(new Chain(first, last, len)));</span>
   }
 
   /**
    * Removes and returns a segment from the end of the list. The segment includes all
    * elements following the &lt;i&gt;last&lt;/i&gt; element that does &lt;i&gt;not&lt;/i&gt; satisfy the
    * specified condition. In other words, all elements in the returned list
-   * &lt;i&gt;will&lt;/i&gt; satisfy the condition. If the condition is never satisfied, the list
+   * &lt;i&gt;will&lt;/i&gt; satisfy the condition. If the condition is never satisfied, the
+   * list
    * remains unchanged and an empty list is returned. If &lt;i&gt;all&lt;/i&gt; elements satisfy
    * the condition, the list remains unchanged and is itself returned.
    *
@@ -1699,19 +1690,19 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    *     that does not satisfy the condition
    */
   public WiredList&lt;E&gt; rchop(Predicate&lt;? super E&gt; criterion) {
-<span class="fc" id="L1702">    Check.notNull(criterion);</span>
-<span class="fc bfc" id="L1703" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L1704">      return this;</span>
+<span class="fc" id="L1693">    Check.notNull(criterion);</span>
+<span class="fc bfc" id="L1694" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L1695">      return this;</span>
     }
-<span class="fc" id="L1706">    Node&lt;E&gt; last = tail;</span>
-<span class="fc" id="L1707">    Node&lt;E&gt; first = justAfterTail();</span>
-<span class="fc" id="L1708">    int len = 0;</span>
-<span class="fc bfc" id="L1709" title="All 4 branches covered.">    for (; criterion.test(first.prev.val) &amp;&amp; ++len != sz; first = first.prev)</span>
+<span class="fc" id="L1697">    Node&lt;E&gt; last = tail;</span>
+<span class="fc" id="L1698">    Node&lt;E&gt; first = justAfterTail();</span>
+<span class="fc" id="L1699">    int len = 0;</span>
+<span class="fc bfc" id="L1700" title="All 4 branches covered.">    for (; criterion.test(first.prev.val) &amp;&amp; ++len != sz; first = first.prev)</span>
       ;
-<span class="fc bfc" id="L1711" title="All 2 branches covered.">    if (len == sz) {</span>
-<span class="fc" id="L1712">      return this;</span>
+<span class="fc bfc" id="L1702" title="All 2 branches covered.">    if (len == sz) {</span>
+<span class="fc" id="L1703">      return this;</span>
     }
-<span class="fc" id="L1714">    return new WiredList&lt;&gt;(unlink(new Chain(first, last, len)));</span>
+<span class="fc" id="L1705">    return new WiredList&lt;&gt;(unlink(new Chain(first, last, len)));</span>
   }
 
   /**
@@ -1720,18 +1711,18 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; reverse() {
-<span class="fc bfc" id="L1723" title="All 2 branches covered.">    if (sz &gt; 1) {</span>
-<span class="fc" id="L1724">      var x = head;</span>
-<span class="fc" id="L1725">      var y = tail;</span>
-<span class="fc bfc" id="L1726" title="All 2 branches covered.">      for (int i = 0; i &lt; sz / 2; ++i) {</span>
-<span class="fc" id="L1727">        E tmp = x.val;</span>
-<span class="fc" id="L1728">        x.val = y.val;</span>
-<span class="fc" id="L1729">        y.val = tmp;</span>
-<span class="fc" id="L1730">        x = x.next;</span>
-<span class="fc" id="L1731">        y = y.prev;</span>
+<span class="fc bfc" id="L1714" title="All 2 branches covered.">    if (sz &gt; 1) {</span>
+<span class="fc" id="L1715">      var x = head;</span>
+<span class="fc" id="L1716">      var y = tail;</span>
+<span class="fc bfc" id="L1717" title="All 2 branches covered.">      for (int i = 0; i &lt; sz / 2; ++i) {</span>
+<span class="fc" id="L1718">        E tmp = x.val;</span>
+<span class="fc" id="L1719">        x.val = y.val;</span>
+<span class="fc" id="L1720">        y.val = tmp;</span>
+<span class="fc" id="L1721">        x = x.next;</span>
+<span class="fc" id="L1722">        y = y.prev;</span>
       }
     }
-<span class="fc" id="L1734">    return this;</span>
+<span class="fc" id="L1725">    return this;</span>
   }
 
   /**
@@ -1745,55 +1736,55 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; move(int fromIndex, int toIndex, int newFromIndex) {
-<span class="fc" id="L1748">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
-<span class="fc" id="L1749">    Check.that(newFromIndex, &quot;target index&quot;).is(indexInclusiveOf(), this);</span>
-<span class="pc bpc" id="L1750" title="1 of 2 branches missed.">    if (len != 0) {</span>
-<span class="fc bfc" id="L1751" title="All 2 branches covered.">      if (newFromIndex &gt; fromIndex) {</span>
-<span class="fc" id="L1752">        moveToTail(fromIndex, toIndex, newFromIndex);</span>
-<span class="pc bpc" id="L1753" title="1 of 2 branches missed.">      } else if (newFromIndex &lt; fromIndex) {</span>
-<span class="fc" id="L1754">        moveToHead(fromIndex, toIndex, newFromIndex);</span>
+<span class="fc" id="L1739">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="fc" id="L1740">    Check.that(newFromIndex, &quot;target index&quot;).is(indexInclusiveOf(), this);</span>
+<span class="pc bpc" id="L1741" title="1 of 2 branches missed.">    if (len != 0) {</span>
+<span class="fc bfc" id="L1742" title="All 2 branches covered.">      if (newFromIndex &gt; fromIndex) {</span>
+<span class="fc" id="L1743">        moveToTail(fromIndex, toIndex, newFromIndex);</span>
+<span class="pc bpc" id="L1744" title="1 of 2 branches missed.">      } else if (newFromIndex &lt; fromIndex) {</span>
+<span class="fc" id="L1745">        moveToHead(fromIndex, toIndex, newFromIndex);</span>
       }
     }
-<span class="fc" id="L1757">    return this;</span>
+<span class="fc" id="L1748">    return this;</span>
   }
 
   private void moveToTail(int from, int to, int newFrom) {
-<span class="fc" id="L1761">    int indexOfLast = to - 1;</span>
-<span class="fc" id="L1762">    int steps = newFrom - from;</span>
-<span class="fc" id="L1763">    Node&lt;E&gt; first = nodeAt(from);</span>
-<span class="fc" id="L1764">    Node&lt;E&gt; last = nodeAfter(first, from, indexOfLast);</span>
-<span class="fc" id="L1765">    Node&lt;E&gt; insertAfter = nodeAfter(last, indexOfLast, indexOfLast + steps);</span>
-<span class="fc bfc" id="L1766" title="All 2 branches covered.">    if (first == head) {</span>
-<span class="fc" id="L1767">      makeHead(last.next);</span>
+<span class="fc" id="L1752">    int indexOfLast = to - 1;</span>
+<span class="fc" id="L1753">    int steps = newFrom - from;</span>
+<span class="fc" id="L1754">    Node&lt;E&gt; first = nodeAt(from);</span>
+<span class="fc" id="L1755">    Node&lt;E&gt; last = nodeAfter(first, from, indexOfLast);</span>
+<span class="fc" id="L1756">    Node&lt;E&gt; insertAfter = nodeAfter(last, indexOfLast, indexOfLast + steps);</span>
+<span class="fc bfc" id="L1757" title="All 2 branches covered.">    if (first == head) {</span>
+<span class="fc" id="L1758">      makeHead(last.next);</span>
     } else {
-<span class="fc" id="L1769">      join(first.prev, last.next);</span>
+<span class="fc" id="L1760">      join(first.prev, last.next);</span>
     }
-<span class="fc bfc" id="L1771" title="All 2 branches covered.">    if (insertAfter == tail) {</span>
-<span class="fc" id="L1772">      join(insertAfter, first);</span>
-<span class="fc" id="L1773">      makeTail(last);</span>
+<span class="fc bfc" id="L1762" title="All 2 branches covered.">    if (insertAfter == tail) {</span>
+<span class="fc" id="L1763">      join(insertAfter, first);</span>
+<span class="fc" id="L1764">      makeTail(last);</span>
     } else {
-<span class="fc" id="L1775">      join(last, insertAfter.next);</span>
-<span class="fc" id="L1776">      join(insertAfter, first);</span>
+<span class="fc" id="L1766">      join(last, insertAfter.next);</span>
+<span class="fc" id="L1767">      join(insertAfter, first);</span>
     }
-<span class="fc" id="L1778">  }</span>
+<span class="fc" id="L1769">  }</span>
 
   private void moveToHead(int from, int to, int newFrom) {
-<span class="fc" id="L1781">    Node&lt;E&gt; first = nodeAt(from);</span>
-<span class="fc" id="L1782">    Node&lt;E&gt; last = nodeAfter(first, from, to - 1);</span>
-<span class="fc" id="L1783">    Node&lt;E&gt; insertBefore = nodeBefore(first, from, newFrom);</span>
-<span class="fc bfc" id="L1784" title="All 2 branches covered.">    if (last == tail) {</span>
-<span class="fc" id="L1785">      makeTail(first.prev);</span>
+<span class="fc" id="L1772">    Node&lt;E&gt; first = nodeAt(from);</span>
+<span class="fc" id="L1773">    Node&lt;E&gt; last = nodeAfter(first, from, to - 1);</span>
+<span class="fc" id="L1774">    Node&lt;E&gt; insertBefore = nodeBefore(first, from, newFrom);</span>
+<span class="fc bfc" id="L1775" title="All 2 branches covered.">    if (last == tail) {</span>
+<span class="fc" id="L1776">      makeTail(first.prev);</span>
     } else {
-<span class="fc" id="L1787">      join(first.prev, last.next);</span>
+<span class="fc" id="L1778">      join(first.prev, last.next);</span>
     }
-<span class="fc bfc" id="L1789" title="All 2 branches covered.">    if (insertBefore == head) {</span>
-<span class="fc" id="L1790">      join(last, insertBefore);</span>
-<span class="fc" id="L1791">      makeHead(first);</span>
+<span class="fc bfc" id="L1780" title="All 2 branches covered.">    if (insertBefore == head) {</span>
+<span class="fc" id="L1781">      join(last, insertBefore);</span>
+<span class="fc" id="L1782">      makeHead(first);</span>
     } else {
-<span class="fc" id="L1793">      join(insertBefore.prev, first);</span>
-<span class="fc" id="L1794">      join(last, insertBefore);</span>
+<span class="fc" id="L1784">      join(insertBefore.prev, first);</span>
+<span class="fc" id="L1785">      join(last, insertBefore);</span>
     }
-<span class="fc" id="L1796">  }</span>
+<span class="fc" id="L1787">  }</span>
 
   /**
    * Returns an array containing all elements in this list in proper sequence (from
@@ -1804,15 +1795,15 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public Object[] toArray() {
-<span class="fc bfc" id="L1807" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L1808">      return EMPTY_OBJECT_ARRAY;</span>
+<span class="fc bfc" id="L1798" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L1799">      return EMPTY_OBJECT_ARRAY;</span>
     }
-<span class="fc" id="L1810">    Object[] result = new Object[sz];</span>
-<span class="fc" id="L1811">    int i = 0;</span>
-<span class="fc bfc" id="L1812" title="All 2 branches covered.">    for (E val : this) {</span>
-<span class="fc" id="L1813">      result[i++] = val;</span>
-<span class="fc" id="L1814">    }</span>
-<span class="fc" id="L1815">    return result;</span>
+<span class="fc" id="L1801">    Object[] result = new Object[sz];</span>
+<span class="fc" id="L1802">    int i = 0;</span>
+<span class="fc bfc" id="L1803" title="All 2 branches covered.">    for (E val : this) {</span>
+<span class="fc" id="L1804">      result[i++] = val;</span>
+<span class="fc" id="L1805">    }</span>
+<span class="fc" id="L1806">    return result;</span>
   }
 
   /**
@@ -1831,19 +1822,19 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
   @Override
   @SuppressWarnings({&quot;unchecked&quot;})
   public &lt;T&gt; T[] toArray(T[] a) {
-<span class="fc" id="L1834">    Check.notNull(a);</span>
-<span class="fc bfc" id="L1835" title="All 2 branches covered.">    if (a.length &lt; sz) {</span>
-<span class="fc" id="L1836">      a = (T[]) InvokeMethods.newArray(a.getClass(), sz);</span>
+<span class="fc" id="L1825">    Check.notNull(a);</span>
+<span class="fc bfc" id="L1826" title="All 2 branches covered.">    if (a.length &lt; sz) {</span>
+<span class="fc" id="L1827">      a = (T[]) InvokeMethods.newArray(a.getClass(), sz);</span>
     }
-<span class="fc" id="L1838">    int i = 0;</span>
-<span class="fc" id="L1839">    Object[] result = a;</span>
-<span class="fc bfc" id="L1840" title="All 2 branches covered.">    for (E val : this) {</span>
-<span class="fc" id="L1841">      result[i++] = val;</span>
-<span class="fc" id="L1842">    }</span>
-<span class="fc bfc" id="L1843" title="All 2 branches covered.">    if (a.length &gt; sz) {</span>
-<span class="fc" id="L1844">      a[sz] = null;</span>
+<span class="fc" id="L1829">    int i = 0;</span>
+<span class="fc" id="L1830">    Object[] result = a;</span>
+<span class="fc bfc" id="L1831" title="All 2 branches covered.">    for (E val : this) {</span>
+<span class="fc" id="L1832">      result[i++] = val;</span>
+<span class="fc" id="L1833">    }</span>
+<span class="fc bfc" id="L1834" title="All 2 branches covered.">    if (a.length &gt; sz) {</span>
+<span class="fc" id="L1835">      a[sz] = null;</span>
     }
-<span class="fc" id="L1846">    return a;</span>
+<span class="fc" id="L1837">    return a;</span>
   }
 
   /**
@@ -1852,18 +1843,18 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public void clear() {
-<span class="pc bpc" id="L1855" title="1 of 2 branches missed.">    if (sz != 0) {</span>
-<span class="fc" id="L1856">      var curr = head;</span>
+<span class="pc bpc" id="L1846" title="1 of 2 branches missed.">    if (sz != 0) {</span>
+<span class="fc" id="L1847">      var curr = head;</span>
       do {
-<span class="fc" id="L1858">        var next = curr.next;</span>
-<span class="fc" id="L1859">        curr.val = null;</span>
-<span class="fc" id="L1860">        curr.prev = curr.next = null;</span>
-<span class="fc" id="L1861">        curr = next;</span>
-<span class="fc bfc" id="L1862" title="All 2 branches covered.">      } while (curr != tail);</span>
-<span class="fc" id="L1863">      head = tail = null;</span>
-<span class="fc" id="L1864">      sz = 0;</span>
+<span class="fc" id="L1849">        var next = curr.next;</span>
+<span class="fc" id="L1850">        curr.val = null;</span>
+<span class="fc" id="L1851">        curr.prev = curr.next = null;</span>
+<span class="fc" id="L1852">        curr = next;</span>
+<span class="fc bfc" id="L1853" title="All 2 branches covered.">      } while (curr != tail);</span>
+<span class="fc" id="L1854">      head = tail = null;</span>
+<span class="fc" id="L1855">      sz = 0;</span>
     }
-<span class="fc" id="L1866">  }</span>
+<span class="fc" id="L1857">  }</span>
 
   /**
    * Returns an {@code Iterator} that traverses the list from the first element to
@@ -1874,21 +1865,21 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public Iterator&lt;E&gt; iterator() {
-<span class="fc bfc" id="L1877" title="All 2 branches covered.">    return sz == 0 ? emptyIterator() : new Iterator&lt;&gt;() {</span>
+<span class="fc bfc" id="L1868" title="All 2 branches covered.">    return sz == 0 ? emptyIterator() : new Iterator&lt;&gt;() {</span>
 
-<span class="fc" id="L1879">      private Node&lt;E&gt; curr = justBeforeHead();</span>
+<span class="fc" id="L1870">      private Node&lt;E&gt; curr = justBeforeHead();</span>
 
       @Override
       public boolean hasNext() {
-<span class="fc bfc" id="L1883" title="All 2 branches covered.">        return curr != tail;</span>
+<span class="fc bfc" id="L1874" title="All 2 branches covered.">        return curr != tail;</span>
       }
 
       @Override
       public E next() {
-<span class="fc" id="L1888">        Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
-<span class="fc" id="L1889">        return Check.that(curr = curr.next)</span>
-<span class="fc" id="L1890">            .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L1891">            .ok(Node::value);</span>
+<span class="fc" id="L1879">        Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
+<span class="fc" id="L1880">        return Check.that(curr = curr.next)</span>
+<span class="fc" id="L1881">            .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L1882">            .ok(Node::value);</span>
       }
     };
   }
@@ -1901,21 +1892,21 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    *     first
    */
   public Iterator&lt;E&gt; reverseIterator() {
-<span class="fc bfc" id="L1904" title="All 2 branches covered.">    return sz == 0 ? emptyIterator() : new Iterator&lt;&gt;() {</span>
+<span class="fc bfc" id="L1895" title="All 2 branches covered.">    return sz == 0 ? emptyIterator() : new Iterator&lt;&gt;() {</span>
 
-<span class="fc" id="L1906">      private Node&lt;E&gt; curr = justAfterTail();</span>
+<span class="fc" id="L1897">      private Node&lt;E&gt; curr = justAfterTail();</span>
 
       @Override
       public boolean hasNext() {
-<span class="fc bfc" id="L1910" title="All 2 branches covered.">        return curr != head;</span>
+<span class="fc bfc" id="L1901" title="All 2 branches covered.">        return curr != head;</span>
       }
 
       @Override
       public E next() {
-<span class="fc" id="L1915">        Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
-<span class="fc" id="L1916">        return Check.that(curr = curr.prev)</span>
-<span class="fc" id="L1917">            .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L1918">            .ok(Node::value);</span>
+<span class="fc" id="L1906">        Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
+<span class="fc" id="L1907">        return Check.that(curr = curr.prev)</span>
+<span class="fc" id="L1908">            .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L1909">            .ok(Node::value);</span>
       }
     };
   }
@@ -1928,7 +1919,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    *     to the last
    */
   public WiredIterator&lt;E&gt; wiredIterator() {
-<span class="fc" id="L1931">    return new ForwardWiredIterator();</span>
+<span class="fc" id="L1922">    return new ForwardWiredIterator();</span>
   }
 
   /**
@@ -1941,7 +1932,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    *     to the last, or the other way round
    */
   public WiredIterator&lt;E&gt; wiredIterator(boolean reverse) {
-<span class="fc bfc" id="L1944" title="All 2 branches covered.">    return reverse ? new ReverseWiredIterator() : new ForwardWiredIterator();</span>
+<span class="fc bfc" id="L1935" title="All 2 branches covered.">    return reverse ? new ReverseWiredIterator() : new ForwardWiredIterator();</span>
   }
 
   /**
@@ -1951,7 +1942,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public ListIterator&lt;E&gt; listIterator() {
-<span class="fc bfc" id="L1954" title="All 2 branches covered.">    return isEmpty() ? emptyListIterator() : new ListItr();</span>
+<span class="fc bfc" id="L1945" title="All 2 branches covered.">    return isEmpty() ? emptyListIterator() : new ListItr();</span>
   }
 
   /**
@@ -1971,11 +1962,11 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public ListIterator&lt;E&gt; listIterator(int index) {
-<span class="fc" id="L1974">    checkInclusive(index);</span>
-<span class="pc bpc" id="L1975" title="1 of 2 branches missed.">    if (isEmpty()) {</span>
-<span class="nc" id="L1976">      return emptyListIterator();</span>
+<span class="fc" id="L1965">    checkInclusive(index);</span>
+<span class="pc bpc" id="L1966" title="1 of 2 branches missed.">    if (isEmpty()) {</span>
+<span class="nc" id="L1967">      return emptyListIterator();</span>
     }
-<span class="fc" id="L1978">    return new ListItr(index);</span>
+<span class="fc" id="L1969">    return new ListItr(index);</span>
   }
 
   /**
@@ -1993,23 +1984,23 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public boolean equals(Object o) {
-<span class="fc bfc" id="L1996" title="All 2 branches covered.">    if (this == o) {</span>
-<span class="fc" id="L1997">      return true;</span>
-<span class="fc bfc" id="L1998" title="All 2 branches covered.">    } else if (o instanceof List&lt;?&gt; l) {</span>
-<span class="fc bfc" id="L1999" title="All 2 branches covered.">      if (sz == 0) {</span>
-<span class="pc bpc" id="L2000" title="1 of 2 branches missed.">        return l.size() == 0;</span>
-<span class="fc bfc" id="L2001" title="All 2 branches covered.">      } else if (sz == l.size()) {</span>
-<span class="fc" id="L2002">        var x = head;</span>
-<span class="fc bfc" id="L2003" title="All 2 branches covered.">        for (Object obj : l) {</span>
-<span class="fc bfc" id="L2004" title="All 2 branches covered.">          if (!Objects.equals(obj, x.val)) {</span>
-<span class="fc" id="L2005">            return false;</span>
+<span class="fc bfc" id="L1987" title="All 2 branches covered.">    if (this == o) {</span>
+<span class="fc" id="L1988">      return true;</span>
+<span class="fc bfc" id="L1989" title="All 2 branches covered.">    } else if (o instanceof List&lt;?&gt; l) {</span>
+<span class="fc bfc" id="L1990" title="All 2 branches covered.">      if (sz == 0) {</span>
+<span class="pc bpc" id="L1991" title="1 of 2 branches missed.">        return l.size() == 0;</span>
+<span class="fc bfc" id="L1992" title="All 2 branches covered.">      } else if (sz == l.size()) {</span>
+<span class="fc" id="L1993">        var x = head;</span>
+<span class="fc bfc" id="L1994" title="All 2 branches covered.">        for (Object obj : l) {</span>
+<span class="fc bfc" id="L1995" title="All 2 branches covered.">          if (!Objects.equals(obj, x.val)) {</span>
+<span class="fc" id="L1996">            return false;</span>
           }
-<span class="fc" id="L2007">          x = x.next;</span>
-<span class="fc" id="L2008">        }</span>
-<span class="fc" id="L2009">        return true;</span>
+<span class="fc" id="L1998">          x = x.next;</span>
+<span class="fc" id="L1999">        }</span>
+<span class="fc" id="L2000">        return true;</span>
       }
     }
-<span class="fc" id="L2012">    return false;</span>
+<span class="fc" id="L2003">    return false;</span>
   }
 
   /**
@@ -2021,11 +2012,11 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public int hashCode() {
-<span class="nc" id="L2024">    int hash = 1;</span>
-<span class="nc bnc" id="L2025" title="All 2 branches missed.">    for (E val : this) {</span>
-<span class="nc" id="L2026">      hash = 31 * hash + Objects.hashCode(val);</span>
-<span class="nc" id="L2027">    }</span>
-<span class="nc" id="L2028">    return hash;</span>
+<span class="nc" id="L2015">    int hash = 1;</span>
+<span class="nc bnc" id="L2016" title="All 2 branches missed.">    for (E val : this) {</span>
+<span class="nc" id="L2017">      hash = 31 * hash + Objects.hashCode(val);</span>
+<span class="nc" id="L2018">    }</span>
+<span class="nc" id="L2019">    return hash;</span>
   }
 
   /**
@@ -2035,7 +2026,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public String toString() {
-<span class="fc" id="L2038">    return '[' + CollectionMethods.implode(this) + ']';</span>
+<span class="fc" id="L2029">    return '[' + CollectionMethods.implode(this) + ']';</span>
   }
 
   /**
@@ -2049,7 +2040,7 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   @Override
   public List&lt;E&gt; subList(int fromIndex, int toIndex) {
-<span class="nc" id="L2052">    throw new UnsupportedOperationException();</span>
+<span class="nc" id="L2043">    throw new UnsupportedOperationException();</span>
   }
 
   ////////////////////////////////////////////////////////////////
@@ -2060,97 +2051,97 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
 
   @SuppressWarnings({&quot;unchecked&quot;, &quot;rawtypes&quot;})
   private void insert(int index, Node node) {
-<span class="fc bfc" id="L2063" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L2064">      makeHead(node);</span>
-<span class="fc" id="L2065">      makeTail(node);</span>
-<span class="fc bfc" id="L2066" title="All 2 branches covered.">    } else if (index == 0) {</span>
-<span class="fc" id="L2067">      join(node, head);</span>
-<span class="fc" id="L2068">      makeHead(node);</span>
-<span class="fc bfc" id="L2069" title="All 2 branches covered.">    } else if (index == sz) {</span>
-<span class="fc" id="L2070">      join(tail, node);</span>
-<span class="fc" id="L2071">      makeTail(node);</span>
+<span class="fc bfc" id="L2054" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L2055">      makeHead(node);</span>
+<span class="fc" id="L2056">      makeTail(node);</span>
+<span class="fc bfc" id="L2057" title="All 2 branches covered.">    } else if (index == 0) {</span>
+<span class="fc" id="L2058">      join(node, head);</span>
+<span class="fc" id="L2059">      makeHead(node);</span>
+<span class="fc bfc" id="L2060" title="All 2 branches covered.">    } else if (index == sz) {</span>
+<span class="fc" id="L2061">      join(tail, node);</span>
+<span class="fc" id="L2062">      makeTail(node);</span>
     } else {
-<span class="fc" id="L2073">      var x = nodeAt(index);</span>
-<span class="fc" id="L2074">      join(x.prev, node);</span>
-<span class="fc" id="L2075">      join(node, x);</span>
+<span class="fc" id="L2064">      var x = nodeAt(index);</span>
+<span class="fc" id="L2065">      join(x.prev, node);</span>
+<span class="fc" id="L2066">      join(node, x);</span>
     }
-<span class="fc" id="L2077">    ++sz;</span>
-<span class="fc" id="L2078">  }</span>
+<span class="fc" id="L2068">    ++sz;</span>
+<span class="fc" id="L2069">  }</span>
 
   @SuppressWarnings(&quot;unchecked&quot;)
   private void insert(int index, Chain chain) {
-<span class="fc bfc" id="L2082" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L2083">      makeHead(chain.head);</span>
-<span class="fc" id="L2084">      makeTail(chain.tail);</span>
-<span class="fc bfc" id="L2085" title="All 2 branches covered.">    } else if (index == 0) {</span>
-<span class="fc" id="L2086">      join(chain.tail, head);</span>
-<span class="fc" id="L2087">      makeHead(chain.head);</span>
-<span class="fc bfc" id="L2088" title="All 2 branches covered.">    } else if (index == sz) {</span>
-<span class="fc" id="L2089">      join(tail, chain.head);</span>
-<span class="fc" id="L2090">      makeTail(chain.tail);</span>
+<span class="fc bfc" id="L2073" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L2074">      makeHead(chain.head);</span>
+<span class="fc" id="L2075">      makeTail(chain.tail);</span>
+<span class="fc bfc" id="L2076" title="All 2 branches covered.">    } else if (index == 0) {</span>
+<span class="fc" id="L2077">      join(chain.tail, head);</span>
+<span class="fc" id="L2078">      makeHead(chain.head);</span>
+<span class="fc bfc" id="L2079" title="All 2 branches covered.">    } else if (index == sz) {</span>
+<span class="fc" id="L2080">      join(tail, chain.head);</span>
+<span class="fc" id="L2081">      makeTail(chain.tail);</span>
     } else {
-<span class="fc" id="L2092">      var node = nodeAt(index);</span>
-<span class="fc" id="L2093">      join(node.prev, chain.head);</span>
-<span class="fc bfc" id="L2094" title="All 2 branches covered.">      if (chain.length == 1) {</span>
-<span class="fc" id="L2095">        join(chain.head, node);</span>
+<span class="fc" id="L2083">      var node = nodeAt(index);</span>
+<span class="fc" id="L2084">      join(node.prev, chain.head);</span>
+<span class="fc bfc" id="L2085" title="All 2 branches covered.">      if (chain.length == 1) {</span>
+<span class="fc" id="L2086">        join(chain.head, node);</span>
       } else {
-<span class="fc" id="L2097">        join(chain.tail, node);</span>
+<span class="fc" id="L2088">        join(chain.tail, node);</span>
       }
     }
-<span class="fc" id="L2100">    sz += chain.length;</span>
-<span class="fc" id="L2101">  }</span>
+<span class="fc" id="L2091">    sz += chain.length;</span>
+<span class="fc" id="L2092">  }</span>
 
   // Make garbage collector happy
   private E destroy(Node&lt;E&gt; node) {
-<span class="fc" id="L2105">    E val = node.val;</span>
-<span class="fc" id="L2106">    unlink(node);</span>
-<span class="fc" id="L2107">    node.val = null;</span>
-<span class="fc" id="L2108">    node.prev = node.next = null;</span>
-<span class="fc" id="L2109">    return val;</span>
+<span class="fc" id="L2096">    E val = node.val;</span>
+<span class="fc" id="L2097">    unlink(node);</span>
+<span class="fc" id="L2098">    node.val = null;</span>
+<span class="fc" id="L2099">    node.prev = node.next = null;</span>
+<span class="fc" id="L2100">    return val;</span>
   }
 
   private void unlink(Node&lt;E&gt; node) {
-<span class="fc bfc" id="L2113" title="All 2 branches covered.">    if (sz == 1) {</span>
-<span class="fc" id="L2114">      head = tail = null;</span>
-<span class="fc bfc" id="L2115" title="All 2 branches covered.">    } else if (node == head) {</span>
-<span class="fc" id="L2116">      makeHead(node.next);</span>
-<span class="fc bfc" id="L2117" title="All 2 branches covered.">    } else if (node == tail) {</span>
-<span class="fc" id="L2118">      makeTail(node.prev);</span>
+<span class="fc bfc" id="L2104" title="All 2 branches covered.">    if (sz == 1) {</span>
+<span class="fc" id="L2105">      head = tail = null;</span>
+<span class="fc bfc" id="L2106" title="All 2 branches covered.">    } else if (node == head) {</span>
+<span class="fc" id="L2107">      makeHead(node.next);</span>
+<span class="fc bfc" id="L2108" title="All 2 branches covered.">    } else if (node == tail) {</span>
+<span class="fc" id="L2109">      makeTail(node.prev);</span>
     } else {
-<span class="fc" id="L2120">      join(node.prev, node.next);</span>
+<span class="fc" id="L2111">      join(node.prev, node.next);</span>
     }
-<span class="fc" id="L2122">    --sz;</span>
-<span class="fc" id="L2123">  }</span>
+<span class="fc" id="L2113">    --sz;</span>
+<span class="fc" id="L2114">  }</span>
 
   private Chain unlink(int from, int to) {
-<span class="fc" id="L2126">    var first = nodeAt(from);</span>
-<span class="fc" id="L2127">    var last = nodeAfter(first, from, to - 1);</span>
-<span class="fc" id="L2128">    int len = to - from;</span>
-<span class="fc" id="L2129">    return unlink(new Chain(first, last, len));</span>
+<span class="fc" id="L2117">    var first = nodeAt(from);</span>
+<span class="fc" id="L2118">    var last = nodeAfter(first, from, to - 1);</span>
+<span class="fc" id="L2119">    int len = to - from;</span>
+<span class="fc" id="L2120">    return unlink(new Chain(first, last, len));</span>
   }
 
   @SuppressWarnings(&quot;unchecked&quot;)
   private Chain unlink(Chain chain) {
-<span class="fc bfc" id="L2134" title="All 2 branches covered.">    if (chain.length == sz) {</span>
-<span class="fc" id="L2135">      head = tail = null;</span>
-<span class="fc bfc" id="L2136" title="All 2 branches covered.">    } else if (chain.head == head) {</span>
-<span class="fc" id="L2137">      makeHead(chain.tail.next);</span>
-<span class="fc bfc" id="L2138" title="All 2 branches covered.">    } else if (chain.tail == tail) {</span>
-<span class="fc" id="L2139">      makeTail(chain.head.prev);</span>
+<span class="fc bfc" id="L2125" title="All 2 branches covered.">    if (chain.length == sz) {</span>
+<span class="fc" id="L2126">      head = tail = null;</span>
+<span class="fc bfc" id="L2127" title="All 2 branches covered.">    } else if (chain.head == head) {</span>
+<span class="fc" id="L2128">      makeHead(chain.tail.next);</span>
+<span class="fc bfc" id="L2129" title="All 2 branches covered.">    } else if (chain.tail == tail) {</span>
+<span class="fc" id="L2130">      makeTail(chain.head.prev);</span>
     } else {
-<span class="fc" id="L2141">      join(chain.head.prev, chain.tail.next);</span>
+<span class="fc" id="L2132">      join(chain.head.prev, chain.tail.next);</span>
     }
-<span class="fc" id="L2143">    sz -= chain.length;</span>
-<span class="fc" id="L2144">    return chain;</span>
+<span class="fc" id="L2134">    sz -= chain.length;</span>
+<span class="fc" id="L2135">    return chain;</span>
   }
 
   /**
    * Validates the index and then returns {@link #nodeAt(int)}.
    */
   private Node&lt;E&gt; node(int index) {
-<span class="fc" id="L2151">    return Check.that(index)</span>
-<span class="fc" id="L2152">        .is(indexInclusiveOf(), this, indexOutOfBounds(index))</span>
-<span class="fc" id="L2153">        .mapToObj(this::nodeAt);</span>
+<span class="fc" id="L2142">    return Check.that(index)</span>
+<span class="fc" id="L2143">        .is(indexInclusiveOf(), this, indexOutOfBounds(index))</span>
+<span class="fc" id="L2144">        .mapToObj(this::nodeAt);</span>
   }
 
   /**
@@ -2158,18 +2149,18 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
    */
   // @VisibleForTesting
   private Node&lt;E&gt; nodeAt(int index) {
-<span class="fc bfc" id="L2161" title="All 2 branches covered.">    if (index &lt; (sz &gt;&gt; 1)) {</span>
-<span class="fc" id="L2162">      Node&lt;E&gt; n = head;</span>
-<span class="fc bfc" id="L2163" title="All 2 branches covered.">      for (int i = 0; i &lt; index; ++i) {</span>
-<span class="fc" id="L2164">        n = n.next;</span>
+<span class="fc bfc" id="L2152" title="All 2 branches covered.">    if (index &lt; (sz &gt;&gt; 1)) {</span>
+<span class="fc" id="L2153">      Node&lt;E&gt; n = head;</span>
+<span class="fc bfc" id="L2154" title="All 2 branches covered.">      for (int i = 0; i &lt; index; ++i) {</span>
+<span class="fc" id="L2155">        n = n.next;</span>
       }
-<span class="fc" id="L2166">      return n;</span>
+<span class="fc" id="L2157">      return n;</span>
     } else {
-<span class="fc" id="L2168">      Node&lt;E&gt; n = tail;</span>
-<span class="fc bfc" id="L2169" title="All 2 branches covered.">      for (int i = sz - 1; i &gt; index; --i) {</span>
-<span class="fc" id="L2170">        n = n.prev;</span>
+<span class="fc" id="L2159">      Node&lt;E&gt; n = tail;</span>
+<span class="fc bfc" id="L2160" title="All 2 branches covered.">      for (int i = sz - 1; i &gt; index; --i) {</span>
+<span class="fc" id="L2161">        n = n.prev;</span>
       }
-<span class="fc" id="L2172">      return n;</span>
+<span class="fc" id="L2163">      return n;</span>
     }
   }
 
@@ -2183,59 +2174,59 @@ public final class WiredList&lt;E&gt; implements List&lt;E&gt; {
   // @VisibleForTesting
   private Node&lt;E&gt; nodeAfter(Node&lt;E&gt; startNode, int startIndex, int index) {
     Node&lt;E&gt; n;
-<span class="fc bfc" id="L2186" title="All 2 branches covered.">    if (index &lt; ((sz + startIndex) &gt;&gt; 1)) {</span>
-<span class="fc bfc" id="L2187" title="All 2 branches covered.">      for (n = startNode; startIndex++ &lt; index; n = n.next)</span>
+<span class="fc bfc" id="L2177" title="All 2 branches covered.">    if (index &lt; ((sz + startIndex) &gt;&gt; 1)) {</span>
+<span class="fc bfc" id="L2178" title="All 2 branches covered.">      for (n = startNode; startIndex++ &lt; index; n = n.next)</span>
         ;
     } else {
-<span class="fc bfc" id="L2190" title="All 2 branches covered.">      for (n = tail; ++index &lt; sz; n = n.prev)</span>
+<span class="fc bfc" id="L2181" title="All 2 branches covered.">      for (n = tail; ++index &lt; sz; n = n.prev)</span>
         ;
     }
-<span class="fc" id="L2193">    return n;</span>
+<span class="fc" id="L2184">    return n;</span>
   }
 
   // @VisibleForTesting
   private Node&lt;E&gt; nodeBefore(Node&lt;E&gt; startNode, int startIndex, int index) {
     Node&lt;E&gt; n;
-<span class="fc bfc" id="L2199" title="All 2 branches covered.">    if (index &lt; (startIndex &gt;&gt; 1)) {</span>
-<span class="pc bpc" id="L2200" title="1 of 2 branches missed.">      for (n = head; index-- &gt; 0; n = n.next)</span>
+<span class="fc bfc" id="L2190" title="All 2 branches covered.">    if (index &lt; (startIndex &gt;&gt; 1)) {</span>
+<span class="pc bpc" id="L2191" title="1 of 2 branches missed.">      for (n = head; index-- &gt; 0; n = n.next)</span>
         ;
     } else {
-<span class="fc bfc" id="L2203" title="All 2 branches covered.">      for (n = startNode; index++ &lt; startIndex; n = n.prev)</span>
+<span class="fc bfc" id="L2194" title="All 2 branches covered.">      for (n = startNode; index++ &lt; startIndex; n = n.prev)</span>
         ;
     }
-<span class="fc" id="L2206">    return n;</span>
+<span class="fc" id="L2197">    return n;</span>
   }
 
   private void makeHead(Node&lt;E&gt; node) {
-<span class="fc" id="L2210">    node.prev = null;</span>
-<span class="fc" id="L2211">    head = node;</span>
-<span class="fc" id="L2212">  }</span>
+<span class="fc" id="L2201">    node.prev = null;</span>
+<span class="fc" id="L2202">    head = node;</span>
+<span class="fc" id="L2203">  }</span>
 
   private void makeTail(Node&lt;E&gt; node) {
-<span class="fc" id="L2215">    node.next = null;</span>
-<span class="fc" id="L2216">    tail = node;</span>
-<span class="fc" id="L2217">  }</span>
+<span class="fc" id="L2206">    node.next = null;</span>
+<span class="fc" id="L2207">    tail = node;</span>
+<span class="fc" id="L2208">  }</span>
 
   private static &lt;T&gt; void join(Node&lt;T&gt; prev, Node&lt;T&gt; next) {
-<span class="fc" id="L2220">    prev.next = next;</span>
-<span class="fc" id="L2221">    next.prev = prev;</span>
-<span class="fc" id="L2222">  }</span>
+<span class="fc" id="L2211">    prev.next = next;</span>
+<span class="fc" id="L2212">    next.prev = prev;</span>
+<span class="fc" id="L2213">  }</span>
 
   private Node&lt;E&gt; justBeforeHead() {
-<span class="fc" id="L2225">    Node&lt;E&gt; x = new Node&lt;&gt;(null);</span>
-<span class="fc" id="L2226">    x.next = head;</span>
-<span class="fc" id="L2227">    return x;</span>
+<span class="fc" id="L2216">    Node&lt;E&gt; x = new Node&lt;&gt;(null);</span>
+<span class="fc" id="L2217">    x.next = head;</span>
+<span class="fc" id="L2218">    return x;</span>
   }
 
   private Node&lt;E&gt; justAfterTail() {
-<span class="fc" id="L2231">    Node&lt;E&gt; x = new Node&lt;&gt;(null);</span>
-<span class="fc" id="L2232">    x.prev = tail;</span>
-<span class="fc" id="L2233">    return x;</span>
+<span class="fc" id="L2222">    Node&lt;E&gt; x = new Node&lt;&gt;(null);</span>
+<span class="fc" id="L2223">    x.prev = tail;</span>
+<span class="fc" id="L2224">    return x;</span>
   }
 
   private void checkInclusive(int index) {
-<span class="fc" id="L2237">    Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));</span>
-<span class="fc" id="L2238">  }</span>
+<span class="fc" id="L2228">    Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));</span>
+<span class="fc" id="L2229">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -131,7 +131,7 @@ public final class WiredList<E> implements List<E> {
   //
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private static final class Chain {
+  private record Chain(Node head, Node tail, int length) {
 
     // must (and will) only be called if values.size() > 0
     static <V> Chain of(Collection<V> values) {
@@ -154,16 +154,6 @@ public final class WiredList<E> implements List<E> {
         tail = new Node(tail, (node = node.next).val);
       }
       return new Chain(head, tail, len);
-    }
-
-    final Node head;
-    final Node tail;
-    final int length;
-
-    Chain(Node head, Node tail, int length) {
-      this.head = head;
-      this.tail = tail;
-      this.length = length;
     }
 
   }
@@ -1689,7 +1679,8 @@ public final class WiredList<E> implements List<E> {
    * Removes and returns a segment from the end of the list. The segment includes all
    * elements following the <i>last</i> element that does <i>not</i> satisfy the
    * specified condition. In other words, all elements in the returned list
-   * <i>will</i> satisfy the condition. If the condition is never satisfied, the list
+   * <i>will</i> satisfy the condition. If the condition is never satisfied, the
+   * list
    * remains unchanged and an empty list is returned. If <i>all</i> elements satisfy
    * the condition, the list remains unchanged and is itself returned.
    *
