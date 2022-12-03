@@ -1,0 +1,2201 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CrisprList.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Klojang Collections</a> &gt; <a href="index.source.html" class="el_package">org.klojang.collections</a> &gt; <span class="el_source">CrisprList.java</span></div><h1>CrisprList.java</h1><pre class="source lang-java linenums">package org.klojang.collections;
+
+import org.klojang.check.Check;
+import org.klojang.check.Tag;
+import org.klojang.util.CollectionMethods;
+import org.klojang.util.InvokeMethods;
+
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static java.util.Collections.*;
+import static org.klojang.check.CommonChecks.*;
+import static org.klojang.check.CommonExceptions.indexOutOfBounds;
+import static org.klojang.check.CommonExceptions.noSuchElement;
+import static org.klojang.check.CommonProperties.length;
+import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
+import static org.klojang.util.MathMethods.divUp;
+
+/**
+ * A doubly-linked list, much like the JDK's {@link LinkedList}, but exclusively
+ * focused on list manipulation while disregarding the queue-like aspects of linked
+ * lists. As with any doubly-linked list, index-based retrieval is relatively costly
+ * compared to {@link ArrayList}. It is very efficient, however, at inserting,
+ * deleting and moving around chunks of list elements (i.e. structural changes). The
+ * larger the chunks, the bigger the gain - again compared to {@code ArrayList}.
+ *
+ * &lt;h2&gt;Iteration&lt;/h2&gt;
+ * &lt;p&gt;
+ * You should always use an {@code Iterator} to iterate over the elements in the list
+ * (which you implicitly would when executing a {@code forEach} loop). Using an
+ * index/get loop is possible, but performs poorly. The {@link Iterator} and
+ * {@link ListIterator} implementations prescribed by the {@code List} interface are
+ * no-frills iterators that throw an {@code UnsupportedOperationException} from all
+ * methods designated as optional by the specification. In addition, the
+ * {@code WiredList class} also features a {@link #reverseIterator()} and a
+ * {@link #wiredIterator()} method. The latter returns an instance of the
+ * {@link WiredIterator} interface. Unlike a {@link ListIterator}, this is a
+ * one-way-only iterator, but it still provides the same functionality, and it
+ * &lt;i&gt;does&lt;/i&gt; implement the methods that are optional in the {@code ListIterator}
+ * interface.
+ *
+ * &lt;h2&gt;Fluent API&lt;/h2&gt;
+ * &lt;p&gt;
+ * Many of the methods that go beyond those prescribed by the {@code List} interface
+ * form part of a fluent API. This causes some overlap in functionality between
+ * {@code List} methods and methods taking part in the fluent API. They are
+ * implemented exactly alike, so there is intrinsic reason to prefer one over the
+ * other.
+ *
+ * &lt;h2&gt;Thread safety&lt;/h2&gt;
+ * &lt;p&gt;
+ * List edits are always destructive, and nearly always don't just change the values
+ * in the list, but the underlying data structure itself. The {@code WiredList} class
+ * is not thread-safe. Multiple threads mutating the same list can leave it in a
+ * seriously corrupted state, with &quot;dangling wires&quot; between the list elements (i.e.
+ * null pointers). While the iterators make a light-touch effort to detect and trap
+ * concurrent modifications on the list, {@code WiredList} itself doesn't. Therefore,
+ * synchronize carefully when multiple threads access the same list.
+ *
+ * @param &lt;E&gt; the type of the elements in the list
+ * @author Ayco Holleman
+ */
+public final class CrisprList&lt;E&gt; implements List&lt;E&gt; {
+
+  // Ubiquitous parameter names within this class
+  private static final String WIRED_LIST = &quot;WiredList&quot;;
+
+  private static Supplier&lt;IllegalArgumentException&gt; autoEmbedNotAllowed() {
+<span class="nc" id="L73">    return () -&gt; new IllegalArgumentException(&quot;list cannot be embedded within itself&quot;);</span>
+  }
+
+  private static Supplier&lt;IllegalStateException&gt; callNextFirst() {
+<span class="nc" id="L77">    return () -&gt; new IllegalStateException(&quot;Iterator.next() must be called first&quot;);</span>
+  }
+
+  private static Supplier&lt;IllegalStateException&gt; emptyList() {
+<span class="nc" id="L81">    return () -&gt; new IllegalStateException(&quot;illegal operation on empty list&quot;);</span>
+  }
+
+  private static Supplier&lt;ConcurrentModificationException&gt; concurrentModification() {
+<span class="nc" id="L85">    return ConcurrentModificationException::new;</span>
+  }
+
+  //
+  //
+  //
+  // ======================================================= //
+  // ======================= [ Node ] ====================== //
+  // ======================================================= //
+  //
+  //
+  //
+
+  // @VisibleForTesting
+  private static final class Node&lt;V&gt; {
+
+    V val;
+    Node&lt;V&gt; prev;
+    Node&lt;V&gt; next;
+
+<span class="nc" id="L105">    Node(V val) {this.val = val;}</span>
+
+<span class="nc" id="L107">    Node(Node&lt;V&gt; prev, V val) {</span>
+<span class="nc" id="L108">      this.prev = prev;</span>
+<span class="nc" id="L109">      this.val = val;</span>
+<span class="nc" id="L110">      prev.next = this;</span>
+<span class="nc" id="L111">    }</span>
+
+    V value() {
+<span class="nc" id="L114">      return val;</span>
+    }
+
+    public String toString() {
+<span class="nc" id="L118">      return String.valueOf(val);</span>
+    }
+
+  }
+
+  //
+  //
+  //
+  // ======================================================= //
+  // ====================== [ Chain ] ====================== //
+  // ======================================================= //
+  //
+  //
+  //
+
+<span class="nc" id="L133">  @SuppressWarnings({&quot;unchecked&quot;, &quot;rawtypes&quot;})</span>
+<span class="nc" id="L134">  private record Chain(Node head, Node tail, int length) {</span>
+
+    // must (and will) only be called if values.size() &gt; 0
+    static &lt;V&gt; Chain of(Collection&lt;V&gt; values) {
+<span class="nc bnc" id="L138" title="All 2 branches missed.">      if (values instanceof CrisprList wl) {</span>
+<span class="nc" id="L139">        return copyOf(wl.head, wl.size());</span>
+      }
+<span class="nc" id="L141">      Iterator&lt;V&gt; itr = values.iterator();</span>
+<span class="nc" id="L142">      var head = new Node&lt;&gt;(itr.next());</span>
+<span class="nc" id="L143">      var tail = head;</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">      while (itr.hasNext()) {</span>
+<span class="nc" id="L145">        tail = new Node&lt;&gt;(tail, itr.next());</span>
+      }
+<span class="nc" id="L147">      return new Chain(head, tail, values.size());</span>
+    }
+
+    static Chain copyOf(Node node, int len) {
+<span class="nc" id="L151">      var head = new Node(node.val);</span>
+<span class="nc" id="L152">      var tail = head;</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">      for (int i = 1; i &lt; len; ++i) {</span>
+<span class="nc" id="L154">        tail = new Node(tail, (node = node.next).val);</span>
+      }
+<span class="nc" id="L156">      return new Chain(head, tail, len);</span>
+    }
+
+  }
+
+  //
+  //
+  //
+  // ======================================================= //
+  // ================ [ Iterator classes ]  ================ //
+  // ======================================================= //
+  //
+  //
+  //
+
+  final class ForwardWiredIterator implements WiredIterator&lt;E&gt; {
+
+    private Node&lt;E&gt; beforeHead;
+    private Node&lt;E&gt; curr;
+
+<span class="nc" id="L176">    private ForwardWiredIterator() {</span>
+<span class="nc" id="L177">      curr = beforeHead = justBeforeHead();</span>
+<span class="nc" id="L178">    }</span>
+
+<span class="nc" id="L180">    private ForwardWiredIterator(Node&lt;E&gt; curr) {</span>
+<span class="nc" id="L181">      this.curr = curr;</span>
+<span class="nc" id="L182">    }</span>
+
+    @Override
+    public boolean hasNext() {
+<span class="nc bnc" id="L186" title="All 4 branches missed.">      return sz != 0 &amp;&amp; curr != tail;</span>
+    }
+
+    @Override
+    public E value() {
+<span class="nc" id="L191">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
+<span class="nc" id="L192">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="nc" id="L193">      return curr.val;</span>
+    }
+
+    @Override
+    public E peek() {
+<span class="nc" id="L198">      Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
+<span class="nc" id="L199">      Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="nc" id="L200">      return Check.that(curr.next)</span>
+<span class="nc" id="L201">          .is(notNull(), concurrentModification())</span>
+<span class="nc" id="L202">          .ok(Node::value);</span>
+    }
+
+    @Override
+    public E next() {
+<span class="nc" id="L207">      Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
+<span class="nc" id="L208">      Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="nc" id="L209">      return Check.that(curr = curr.next)</span>
+<span class="nc" id="L210">          .is(notNull(), concurrentModification())</span>
+<span class="nc" id="L211">          .ok(Node::value);</span>
+    }
+
+    @Override
+    public void set(E newVal) {
+<span class="nc" id="L216">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
+<span class="nc" id="L217">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="nc" id="L218">      curr.val = newVal;</span>
+<span class="nc" id="L219">    }</span>
+
+    @Override
+    public void insertBefore(E value) {
+<span class="nc" id="L223">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
+<span class="nc" id="L224">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="nc" id="L225">      Node&lt;E&gt; node = new Node&lt;&gt;(value);</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">      if (curr == head) {</span>
+<span class="nc" id="L227">        join(head = node, curr);</span>
+      } else {
+<span class="nc" id="L229">        Check.that(curr.prev).is(notNull(), concurrentModification());</span>
+<span class="nc" id="L230">        join(curr.prev, node);</span>
+<span class="nc" id="L231">        join(node, curr);</span>
+      }
+<span class="nc" id="L233">      ++sz;</span>
+<span class="nc" id="L234">    }</span>
+
+    @Override
+    public void insertAfter(E value) {
+<span class="nc" id="L238">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
+<span class="nc" id="L239">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="nc" id="L240">      Node&lt;E&gt; node = new Node&lt;&gt;(value);</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">      if (curr == tail) {</span>
+<span class="nc" id="L242">        join(curr, tail = node);</span>
+      } else {
+<span class="nc" id="L244">        Check.that(curr.next).is(notNull(), concurrentModification());</span>
+<span class="nc" id="L245">        join(node, curr.next);</span>
+<span class="nc" id="L246">        join(curr, node);</span>
+      }
+<span class="nc" id="L248">      ++sz;</span>
+<span class="nc" id="L249">    }</span>
+
+    @Override
+    public void remove() {
+<span class="nc" id="L253">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
+<span class="nc" id="L254">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">      if (curr == head) {</span>
+<span class="nc" id="L256">        unlink(curr);</span>
+<span class="nc" id="L257">        curr = beforeHead = justBeforeHead();</span>
+      } else {
+<span class="nc" id="L259">        Check.that(curr = curr.prev)</span>
+<span class="nc" id="L260">            .is(notNull(), concurrentModification())</span>
+<span class="nc" id="L261">            .then(prev -&gt; unlink(prev.next));</span>
+      }
+<span class="nc" id="L263">    }</span>
+
+    @Override
+    public int index() {
+<span class="nc" id="L267">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
+<span class="nc" id="L268">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="nc" id="L269">      int idx = 0;</span>
+<span class="nc" id="L270">      for (var node = head; ; ++idx) {</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">        if (node == curr) {</span>
+<span class="nc" id="L272">          return idx;</span>
+        }
+<span class="nc" id="L274">        node = Check.that(node)</span>
+<span class="nc" id="L275">            .is(notNull(), concurrentModification())</span>
+<span class="nc" id="L276">            .isNot(sameAs(), tail, concurrentModification())</span>
+<span class="nc" id="L277">            .ok(x -&gt; x.next);</span>
+      }
+    }
+
+    @Override
+    public WiredIterator&lt;E&gt; turn() {
+<span class="nc" id="L283">      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());</span>
+<span class="nc" id="L284">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="nc" id="L285">      return new ReverseWiredIterator(curr);</span>
+    }
+
+  }
+
+  final class ReverseWiredIterator implements WiredIterator&lt;E&gt; {
+
+    private Node&lt;E&gt; afterTail;
+    private Node&lt;E&gt; curr;
+
+<span class="nc" id="L295">    private ReverseWiredIterator() {</span>
+<span class="nc" id="L296">      curr = afterTail = justAfterTail();</span>
+<span class="nc" id="L297">    }</span>
+
+<span class="nc" id="L299">    private ReverseWiredIterator(Node&lt;E&gt; curr) {</span>
+<span class="nc" id="L300">      this.curr = curr;</span>
+<span class="nc" id="L301">    }</span>
+
+    @Override
+    public boolean hasNext() {
+<span class="nc bnc" id="L305" title="All 4 branches missed.">      return sz != 0 &amp;&amp; curr != head;</span>
+    }
+
+    @Override
+    public E value() {
+<span class="nc" id="L310">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
+<span class="nc" id="L311">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="nc" id="L312">      return curr.val;</span>
+    }
+
+    @Override
+    public E peek() {
+<span class="nc" id="L317">      Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
+<span class="nc" id="L318">      Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="nc" id="L319">      return Check.that(curr.prev)</span>
+<span class="nc" id="L320">          .is(notNull(), concurrentModification())</span>
+<span class="nc" id="L321">          .ok(Node::value);</span>
+    }
+
+    @Override
+    public E next() {
+<span class="nc" id="L326">      Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
+<span class="nc" id="L327">      Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="nc" id="L328">      return Check.that(curr = curr.prev)</span>
+<span class="nc" id="L329">          .is(notNull(), concurrentModification())</span>
+<span class="nc" id="L330">          .ok(Node::value);</span>
+    }
+
+    @Override
+    public void set(E newVal) {
+<span class="nc" id="L335">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
+<span class="nc" id="L336">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="nc" id="L337">      curr.val = newVal;</span>
+<span class="nc" id="L338">    }</span>
+
+    @Override
+    public void insertBefore(E value) {
+<span class="nc" id="L342">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
+<span class="nc" id="L343">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="nc" id="L344">      Node&lt;E&gt; node = new Node&lt;&gt;(value);</span>
+<span class="nc bnc" id="L345" title="All 2 branches missed.">      if (curr == tail) {</span>
+<span class="nc" id="L346">        join(curr, tail = node);</span>
+      } else {
+<span class="nc" id="L348">        Check.that(curr.next).is(notNull(), concurrentModification());</span>
+<span class="nc" id="L349">        join(node, curr.next);</span>
+<span class="nc" id="L350">        join(curr, node);</span>
+      }
+<span class="nc" id="L352">      ++sz;</span>
+<span class="nc" id="L353">    }</span>
+
+    @Override
+    public void insertAfter(E value) {
+<span class="nc" id="L357">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
+<span class="nc" id="L358">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="nc" id="L359">      Node&lt;E&gt; node = new Node&lt;&gt;(value);</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">      if (curr == head) {</span>
+<span class="nc" id="L361">        join(head = node, curr);</span>
+      } else {
+<span class="nc" id="L363">        Check.that(curr.prev).is(notNull(), concurrentModification());</span>
+<span class="nc" id="L364">        join(curr.prev, node);</span>
+<span class="nc" id="L365">        join(node, curr);</span>
+      }
+<span class="nc" id="L367">      ++sz;</span>
+<span class="nc" id="L368">    }</span>
+
+    @Override
+    public void remove() {
+<span class="nc" id="L372">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
+<span class="nc" id="L373">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="nc bnc" id="L374" title="All 2 branches missed.">      if (curr == tail) {</span>
+<span class="nc" id="L375">        unlink(curr);</span>
+<span class="nc" id="L376">        curr = afterTail = justAfterTail();</span>
+      } else {
+<span class="nc" id="L378">        Check.that(curr = curr.next)</span>
+<span class="nc" id="L379">            .is(notNull(), concurrentModification())</span>
+<span class="nc" id="L380">            .then(next -&gt; unlink(next.prev));</span>
+      }
+<span class="nc" id="L382">    }</span>
+
+    @Override
+    public int index() {
+<span class="nc" id="L386">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
+<span class="nc" id="L387">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="nc" id="L388">      int idx = sz - 1;</span>
+<span class="nc" id="L389">      for (var node = tail; ; --idx) {</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">        if (node == curr) {</span>
+<span class="nc" id="L391">          return idx;</span>
+        }
+<span class="nc" id="L393">        node = Check.that(node)</span>
+<span class="nc" id="L394">            .is(notNull(), concurrentModification())</span>
+<span class="nc" id="L395">            .isNot(sameAs(), head, concurrentModification())</span>
+<span class="nc" id="L396">            .ok(x -&gt; x.prev);</span>
+      }
+    }
+
+    @Override
+    public WiredIterator&lt;E&gt; turn() {
+<span class="nc" id="L402">      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());</span>
+<span class="nc" id="L403">      Check.that(sz).isNot(zero(), emptyList());</span>
+<span class="nc" id="L404">      return new ForwardWiredIterator(curr);</span>
+    }
+
+  }
+
+  /*
+   * NB The asymmetry between next/hasNext and previous/hasPrevious is no code
+   * sloth. It is due to the specification of the ListIterator interface and the
+   * List.listIterator(index) method.
+   */
+  private class ListItr implements ListIterator&lt;E&gt; {
+
+    Node&lt;E&gt; curr;
+    Boolean forward;
+    int idx;
+
+<span class="nc" id="L420">    ListItr() {</span>
+<span class="nc" id="L421">      curr = head;</span>
+<span class="nc" id="L422">      idx = 0;</span>
+<span class="nc" id="L423">    }</span>
+
+<span class="nc" id="L425">    ListItr(int index) {</span>
+<span class="nc bnc" id="L426" title="All 2 branches missed.">      if ((idx = index) == sz) {</span>
+<span class="nc" id="L427">        curr = null;</span>
+      } else {
+<span class="nc" id="L429">        curr = nodeAt(index);</span>
+      }
+<span class="nc" id="L431">    }</span>
+
+    @Override
+    public boolean hasNext() {
+<span class="nc bnc" id="L435" title="All 6 branches missed.">      return (forward == null &amp;&amp; sz != 0) || curr != tail;</span>
+    }
+
+    @Override
+    public E next() {
+<span class="nc bnc" id="L440" title="All 2 branches missed.">      if (forward == TRUE) {</span>
+<span class="nc" id="L441">        Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
+<span class="nc" id="L442">        Check.that(++idx).is(lt(), sz, concurrentModification());</span>
+<span class="nc" id="L443">        return Check.that(curr = curr.next)</span>
+<span class="nc" id="L444">            .is(notNull(), concurrentModification())</span>
+<span class="nc" id="L445">            .ok(Node::value);</span>
+      }
+<span class="nc" id="L447">      forward = TRUE;</span>
+<span class="nc" id="L448">      return curr.val;</span>
+    }
+
+    @Override
+    public boolean hasPrevious() {
+<span class="nc bnc" id="L453" title="All 2 branches missed.">      return curr != head;</span>
+    }
+
+    @Override
+    public E previous() {
+      E val;
+<span class="nc bnc" id="L459" title="All 2 branches missed.">      if (idx == sz) {</span>
+<span class="nc" id="L460">        Check.that(--idx).is(gte(), 0, concurrentModification());</span>
+<span class="nc" id="L461">        val = Check.that(curr = tail)</span>
+<span class="nc" id="L462">            .is(notNull(), concurrentModification())</span>
+<span class="nc" id="L463">            .ok(Node::value);</span>
+<span class="nc bnc" id="L464" title="All 2 branches missed.">      } else if (forward != TRUE) {</span>
+<span class="nc" id="L465">        Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
+<span class="nc" id="L466">        Check.that(--idx).is(gte(), 0, concurrentModification());</span>
+<span class="nc" id="L467">        val = Check.that(curr = curr.prev)</span>
+<span class="nc" id="L468">            .is(notNull(), concurrentModification())</span>
+<span class="nc" id="L469">            .ok(Node::value);</span>
+      } else {
+<span class="nc" id="L471">        val = curr.val;</span>
+      }
+<span class="nc" id="L473">      forward = FALSE;</span>
+<span class="nc" id="L474">      return val;</span>
+    }
+
+    @Override
+    public int nextIndex() {
+<span class="nc bnc" id="L479" title="All 2 branches missed.">      return forward == TRUE ? idx + 1 : idx;</span>
+    }
+
+    @Override
+    public int previousIndex() {
+<span class="nc bnc" id="L484" title="All 2 branches missed.">      return forward == TRUE ? idx : idx - 1;</span>
+    }
+
+    @Override
+    public void remove() {
+<span class="nc" id="L489">      throw new UnsupportedOperationException();</span>
+    }
+
+    @Override
+    @SuppressWarnings({&quot;unused&quot;})
+    public void set(E value) {
+<span class="nc" id="L495">      throw new UnsupportedOperationException();</span>
+    }
+
+    @Override
+    @SuppressWarnings({&quot;unused&quot;})
+    public void add(E value) {
+<span class="nc" id="L501">      throw new UnsupportedOperationException();</span>
+    }
+
+  }
+
+  //
+  //
+  //
+  // ======================================================= //
+  // ==================== [ WiredList ] ==================== //
+  // ======================================================= //
+  //
+  //
+  //
+
+  /**
+   * Returns a new, empty {@code WiredList}. Note that, although the {@code of(..)}
+   * methods look like the {@code List.of(...)} methods, they return ordinary,
+   * mutable, {@code null}-accepting {@code WiredList} instances.
+   *
+   * @param &lt;E&gt; the type of the elements in the list
+   * @return a new, empty {@code WiredList}
+   */
+  public static &lt;E&gt; CrisprList&lt;E&gt; of() {
+<span class="nc" id="L525">    return new CrisprList&lt;&gt;();</span>
+  }
+
+  /**
+   * Returns a new {@code WiredList} containing the specified element.
+   *
+   * @param e the element
+   * @param &lt;E&gt; the type of the elements in the list
+   * @return a new {@code WiredList} containing the specified elements
+   */
+  public static &lt;E&gt; CrisprList&lt;E&gt; of(E e) {
+<span class="nc" id="L536">    return new CrisprList&lt;E&gt;().append(e);</span>
+  }
+
+  /**
+   * Returns a new {@code WiredList} containing the specified elements.
+   *
+   * @param e0 the first element in the list
+   * @param e1 the second element in the list
+   * @param &lt;E&gt; the type of the elements in the list
+   * @return a new {@code WiredList} containing the specified elements
+   */
+  public static &lt;E&gt; CrisprList&lt;E&gt; of(E e0, E e1) {
+<span class="nc" id="L548">    return new CrisprList&lt;E&gt;().append(e0).append(e1);</span>
+  }
+
+  /**
+   * Returns a new {@code WiredList} containing the specified elements.
+   *
+   * @param e0 the first element in the list
+   * @param e1 the second element in the list
+   * @param e2 the third element in the list
+   * @param moreElems more elements to include in the list
+   * @param &lt;E&gt; the type of the elements in the list
+   * @return a new {@code WiredList} containing the specified elements
+   */
+  @SafeVarargs
+  public static &lt;E&gt; CrisprList&lt;E&gt; of(E e0, E e1, E e2, E... moreElems) {
+<span class="nc" id="L563">    Check.notNull(moreElems, Tag.ARRAY);</span>
+<span class="nc" id="L564">    var wl = new CrisprList&lt;E&gt;();</span>
+<span class="nc" id="L565">    Node&lt;E&gt; head = new Node&lt;&gt;(e0);</span>
+<span class="nc" id="L566">    Node&lt;E&gt; tail = head;</span>
+<span class="nc" id="L567">    tail = new Node&lt;&gt;(tail, e1);</span>
+<span class="nc" id="L568">    tail = new Node&lt;&gt;(tail, e2);</span>
+<span class="nc bnc" id="L569" title="All 2 branches missed.">    for (E e : moreElems) {</span>
+<span class="nc" id="L570">      tail = new Node&lt;&gt;(tail, e);</span>
+    }
+<span class="nc" id="L572">    wl.head = head;</span>
+<span class="nc" id="L573">    wl.tail = tail;</span>
+<span class="nc" id="L574">    wl.sz = moreElems.length + 3;</span>
+<span class="nc" id="L575">    return wl;</span>
+  }
+
+  /**
+   * Returns a new {@code WiredList} containing the specified elements.
+   *
+   * @param elements the elements to add to the list
+   * @param &lt;E&gt; the type of the elements in the list
+   * @return a new {@code WiredList} containing the specified elements
+   */
+  @SafeVarargs
+  public static &lt;E&gt; CrisprList&lt;E&gt; ofElements(E... elements) {
+<span class="nc" id="L587">    Check.notNull(elements, Tag.ARRAY);</span>
+<span class="nc" id="L588">    var wl = new CrisprList&lt;E&gt;();</span>
+<span class="nc bnc" id="L589" title="All 2 branches missed.">    if (elements.length != 0) {</span>
+<span class="nc" id="L590">      Node&lt;E&gt; head = new Node&lt;&gt;(elements[0]);</span>
+<span class="nc" id="L591">      Node&lt;E&gt; tail = head;</span>
+<span class="nc bnc" id="L592" title="All 2 branches missed.">      for (int i = 1; i &lt; elements.length; ++i) {</span>
+<span class="nc" id="L593">        tail = new Node&lt;&gt;(tail, elements[i]);</span>
+      }
+<span class="nc" id="L595">      wl.head = head;</span>
+<span class="nc" id="L596">      wl.tail = tail;</span>
+<span class="nc" id="L597">      wl.sz = elements.length;</span>
+    }
+<span class="nc" id="L599">    return wl;</span>
+  }
+
+  /**
+   * Concatenates the provided {@code WiredList} instances. This is a destructive
+   * operation for the {@code WiredList} instances in the provided {@code List}. They
+   * will be empty when the method returns. See {@link #attach(CrisprList)}.
+   *
+   * @param lists the {@code WiredList} instances to concatenate
+   * @param &lt;E&gt; the type of the elements in the list
+   * @return a new {@code WiredList} containing the elements in the individual
+   *     {@code WiredList} instances
+   */
+  public static &lt;E&gt; CrisprList&lt;E&gt; join(List&lt;CrisprList&lt;E&gt;&gt; lists) {
+<span class="nc" id="L613">    CrisprList&lt;E&gt; wl = new CrisprList&lt;&gt;();</span>
+<span class="nc" id="L614">    Check.notNull(lists).ok().forEach(wl::attach);</span>
+<span class="nc" id="L615">    return wl;</span>
+  }
+
+  private Node&lt;E&gt; head;
+  private Node&lt;E&gt; tail;
+  private int sz;
+
+  /**
+   * Creates a new, empty {@code WiredList}.
+   */
+<span class="nc" id="L625">  public CrisprList() {}</span>
+
+  /**
+   * Creates a new {@code WiredList} containing the elements in the specified
+   * {@code Collection}.
+   *
+   * @param c the collection whose elements to copy to this {@code WiredList}
+   */
+<span class="nc" id="L633">  public CrisprList(Collection&lt;? extends E&gt; c) {</span>
+<span class="nc" id="L634">    addAll(0, c);</span>
+<span class="nc" id="L635">  }</span>
+
+  @SuppressWarnings({&quot;unchecked&quot;})
+<span class="nc" id="L638">  private CrisprList(Chain chain) {</span>
+<span class="nc" id="L639">    makeHead(chain.head);</span>
+<span class="nc" id="L640">    makeTail(chain.tail);</span>
+<span class="nc" id="L641">    sz = chain.length;</span>
+<span class="nc" id="L642">  }</span>
+
+  /**
+   * Returns the number of elements in this list. If this list contains more than
+   * {@code Integer.MAX_VALUE} elements, returns {@code Integer.MAX_VALUE}.
+   *
+   * @return the number of elements in this list
+   */
+  @Override
+  public int size() {
+<span class="nc" id="L652">    return sz;</span>
+  }
+
+  /**
+   * Returns {@code true} if this list contains no elements.
+   *
+   * @return {@code true} if this list contains no elements
+   */
+  @Override
+  public boolean isEmpty() {
+<span class="nc bnc" id="L662" title="All 2 branches missed.">    return sz == 0;</span>
+  }
+
+  /**
+   * Returns {@code true} if this list contains the specified element. More formally,
+   * returns {@code true} if and only if this list contains at least one element
+   * {@code e} such that {@code Objects.equals(o, e)}.
+   *
+   * @param o element whose presence in this list is to be tested
+   * @return {@code true} if this list contains the specified element
+   */
+  @Override
+  public boolean contains(Object o) {
+<span class="nc bnc" id="L675" title="All 2 branches missed.">    return indexOf(o) != -1;</span>
+  }
+
+  /**
+   * Returns {@code true} if this list contains all of the elements of the specified
+   * collection.
+   *
+   * @param c collection to be checked for containment in this list
+   * @return {@code true} if this list contains all of the elements of the specified
+   *     collection
+   * @see #contains(Object)
+   */
+  @Override
+  public boolean containsAll(Collection&lt;?&gt; c) {
+<span class="nc" id="L689">    Check.notNull(c);</span>
+<span class="nc" id="L690">    return new HashSet&lt;&gt;(this).containsAll(c);</span>
+  }
+
+  /**
+   * Returns the index of the first occurrence of the specified element in this list,
+   * or -1 if this list does not contain the element. More formally, returns the
+   * lowest index {@code i} such that {@code Objects.equals(o, get(i))}, or -1 if
+   * there is no such index.
+   *
+   * @param o element to search for
+   * @return the index of the first occurrence of the specified element in this list,
+   *     or -1 if this list does not contain the element
+   */
+  @Override
+  public int indexOf(Object o) {
+<span class="nc" id="L705">    var n = head;</span>
+<span class="nc bnc" id="L706" title="All 2 branches missed.">    if (o == null) {</span>
+<span class="nc bnc" id="L707" title="All 2 branches missed.">      for (int i = 0; i &lt; sz; ++i) {</span>
+<span class="nc bnc" id="L708" title="All 2 branches missed.">        if (n.val == null) {</span>
+<span class="nc" id="L709">          return i;</span>
+        }
+<span class="nc" id="L711">        n = n.next;</span>
+      }
+    } else {
+<span class="nc bnc" id="L714" title="All 2 branches missed.">      for (int i = 0; i &lt; sz; ++i) {</span>
+<span class="nc bnc" id="L715" title="All 2 branches missed.">        if (o.equals(n.val)) {</span>
+<span class="nc" id="L716">          return i;</span>
+        }
+<span class="nc" id="L718">        n = n.next;</span>
+      }
+    }
+<span class="nc" id="L721">    return -1;</span>
+  }
+
+  /**
+   * Returns the index of the last occurrence of the specified element in this list,
+   * or -1 if this list does not contain the element. More formally, returns the
+   * highest index {@code i} such that {@code Objects.equals(o, get(i))}, or -1 if
+   * there is no such index.
+   *
+   * @param o element to search for
+   * @return the index of the last occurrence of the specified element in this list,
+   *     or -1 if this list does not contain the element
+   */
+  @Override
+  public int lastIndexOf(Object o) {
+<span class="nc" id="L736">    var n = tail;</span>
+<span class="nc bnc" id="L737" title="All 2 branches missed.">    if (o == null) {</span>
+<span class="nc bnc" id="L738" title="All 2 branches missed.">      for (int i = sz - 1; i &gt;= 0; --i) {</span>
+<span class="nc bnc" id="L739" title="All 2 branches missed.">        if (n.val == null) {</span>
+<span class="nc" id="L740">          return i;</span>
+        }
+<span class="nc" id="L742">        n = n.prev;</span>
+      }
+    } else {
+<span class="nc bnc" id="L745" title="All 2 branches missed.">      for (int i = sz - 1; i &gt;= 0; --i) {</span>
+<span class="nc bnc" id="L746" title="All 2 branches missed.">        if (o.equals(n.val)) {</span>
+<span class="nc" id="L747">          return i;</span>
+        }
+<span class="nc" id="L749">        n = n.prev;</span>
+      }
+    }
+<span class="nc" id="L752">    return -1;</span>
+  }
+
+  /**
+   * Returns the element at the specified position in this list.
+   *
+   * @param index index of the element to return
+   * @return the element at the specified position in this list
+   * @throws IndexOutOfBoundsException if the index is out of range
+   *     ({@code index &lt; 0 || index &gt;= size()})
+   */
+  @Override
+  public E get(int index) {
+<span class="nc" id="L765">    return node(index).val;</span>
+  }
+
+  /**
+   * Replaces the element at the specified position in this list with the specified
+   * element.
+   *
+   * @param index index of the element to replace
+   * @param element element to be stored at the specified position
+   * @return the element previously at the specified position
+   */
+  @Override
+  public E set(int index, E element) {
+<span class="nc" id="L778">    var node = node(index);</span>
+<span class="nc" id="L779">    E old = node.val;</span>
+<span class="nc" id="L780">    node.val = element;</span>
+<span class="nc" id="L781">    return old;</span>
+  }
+
+  /**
+   * Overwrites the elements at, and following the specified index with the provided
+   * values. For linked lists this is more efficient than setting each of the
+   * elements individually, especially if the elements are somewhere in the middle of
+   * the lists. The number of values must not exceed {@code list.size() - index}.
+   *
+   * @param index the index of the first element the set
+   * @param e0 the first value to write
+   * @param e1 the second value to write
+   * @param moreElems more values to write
+   * @return this {@code WiredList}
+   */
+  @SuppressWarnings(&quot;unchecked&quot;)
+  public CrisprList&lt;E&gt; set(int index, E e0, E e1, E... moreElems) {
+<span class="nc" id="L798">    Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));</span>
+<span class="nc" id="L799">    Check.notNull(moreElems, Tag.VARARGS).has(length(), lte(), sz - index - 2);</span>
+<span class="nc" id="L800">    Node&lt;E&gt; node = nodeAt(index);</span>
+<span class="nc" id="L801">    node.val = e0;</span>
+<span class="nc" id="L802">    node = node.next;</span>
+<span class="nc" id="L803">    node.val = e1;</span>
+<span class="nc bnc" id="L804" title="All 2 branches missed.">    if (moreElems.length != 0) {</span>
+<span class="nc" id="L805">      node = node.next;</span>
+<span class="nc bnc" id="L806" title="All 2 branches missed.">      for (E e : moreElems) {</span>
+<span class="nc" id="L807">        node.val = e;</span>
+<span class="nc" id="L808">        node = node.next;</span>
+      }
+    }
+<span class="nc" id="L811">    return this;</span>
+  }
+
+  /**
+   * Sets the element at the specified index to the specified value &lt;i&gt;if&lt;/i&gt; the
+   * original value passes the specified test. This method mitigates the relatively
+   * large cost of index-based retrieval with linked lists, which would double if you
+   * had to execute a get-compare-set sequence.
+   *
+   * @param index the index of the element to set
+   * @param condition The test that the original value has to pass in order to be
+   *     replaced with the new value. The original value is passed to the predicate's
+   *     {@code test} method.
+   * @param value The value to set
+   * @return The original value
+   */
+  public E setIf(int index, Predicate&lt;? super E&gt; condition, E value) {
+<span class="nc" id="L828">    Check.notNull(condition, Tag.TEST);</span>
+<span class="nc" id="L829">    var node = node(index);</span>
+<span class="nc" id="L830">    E old = node.val;</span>
+<span class="nc bnc" id="L831" title="All 2 branches missed.">    if (condition.test(old)) {</span>
+<span class="nc" id="L832">      node.val = value;</span>
+    }
+<span class="nc" id="L834">    return old;</span>
+  }
+
+  /**
+   * Appends the specified element to the end of this list.
+   *
+   * @param e element to be appended to this list
+   * @return {@code true} (as specified by {@link Collection#add})
+   * @see #append(Object)
+   */
+  @Override
+  public boolean add(E e) {
+<span class="nc" id="L846">    append(e);</span>
+<span class="nc" id="L847">    return true;</span>
+  }
+
+  /**
+   * Inserts the specified element at the specified position in this list. Shifts the
+   * element currently at that position (if any) and any subsequent elements to the
+   * right (adds one to their indices).
+   *
+   * @param index index at which the specified element is to be inserted
+   * @param element element to be inserted
+   * @see #insert(int, Object)
+   */
+  @Override
+  public void add(int index, E element) {
+<span class="nc" id="L861">    checkInclusive(index);</span>
+<span class="nc" id="L862">    insert(index, new Node&lt;&gt;(element));</span>
+<span class="nc" id="L863">  }</span>
+
+  /**
+   * Appends all elements in the specified collection to the end of this list, in the
+   * order that they are returned by the specified collection's iterator.
+   *
+   * @param c collection containing elements to be added to this list
+   * @return {@code true} if this list changed as a result of the call
+   * @see #add(Object)
+   * @see #appendAll(Collection)
+   * @see #attach(CrisprList)
+   */
+  @Override
+  public boolean addAll(Collection&lt;? extends E&gt; c) {
+<span class="nc" id="L877">    return addAll(sz, c);</span>
+  }
+
+  /**
+   * Inserts all elements in the specified collection into this list at the specified
+   * position (optional operation). Shifts the element currently at that position (if
+   * any) and any subsequent elements to the right (increases their indices).
+   *
+   * @param index index at which to insert the first element from the specified
+   *     collection
+   * @param c collection containing elements to be added to this list
+   * @return {@code true} if this list changed as a result of the call
+   * @see #insertAll(int, Collection)
+   */
+  @Override
+  public boolean addAll(int index, Collection&lt;? extends E&gt; c) {
+<span class="nc" id="L893">    checkInclusive(index);</span>
+<span class="nc" id="L894">    Check.notNull(c, Tag.COLLECTION);</span>
+<span class="nc bnc" id="L895" title="All 2 branches missed.">    if (!c.isEmpty()) {</span>
+<span class="nc" id="L896">      insert(index, Chain.of(c));</span>
+    }
+<span class="nc bnc" id="L898" title="All 2 branches missed.">    return !c.isEmpty();</span>
+  }
+
+  /**
+   * Removes the element at the specified position in this list.
+   *
+   * @param index the index of the element to be removed
+   * @return the element previously at the specified position
+   * @throws IndexOutOfBoundsException if the index is out of range
+   *     ({@code index &lt; 0 || index &gt;= size()})
+   */
+  @Override
+  public E remove(int index) {
+<span class="nc" id="L911">    var x = node(index);</span>
+<span class="nc" id="L912">    E val = x.val;</span>
+<span class="nc" id="L913">    unlink(x);</span>
+<span class="nc" id="L914">    return val;</span>
+  }
+
+  /**
+   * Removes the first occurrence of the specified element from this list, if it is
+   * present.
+   *
+   * @param o element to be removed from this list, if present
+   * @return {@code true} if this list contained the specified element
+   */
+  @Override
+  public boolean remove(Object o) {
+<span class="nc bnc" id="L926" title="All 2 branches missed.">    if (o == null) {</span>
+<span class="nc bnc" id="L927" title="All 2 branches missed.">      for (var x = head; x != null; ) {</span>
+<span class="nc bnc" id="L928" title="All 2 branches missed.">        if (x.val == null) {</span>
+<span class="nc" id="L929">          unlink(x);</span>
+<span class="nc" id="L930">          return true;</span>
+        }
+<span class="nc" id="L932">        x = x.next;</span>
+      }
+    } else {
+<span class="nc bnc" id="L935" title="All 2 branches missed.">      for (var x = head; x != null; ) {</span>
+<span class="nc bnc" id="L936" title="All 2 branches missed.">        if (o.equals(x.val)) {</span>
+<span class="nc" id="L937">          unlink(x);</span>
+<span class="nc" id="L938">          return true;</span>
+        }
+<span class="nc" id="L940">        x = x.next;</span>
+      }
+    }
+<span class="nc" id="L943">    return false;</span>
+  }
+
+  /**
+   * Removes all elements of this collection that satisfy the given predicate.
+   *
+   * @param filter a predicate which returns {@code true} for elements to be
+   *     removed
+   * @return {@code true} if any elements were removed
+   */
+  @Override
+  public boolean removeIf(Predicate&lt;? super E&gt; filter) {
+<span class="nc" id="L955">    Check.notNull(filter, Tag.TEST);</span>
+<span class="nc" id="L956">    int size = sz;</span>
+<span class="nc bnc" id="L957" title="All 2 branches missed.">    for (var x = head; x != null; ) {</span>
+<span class="nc bnc" id="L958" title="All 2 branches missed.">      if (filter.test(x.val)) {</span>
+<span class="nc" id="L959">        var next = x.next;</span>
+<span class="nc" id="L960">        unlink(x);</span>
+<span class="nc" id="L961">        x = next;</span>
+<span class="nc" id="L962">      } else {</span>
+<span class="nc" id="L963">        x = x.next;</span>
+      }
+    }
+<span class="nc bnc" id="L966" title="All 2 branches missed.">    return size != this.sz;</span>
+  }
+
+  /**
+   * Removes all elements from this list that are also present in the specified
+   * collection.
+   *
+   * @param c collection containing elements to be removed from this list
+   * @return {@code true} if this list changed as a result of the call
+   * @see #remove(Object)
+   * @see #contains(Object)
+   */
+  @Override
+  public boolean removeAll(Collection&lt;?&gt; c) {
+<span class="nc" id="L980">    Check.notNull(c, Tag.COLLECTION);</span>
+<span class="nc" id="L981">    int size = this.sz;</span>
+<span class="nc" id="L982">    removeIf(c::contains);</span>
+<span class="nc bnc" id="L983" title="All 2 branches missed.">    return size != this.sz;</span>
+  }
+
+  /**
+   * Removes all elements from this list that are not present in the specified
+   * collection.
+   *
+   * @param c collection containing elements to be retained in this list
+   * @return {@code true} if this list changed as a result of the call
+   * @see #remove(Object)
+   * @see #contains(Object)
+   */
+  @Override
+  public boolean retainAll(Collection&lt;?&gt; c) {
+<span class="nc" id="L997">    Check.notNull(c, Tag.COLLECTION);</span>
+<span class="nc" id="L998">    int sz = this.sz;</span>
+<span class="nc bnc" id="L999" title="All 2 branches missed.">    removeIf(e -&gt; !c.contains(e));</span>
+<span class="nc bnc" id="L1000" title="All 2 branches missed.">    return sz != this.sz;</span>
+  }
+
+  /**
+   * Returns the first element of the list. A {@link NoSuchElementException} is
+   * thrown if the list is empty.
+   *
+   * @return the first element of the list
+   */
+  public E first() {
+<span class="nc" id="L1010">    Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="nc" id="L1011">    return head.val;</span>
+  }
+
+  /**
+   * Returns the last element of the list. A {@link NoSuchElementException} is thrown
+   * if the list is empty.
+   *
+   * @return the last element of the list
+   */
+  public E last() {
+<span class="nc" id="L1021">    Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="nc" id="L1022">    return tail.val;</span>
+  }
+
+  /**
+   * Inserts the specified value at the start of the list, right-shifting the
+   * original elements.
+   *
+   * @param value The value to insert
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; prepend(E value) {
+<span class="nc" id="L1033">    Node&lt;E&gt; n = new Node&lt;&gt;(value);</span>
+<span class="nc bnc" id="L1034" title="All 2 branches missed.">    if (sz == 0) {</span>
+<span class="nc" id="L1035">      head = tail = n;</span>
+    } else {
+<span class="nc" id="L1037">      join(n, head);</span>
+<span class="nc" id="L1038">      head = n;</span>
+    }
+<span class="nc" id="L1040">    ++sz;</span>
+<span class="nc" id="L1041">    return this;</span>
+  }
+
+  /**
+   * Inserts the specified collection at the start of the list, right-shifting the
+   * original elements.
+   *
+   * @param values The values to prepend to the list
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; prependAll(Collection&lt;? extends E&gt; values) {
+<span class="nc" id="L1052">    Check.notNull(values, Tag.COLLECTION);</span>
+<span class="nc bnc" id="L1053" title="All 2 branches missed.">    if (!values.isEmpty()) {</span>
+<span class="nc" id="L1054">      insert(0, Chain.of(values));</span>
+    }
+<span class="nc" id="L1056">    return this;</span>
+  }
+
+  /**
+   * Appends the specified value to the end of the list. Equivalent to
+   * {@link #add(Object) add(value)}.
+   *
+   * @param value The value to append to the list
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; append(E value) {
+<span class="nc" id="L1067">    Node&lt;E&gt; n = new Node&lt;&gt;(value);</span>
+<span class="nc bnc" id="L1068" title="All 2 branches missed.">    if (sz == 0) {</span>
+<span class="nc" id="L1069">      head = tail = n;</span>
+    } else {
+<span class="nc" id="L1071">      join(tail, n);</span>
+<span class="nc" id="L1072">      tail = n;</span>
+    }
+<span class="nc" id="L1074">    ++sz;</span>
+<span class="nc" id="L1075">    return this;</span>
+  }
+
+  /**
+   * Appends the specified collection to this {@code WiredList}.
+   *
+   * @param values The values to append to the list
+   * @return this {@code WiredList}
+   * @see #addAll(Collection)
+   * @see #attach(CrisprList)
+   */
+  public CrisprList&lt;E&gt; appendAll(Collection&lt;? extends E&gt; values) {
+<span class="nc" id="L1087">    Check.notNull(values, Tag.COLLECTION);</span>
+<span class="nc bnc" id="L1088" title="All 2 branches missed.">    if (!values.isEmpty()) {</span>
+<span class="nc" id="L1089">      insert(sz, Chain.of(values));</span>
+    }
+<span class="nc" id="L1091">    return this;</span>
+  }
+
+  /**
+   * Inserts a value into the list. All elements &lt;i&gt;at and following&lt;/i&gt; the
+   * specified index will be right-shifted. The index value must be {@code &gt;= 0} and
+   * {@code &lt;= list.size()}. Specifying 0 (zero) is equivalent to
+   * {@link #prepend(Object) prepend(value)}. Specifying {@code list.size()} is
+   * equivalent to {@link #append(Object) append(value} and
+   * {@link #add(Object) add(value)}.
+   *
+   * @param index the index at which to insert the value
+   * @param value the value
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; insert(int index, E value) {
+<span class="nc" id="L1107">    checkInclusive(index);</span>
+<span class="nc" id="L1108">    insert(index, new Node&lt;&gt;(value));</span>
+<span class="nc" id="L1109">    return this;</span>
+  }
+
+  /**
+   * Inserts the specified collection at the specified index, right-shifting the
+   * elements at and following the index.
+   *
+   * @param index the index at which to insert the collection
+   * @param values The collection to insert into the list
+   * @return this {@code WiredList}
+   * @see #addAll(int, Collection)
+   */
+  public CrisprList&lt;E&gt; insertAll(int index, Collection&lt;? extends E&gt; values) {
+<span class="nc" id="L1122">    checkInclusive(index);</span>
+<span class="nc" id="L1123">    Check.notNull(values, Tag.COLLECTION);</span>
+<span class="nc bnc" id="L1124" title="All 2 branches missed.">    if (!values.isEmpty()) {</span>
+<span class="nc" id="L1125">      insert(index, Chain.of(values));</span>
+    }
+<span class="nc" id="L1127">    return this;</span>
+  }
+
+  /**
+   * Removes the first element from the list, left-shifting the remaining elements. A
+   * {@link NoSuchElementException} is thrown if the list is empty.
+   *
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; deleteFirst() {
+<span class="nc" id="L1137">    Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="nc" id="L1138">    unlink(head);</span>
+<span class="nc" id="L1139">    return this;</span>
+  }
+
+  /**
+   * Removes the last element from the list. A {@link NoSuchElementException} is
+   * thrown if the list is empty.
+   *
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; deleteLast() {
+<span class="nc" id="L1149">    Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="nc" id="L1150">    unlink(tail);</span>
+<span class="nc" id="L1151">    return this;</span>
+  }
+
+  /**
+   * Replaces each element of this list with the result of applying the operator to
+   * that element.  Errors or runtime exceptions thrown by the operator are relayed
+   * to the caller.
+   *
+   * @param operator the operator to apply to each element
+   * @throws UnsupportedOperationException if this list is unmodifiable.
+   *     Implementations may throw this exception if an element cannot be replaced or
+   *     if, in general, modification is not supported
+   */
+  @Override
+  public void replaceAll(UnaryOperator&lt;E&gt; operator) {
+<span class="nc bnc" id="L1166" title="All 2 branches missed.">    if (sz != 0) {</span>
+<span class="nc" id="L1167">      for (var x = head; ; x = x.next) {</span>
+<span class="nc" id="L1168">        x.val = operator.apply(x.val);</span>
+<span class="nc bnc" id="L1169" title="All 2 branches missed.">        if (x == tail) {</span>
+<span class="nc" id="L1170">          break;</span>
+        }
+      }
+    }
+<span class="nc" id="L1174">  }</span>
+
+  /**
+   * Replaces the segment between {@code fromIndex} and {@code toIndex} with the
+   * elements in the specified collection.
+   *
+   * @param fromIndex the start index (inclusive) of the segment to replace
+   * @param toIndex the end index (exclusive) of
+   * @param values The values to replace the segment with
+   * @return this {@code WiredList}
+   * @see #rewire(int, int, CrisprList)
+   */
+  public CrisprList&lt;E&gt; replace(int fromIndex,
+      int toIndex,
+      Collection&lt;? extends E&gt; values) {
+<span class="nc" id="L1189">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="nc" id="L1190">    Check.notNull(values, Tag.COLLECTION);</span>
+<span class="nc bnc" id="L1191" title="All 2 branches missed.">    if (len == 0) {</span>
+<span class="nc bnc" id="L1192" title="All 2 branches missed.">      if (!values.isEmpty()) {</span>
+<span class="nc" id="L1193">        insert(fromIndex, Chain.of(values));</span>
+      }
+<span class="nc bnc" id="L1195" title="All 2 branches missed.">    } else if (len == values.size()) {</span>
+<span class="nc" id="L1196">      var node = nodeAt(fromIndex);</span>
+<span class="nc bnc" id="L1197" title="All 2 branches missed.">      for (E e : values) {</span>
+<span class="nc" id="L1198">        node.val = e;</span>
+<span class="nc" id="L1199">        node = node.next;</span>
+<span class="nc" id="L1200">      }</span>
+<span class="nc" id="L1201">    } else {</span>
+<span class="nc" id="L1202">      unlink(fromIndex, toIndex);</span>
+<span class="nc bnc" id="L1203" title="All 2 branches missed.">      if (!values.isEmpty()) {</span>
+<span class="nc" id="L1204">        insert(fromIndex, Chain.of(values));</span>
+      }
+    }
+<span class="nc" id="L1207">    return this;</span>
+  }
+
+  /**
+   * Replaces the segment between {@code fromIndex} and {@code toIndex} with the
+   * elements in the specified list. This method is functionally equivalent to
+   * {@link #replace(int, int, Collection) replace}, but more efficient. However, it
+   * will leave the specified list empty. If you don't want this to happen, use
+   * {@code replace}.
+   *
+   * @param fromIndex the start index (inclusive) of the segment to replace
+   * @param toIndex the end index (exclusive) of
+   * @param other the values to replace the segment with
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; rewire(int fromIndex,
+      int toIndex,
+      CrisprList&lt;? extends E&gt; other) {
+<span class="nc" id="L1225">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="nc" id="L1226">    Check.notNull(other, WIRED_LIST).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="nc bnc" id="L1227" title="All 2 branches missed.">    if (len != 0) {</span>
+<span class="nc" id="L1228">      unlink(fromIndex, toIndex);</span>
+    }
+<span class="nc bnc" id="L1230" title="All 2 branches missed.">    if (!other.isEmpty()) {</span>
+<span class="nc" id="L1231">      insert(fromIndex, other.unlink(0, other.sz));</span>
+    }
+<span class="nc" id="L1233">    return this;</span>
+  }
+
+  /**
+   * Returns a copy of this {@code WiredList}. Changes made to the copy will not
+   * propagate to this instance, and vice versa.
+   *
+   * @return a deep copy of this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; copy() {
+<span class="nc bnc" id="L1243" title="All 2 branches missed.">    return sz &gt; 0 ? new CrisprList&lt;&gt;(Chain.copyOf(head, sz)) : CrisprList.of();</span>
+  }
+
+  /**
+   * Returns a copy of the specified segment. Changes made to the copy will not
+   * propagate to this instance, and vice versa.
+   *
+   * @param fromIndex the start index (inclusive) of the segment
+   * @param toIndex the end index (exclusive) of the segment
+   * @return a deep copy of the specified segment
+   */
+  public CrisprList&lt;E&gt; copy(int fromIndex, int toIndex) {
+<span class="nc" id="L1255">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="nc bnc" id="L1256" title="All 2 branches missed.">    return len &gt; 0</span>
+<span class="nc" id="L1257">        ? new CrisprList&lt;&gt;(Chain.copyOf(nodeAt(fromIndex), len))</span>
+<span class="nc" id="L1258">        : CrisprList.of();</span>
+  }
+
+  /**
+   * Shrinks the list to between the specified boundaries. If {@code toIndex} is
+   * equal to {@code fromIndex}, the list will, in effect, be
+   * {@link #clear() cleared}.
+   *
+   * @param fromIndex the index (inclusive) of the new start of the list
+   * @param toIndex the index (exclusive) of the new end of the list
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; shrink(int fromIndex, int toIndex) {
+<span class="nc" id="L1271">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="nc bnc" id="L1272" title="All 2 branches missed.">    if (len == 0) {</span>
+<span class="nc" id="L1273">      clear();</span>
+<span class="nc bnc" id="L1274" title="All 2 branches missed.">    } else if (len != sz) {</span>
+<span class="nc" id="L1275">      makeHead(nodeAt(fromIndex));</span>
+<span class="nc" id="L1276">      makeTail(nodeAt(len));</span>
+    }
+<span class="nc" id="L1278">    return this;</span>
+  }
+
+  /**
+   * Removes and returns a segment from the list.
+   *
+   * @param fromIndex the start index (inclusive) of the segment to delete
+   * @param toIndex the end index (exclusive) of the segment to delete
+   * @return the deleted segment
+   */
+  public CrisprList&lt;E&gt; cut(int fromIndex, int toIndex) {
+<span class="nc bnc" id="L1289" title="All 2 branches missed.">    if (Check.fromTo(this, fromIndex, toIndex) &gt; 0) {</span>
+<span class="nc" id="L1290">      return new CrisprList&lt;&gt;(unlink(fromIndex, toIndex));</span>
+    }
+<span class="nc" id="L1292">    return CrisprList.of();</span>
+  }
+
+  /**
+   * Inserts this list into the specified list at the specified position. Equivalent
+   * to {@link #embed(int, CrisprList) into.embed(index, this)}. This list will be
+   * empty afterwards. Note that this method does not return this list but the
+   * paste-into list.
+   *
+   * @param into the list into which to insert this list
+   * @param index the index at which to insert this list
+   * @return the target list
+   */
+  public CrisprList&lt;? super E&gt; paste(CrisprList&lt;? super E&gt; into, int index) {
+<span class="nc" id="L1306">    return into.embed(index, this);</span>
+  }
+
+  /**
+   * Embeds the specified list in this list. This method is functionally equivalent
+   * to {@link #insertAll(int, Collection) insertAll} and
+   * {@link #addAll(int, Collection) addAll}, but more efficient. However, it is a
+   * destructive operation for the provided list. It will be empty afterwards. If you
+   * don't want this to happen, use {@code insertAll} or {@code addAll}.
+   *
+   * @param index the index at which to embed the list
+   * @param other the list to embed
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; embed(int index, CrisprList&lt;? extends E&gt; other) {
+<span class="nc" id="L1321">    checkInclusive(index);</span>
+<span class="nc" id="L1322">    Check.notNull(other, WIRED_LIST).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="nc bnc" id="L1323" title="All 2 branches missed.">    if (!other.isEmpty()) {</span>
+<span class="nc" id="L1324">      insert(index, new Chain(other.head, other.tail, other.sz));</span>
+<span class="nc" id="L1325">      other.clear();</span>
+    }
+<span class="nc" id="L1327">    return this;</span>
+  }
+
+  /**
+   * Exchanges list segments between this list and the specified list.
+   *
+   * @param myFromIndex the start index (inclusive) of the segment within this
+   *     list
+   * @param myToIndex the end index (exclusive) of the segment within this list
+   * @param other the list to exchange segments with
+   * @param itsFromIndex the start index (inclusive) of the segment within the
+   *     other list
+   * @param itsToIndex the end index (exclusive) of the segment within the other
+   *     list
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; exchange(int myFromIndex,
+      int myToIndex,
+      CrisprList&lt;E&gt; other,
+      int itsFromIndex,
+      int itsToIndex) {
+<span class="nc" id="L1348">    int len0 = Check.fromTo(this, myFromIndex, myToIndex);</span>
+<span class="nc" id="L1349">    int len1 = Check.fromTo(other, itsFromIndex, itsToIndex);</span>
+<span class="nc" id="L1350">    Check.that(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="nc bnc" id="L1351" title="All 2 branches missed.">    if (len0 == 0) {</span>
+<span class="nc bnc" id="L1352" title="All 2 branches missed.">      if (len1 != 0) {</span>
+<span class="nc" id="L1353">        insert(myFromIndex, other.unlink(itsFromIndex, itsToIndex));</span>
+      }
+<span class="nc" id="L1355">      return this;</span>
+<span class="nc bnc" id="L1356" title="All 2 branches missed.">    } else if (len1 == 0) {</span>
+<span class="nc" id="L1357">      other.insert(itsFromIndex, unlink(myFromIndex, myToIndex));</span>
+<span class="nc" id="L1358">      return this;</span>
+    }
+
+    // segment boundary nodes
+<span class="nc" id="L1362">    var seg0L = nodeAt(myFromIndex);</span>
+<span class="nc" id="L1363">    var seg0R = nodeAfter(seg0L, myFromIndex, myToIndex - 1);</span>
+<span class="nc" id="L1364">    var seg1L = other.nodeAt(itsFromIndex);</span>
+<span class="nc" id="L1365">    var seg1R = other.nodeAfter(seg1L, itsFromIndex, itsToIndex - 1);</span>
+
+    // attach-to nodes
+<span class="nc" id="L1368">    var att0L = seg0L.prev;</span>
+<span class="nc" id="L1369">    var att0R = seg0R.next;</span>
+<span class="nc" id="L1370">    var att1L = seg1L.prev;</span>
+<span class="nc" id="L1371">    var att1R = seg1R.next;</span>
+
+<span class="nc bnc" id="L1373" title="All 2 branches missed.">    if (att0L == null) {</span>
+<span class="nc" id="L1374">      makeHead(seg1L);</span>
+    } else {
+<span class="nc" id="L1376">      join(att0L, seg1L);</span>
+    }
+<span class="nc bnc" id="L1378" title="All 2 branches missed.">    if (att0R == null) {</span>
+<span class="nc" id="L1379">      makeTail(seg1R);</span>
+    } else {
+<span class="nc" id="L1381">      join(seg1R, att0R);</span>
+    }
+
+<span class="nc bnc" id="L1384" title="All 2 branches missed.">    if (att1L == null) {</span>
+<span class="nc" id="L1385">      other.makeHead(seg0L);</span>
+    } else {
+<span class="nc" id="L1387">      join(att1L, seg0L);</span>
+    }
+<span class="nc bnc" id="L1389" title="All 2 branches missed.">    if (att1R == null) {</span>
+<span class="nc" id="L1390">      other.makeTail(seg0R);</span>
+    } else {
+<span class="nc" id="L1392">      join(seg0R, att1R);</span>
+    }
+
+<span class="nc" id="L1395">    sz = sz - len0 + len1;</span>
+<span class="nc" id="L1396">    other.sz = other.sz - len1 + len0;</span>
+
+<span class="nc" id="L1398">    return this;</span>
+  }
+
+  /**
+   * Removes a segment from the specified list and embeds it in this list.
+   *
+   * @param myIndex the index at which to insert segment
+   * @param other the list to remove the segment from
+   * @param itsFromIndex the start index of the segment (inclusive)
+   * @param itsToIndex the end index of the segment (exclusive)
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; embed(int myIndex,
+      CrisprList&lt;? extends E&gt; other,
+      int itsFromIndex,
+      int itsToIndex) {
+<span class="nc" id="L1414">    checkInclusive(myIndex);</span>
+<span class="nc" id="L1415">    int len = Check.fromTo(other, itsFromIndex, itsToIndex);</span>
+<span class="nc" id="L1416">    Check.that(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="nc bnc" id="L1417" title="All 2 branches missed.">    if (len &gt; 0) {</span>
+<span class="nc" id="L1418">      insert(myIndex, other.unlink(itsFromIndex, itsToIndex));</span>
+    }
+<span class="nc" id="L1420">    return this;</span>
+  }
+
+  /**
+   * Appends the specified list to this list. This method is functionally equivalent
+   * {@link #appendAll(Collection) appendAll} and {@link #addAll(Collection) addAll},
+   * but more efficient. However, it will leave the specified list empty. If you
+   * don't want this to happen, use {@code appendAll} or {@code addAll}.
+   *
+   * @param other the list to embed
+   * @return this {@code WiredList}
+   * @see #join(List)
+   */
+  public CrisprList&lt;E&gt; attach(CrisprList&lt;? extends E&gt; other) {
+<span class="nc" id="L1434">    Check.notNull(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="nc bnc" id="L1435" title="All 2 branches missed.">    if (other.sz != 0) {</span>
+<span class="nc" id="L1436">      attach0(other);</span>
+    }
+<span class="nc" id="L1438">    return this;</span>
+  }
+
+  @SuppressWarnings({&quot;rawtypes&quot;, &quot;unchecked&quot;})
+  private void attach0(CrisprList other) {
+<span class="nc bnc" id="L1443" title="All 2 branches missed.">    if (sz == 0) {</span>
+<span class="nc" id="L1444">      head = other.head;</span>
+    } else {
+<span class="nc" id="L1446">      join(tail, other.head);</span>
+    }
+<span class="nc" id="L1448">    tail = other.tail;</span>
+<span class="nc" id="L1449">    sz += other.sz;</span>
+<span class="nc" id="L1450">    other.clear();</span>
+<span class="nc" id="L1451">  }</span>
+
+  /**
+   * Reorders the elements according to the specified criteria. The elements
+   * satisfying the first criterion (if any) will come first in the list, the
+   * elements satisfying the second criterion (if any) will come second, etc. The
+   * elements that did not satisfy any criterion will come last in the list.
+   *
+   * @param criteria the criteria used to group the elements
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; defragment(List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
+<span class="nc" id="L1463">    return defragment(true, criteria);</span>
+  }
+
+  /**
+   * Reorders the elements according to the specified criteria. The elements
+   * satisfying the first criterion (if any) will come first in the list, the
+   * elements satisfying the second criterion (if any) will come second, etc.
+   *
+   * @param keepRemainder whether to keep the elements that did not satisfy any
+   *     criterion, and move them to the end of the list
+   * @param criteria the criteria used to group the elements
+   * @return this {@code WiredList}
+   */
+  @SuppressWarnings({&quot;rawtypes&quot;})
+  public CrisprList&lt;E&gt; defragment(boolean keepRemainder,
+      List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
+<span class="nc" id="L1479">    Check.that(criteria).is(deepNotEmpty());</span>
+<span class="nc" id="L1480">    List&lt;CrisprList&lt;E&gt;&gt; groups = createGroups(criteria);</span>
+<span class="nc" id="L1481">    Chain rest = new Chain(head, tail, sz);</span>
+<span class="nc" id="L1482">    sz = 0;</span>
+<span class="nc bnc" id="L1483" title="All 2 branches missed.">    for (CrisprList wl : groups) {</span>
+<span class="nc bnc" id="L1484" title="All 2 branches missed.">      if (!wl.isEmpty()) {</span>
+<span class="nc" id="L1485">        attach0(wl);</span>
+      }
+<span class="nc" id="L1487">    }</span>
+<span class="nc bnc" id="L1488" title="All 4 branches missed.">    if (keepRemainder &amp;&amp; rest.length != 0) {</span>
+<span class="nc" id="L1489">      insert(sz, rest);</span>
+    }
+<span class="nc" id="L1491">    return this;</span>
+  }
+
+  /**
+   * Groups the elements in those that do, and elements that do not satisfy the
+   * specified criterion.
+   *
+   * @param criterion the test to submit the list elements to
+   * @param &lt;L0&gt; the type of the lists within the returned list
+   * @param &lt;L1&gt; the type of returned list
+   * @return a list containing two lists representing the two groups
+   * @see #group(List)
+   */
+  public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 group(Predicate&lt;? super E&gt; criterion) {
+<span class="nc" id="L1505">    return group(singletonList(criterion));</span>
+  }
+
+  /**
+   * &lt;p&gt;
+   * Groups the elements according to the provided criteria. The return value is a
+   * list-of-lists where each inner {@code List} constitutes a group. &lt;i&gt;This&lt;/i&gt;
+   * {@code WiredList} is left with all elements that did not satisfy any criterion,
+   * and it will be the last element in the returned list-of-lists. In other words,
+   * the size of the returned list-of-lists is the number of criteria plus one. You
+   * can use the {@link #join(List) join} method to create a single &quot;defragmented&quot;
+   * list again.
+   * &lt;p&gt;
+   * Elements will never be placed in more than one group. As soon as an element is
+   * found to satisfy a criterion it is placed in the corresponding group and the
+   * remaining criteria are skipped.
+   * &lt;p&gt;
+   * The runtime type of the returned list-of-lists {@code WiredList&lt;WiredList&lt;E&gt;&gt;}.
+   * If you don't care about the exact type of the returned {@code List}, you can
+   * simply write:
+   *
+   * &lt;blockquote&gt;&lt;pre&gt;{@code
+   * WiredList&lt;String&gt; wl = ...;
+   * List&lt;List&lt;String&gt;&gt; groups = wl.group(...);
+   * }&lt;/pre&gt;&lt;/blockquote&gt;
+   * &lt;p&gt;
+   * Otherwise use any combination of {@code List} and {@code WiredList} that suits
+   * your needs.
+   *
+   * @param criteria the criteria used to group the elements
+   * @param &lt;L0&gt; the type of the lists within the returned list
+   * @param &lt;L1&gt; the type of returned list
+   * @return a list of element groups
+   */
+  @SuppressWarnings({&quot;unchecked&quot;})
+  public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 group(List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
+<span class="nc" id="L1541">    Check.that(criteria).is(deepNotEmpty());</span>
+<span class="nc" id="L1542">    List&lt;CrisprList&lt;E&gt;&gt; groups = createGroups(criteria);</span>
+<span class="nc" id="L1543">    var result = new CrisprList&lt;&gt;(groups);</span>
+<span class="nc" id="L1544">    result.add(this);</span>
+<span class="nc" id="L1545">    return (L1) result;</span>
+  }
+
+  @SuppressWarnings({&quot;rawtypes&quot;})
+  private CrisprList&lt;CrisprList&lt;E&gt;&gt; createGroups(List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
+<span class="nc" id="L1550">    CrisprList&lt;CrisprList&lt;E&gt;&gt; groups = new CrisprList&lt;&gt;();</span>
+<span class="nc" id="L1551">    criteria.forEach(c -&gt; groups.append(new CrisprList&lt;&gt;()));</span>
+<span class="nc bnc" id="L1552" title="All 2 branches missed.">    for (Node&lt;E&gt; node = head; node != null; ) {</span>
+<span class="nc" id="L1553">      var next = node.next;</span>
+<span class="nc bnc" id="L1554" title="All 2 branches missed.">      for (int i = 0; i &lt; criteria.size(); ++i) {</span>
+<span class="nc bnc" id="L1555" title="All 2 branches missed.">        if (criteria.get(i).test(node.val)) {</span>
+<span class="nc" id="L1556">          unlink(node);</span>
+<span class="nc" id="L1557">          CrisprList wl = groups.get(i);</span>
+<span class="nc" id="L1558">          wl.insert(wl.size(), node);</span>
+<span class="nc" id="L1559">          break;</span>
+        }
+      }
+<span class="nc" id="L1562">      node = next;</span>
+<span class="nc" id="L1563">    }</span>
+<span class="nc" id="L1564">    return groups;</span>
+  }
+
+  /**
+   * Splits this {@code WiredList} into multiple {@code WiredList} instances of the
+   * specified size. The partitions are chopped off from the {@code WiredList} and
+   * then placed in a separate {@code WiredList}. The last element in the returned
+   * list-of-lists is &lt;i&gt;this&lt;/i&gt; {@code WiredList}, and it will now contain at most
+   * {@code size} elements.
+   * &lt;p&gt;
+   * The runtime type of the return value is {@code WiredList&lt;WiredList&lt;E&gt;&gt;}. If you
+   * don't care about the exact type of the returned {@code List}, you can simply
+   * write:
+   *
+   * &lt;blockquote&gt;&lt;pre&gt;{@code
+   * WiredList&lt;String&gt; wl = ...;
+   * List&lt;List&lt;String&gt;&gt; partitions = wl.partition(3);
+   * }&lt;/pre&gt;&lt;/blockquote&gt;
+   * &lt;p&gt;
+   * Otherwise use any combination of {@code List} and {@code WiredList} that suits
+   * your needs.
+   *
+   * @param size The desired size of the partitions
+   * @param &lt;L0&gt; the type of the lists within the returned list
+   * @param &lt;L1&gt; the type of returned list
+   * @return a list of {@code WiredList} instances of the specified size
+   */
+  @SuppressWarnings(&quot;unchecked&quot;)
+  public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 partition(int size) {
+<span class="nc" id="L1593">    Check.that(size).is(gt(), 0);</span>
+<span class="nc" id="L1594">    CrisprList&lt;CrisprList&lt;E&gt;&gt; partitions = new CrisprList&lt;&gt;();</span>
+<span class="nc bnc" id="L1595" title="All 2 branches missed.">    while (sz &gt; size) {</span>
+<span class="nc" id="L1596">      Chain chain = new Chain(head, nodeAt(size - 1), size);</span>
+<span class="nc" id="L1597">      partitions.append(new CrisprList&lt;&gt;(unlink(chain)));</span>
+<span class="nc" id="L1598">    }</span>
+<span class="nc" id="L1599">    partitions.append(this);</span>
+<span class="nc" id="L1600">    return (L1) partitions;</span>
+  }
+
+  /**
+   * Splits this {@code WiredList} into the specified number of equally-sized
+   * {@code WiredList} instances. The last element in the returned list-of-lists is
+   * this {@code WiredList}, and it will contain the remainder of the elements after
+   * dividing the list size by {@code numPartitions}. The runtime type of the return
+   * value is {@code WiredList&lt;WiredList&lt;E&gt;&gt;}. If you don't care about the exact type
+   * of the returned {@code List}, you can simply write:
+   *
+   * &lt;blockquote&gt;&lt;pre&gt;{@code
+   * WiredList&lt;String&gt; wl = ...;
+   * List&lt;List&lt;String&gt;&gt; partitions = wl.split(3);
+   * }&lt;/pre&gt;&lt;/blockquote&gt;
+   * &lt;p&gt;
+   * Otherwise use any combination of {@code List} and {@code WiredList} that suits
+   * your needs.
+   *
+   * @param numPartitions The number of {@code WiredList} instances to split this
+   *     {@code WiredList} into
+   * @param &lt;L0&gt; the type of the lists within the returned list
+   * @param &lt;L1&gt; the type of returned list
+   * @return a list containing the specified number of {@code WiredList} instances
+   */
+  public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 split(int numPartitions) {
+<span class="nc" id="L1626">    Check.that(numPartitions).is(gt(), 0);</span>
+<span class="nc" id="L1627">    return partition(divUp(sz, numPartitions));</span>
+  }
+
+  /**
+   * Removes and returns a segment from the start of the list. The segment includes
+   * all elements up to (and not including) the first element that does not satisfy
+   * the specified condition. In other words, all elements in the returned list
+   * &lt;i&gt;will&lt;/i&gt; satisfy the condition. If the condition is never satisfied, this
+   * list remains unchanged and an empty list is returned. If &lt;i&gt;all&lt;/i&gt; elements
+   * satisfy the condition, the list remains unchanged and is itself returned.
+   *
+   * @param criterion the criterion that the elements in the returned segment
+   *     will satisfy
+   * @return a {@code WiredList} containing all elements preceding the first element
+   *     that does not satisfy the condition
+   */
+  public CrisprList&lt;E&gt; lchop(Predicate&lt;? super E&gt; criterion) {
+<span class="nc" id="L1644">    Check.notNull(criterion);</span>
+<span class="nc bnc" id="L1645" title="All 2 branches missed.">    if (sz == 0) {</span>
+<span class="nc" id="L1646">      return this;</span>
+    }
+<span class="nc" id="L1648">    Node&lt;E&gt; first = head;</span>
+<span class="nc" id="L1649">    Node&lt;E&gt; last = justBeforeHead();</span>
+<span class="nc" id="L1650">    int len = 0;</span>
+<span class="nc bnc" id="L1651" title="All 4 branches missed.">    for (; criterion.test(last.next.val) &amp;&amp; ++len != sz; last = last.next)</span>
+      ;
+<span class="nc bnc" id="L1653" title="All 2 branches missed.">    if (len == sz) {</span>
+<span class="nc" id="L1654">      return this;</span>
+    }
+<span class="nc" id="L1656">    return new CrisprList&lt;&gt;(unlink(new Chain(first, last, len)));</span>
+  }
+
+  /**
+   * Removes and returns a segment from the end of the list. The segment includes all
+   * elements following the &lt;i&gt;last&lt;/i&gt; element that does &lt;i&gt;not&lt;/i&gt; satisfy the
+   * specified condition. In other words, all elements in the returned list
+   * &lt;i&gt;will&lt;/i&gt; satisfy the condition. If the condition is never satisfied, the
+   * list remains unchanged and an empty list is returned. If &lt;i&gt;all&lt;/i&gt; elements
+   * satisfy the condition, the list remains unchanged and is itself returned.
+   *
+   * @param criterion the criterion that the elements in the returned segment
+   *     will satisfy
+   * @return a {@code WiredList} containing all elements following the last element
+   *     that does not satisfy the condition
+   */
+  public CrisprList&lt;E&gt; rchop(Predicate&lt;? super E&gt; criterion) {
+<span class="nc" id="L1673">    Check.notNull(criterion);</span>
+<span class="nc bnc" id="L1674" title="All 2 branches missed.">    if (sz == 0) {</span>
+<span class="nc" id="L1675">      return this;</span>
+    }
+<span class="nc" id="L1677">    Node&lt;E&gt; last = tail;</span>
+<span class="nc" id="L1678">    Node&lt;E&gt; first = justAfterTail();</span>
+<span class="nc" id="L1679">    int len = 0;</span>
+<span class="nc bnc" id="L1680" title="All 4 branches missed.">    for (; criterion.test(first.prev.val) &amp;&amp; ++len != sz; first = first.prev)</span>
+      ;
+<span class="nc bnc" id="L1682" title="All 2 branches missed.">    if (len == sz) {</span>
+<span class="nc" id="L1683">      return this;</span>
+    }
+<span class="nc" id="L1685">    return new CrisprList&lt;&gt;(unlink(new Chain(first, last, len)));</span>
+  }
+
+  /**
+   * Reverses the order of the elements in this {@code WiredList}.
+   *
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; reverse() {
+<span class="nc bnc" id="L1694" title="All 2 branches missed.">    if (sz &gt; 1) {</span>
+<span class="nc" id="L1695">      var x = head;</span>
+<span class="nc" id="L1696">      var y = tail;</span>
+<span class="nc bnc" id="L1697" title="All 2 branches missed.">      for (int i = 0; i &lt; sz / 2; ++i) {</span>
+<span class="nc" id="L1698">        E tmp = x.val;</span>
+<span class="nc" id="L1699">        x.val = y.val;</span>
+<span class="nc" id="L1700">        y.val = tmp;</span>
+<span class="nc" id="L1701">        x = x.next;</span>
+<span class="nc" id="L1702">        y = y.prev;</span>
+      }
+    }
+<span class="nc" id="L1705">    return this;</span>
+  }
+
+  /**
+   * Moves a list segment forwards or backwards through the list.
+   *
+   * @param fromIndex the start index of the segment (inclusive)
+   * @param toIndex the end index of the segment (exclusive)
+   * @param newFromIndex the index to which to move the segment. To move the
+   *     segment to the very start of the list, specify 0 (zero). To move the segment
+   *     to the very end of the list specify the {@link #size() size} of the list
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; move(int fromIndex, int toIndex, int newFromIndex) {
+<span class="nc" id="L1719">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="nc" id="L1720">    Check.that(newFromIndex, &quot;target index&quot;).is(indexInclusiveOf(), this);</span>
+<span class="nc bnc" id="L1721" title="All 2 branches missed.">    if (len != 0) {</span>
+<span class="nc bnc" id="L1722" title="All 2 branches missed.">      if (newFromIndex &gt; fromIndex) {</span>
+<span class="nc" id="L1723">        moveToTail(fromIndex, toIndex, newFromIndex);</span>
+<span class="nc bnc" id="L1724" title="All 2 branches missed.">      } else if (newFromIndex &lt; fromIndex) {</span>
+<span class="nc" id="L1725">        moveToHead(fromIndex, toIndex, newFromIndex);</span>
+      }
+    }
+<span class="nc" id="L1728">    return this;</span>
+  }
+
+  private void moveToTail(int from, int to, int newFrom) {
+<span class="nc" id="L1732">    int indexOfLast = to - 1;</span>
+<span class="nc" id="L1733">    int steps = newFrom - from;</span>
+<span class="nc" id="L1734">    Node&lt;E&gt; first = nodeAt(from);</span>
+<span class="nc" id="L1735">    Node&lt;E&gt; last = nodeAfter(first, from, indexOfLast);</span>
+<span class="nc" id="L1736">    Node&lt;E&gt; insertAfter = nodeAfter(last, indexOfLast, indexOfLast + steps);</span>
+<span class="nc bnc" id="L1737" title="All 2 branches missed.">    if (first == head) {</span>
+<span class="nc" id="L1738">      makeHead(last.next);</span>
+    } else {
+<span class="nc" id="L1740">      join(first.prev, last.next);</span>
+    }
+<span class="nc bnc" id="L1742" title="All 2 branches missed.">    if (insertAfter == tail) {</span>
+<span class="nc" id="L1743">      join(insertAfter, first);</span>
+<span class="nc" id="L1744">      makeTail(last);</span>
+    } else {
+<span class="nc" id="L1746">      join(last, insertAfter.next);</span>
+<span class="nc" id="L1747">      join(insertAfter, first);</span>
+    }
+<span class="nc" id="L1749">  }</span>
+
+  private void moveToHead(int from, int to, int newFrom) {
+<span class="nc" id="L1752">    Node&lt;E&gt; first = nodeAt(from);</span>
+<span class="nc" id="L1753">    Node&lt;E&gt; last = nodeAfter(first, from, to - 1);</span>
+<span class="nc" id="L1754">    Node&lt;E&gt; insertBefore = nodeBefore(first, from, newFrom);</span>
+<span class="nc bnc" id="L1755" title="All 2 branches missed.">    if (last == tail) {</span>
+<span class="nc" id="L1756">      makeTail(first.prev);</span>
+    } else {
+<span class="nc" id="L1758">      join(first.prev, last.next);</span>
+    }
+<span class="nc bnc" id="L1760" title="All 2 branches missed.">    if (insertBefore == head) {</span>
+<span class="nc" id="L1761">      join(last, insertBefore);</span>
+<span class="nc" id="L1762">      makeHead(first);</span>
+    } else {
+<span class="nc" id="L1764">      join(insertBefore.prev, first);</span>
+<span class="nc" id="L1765">      join(last, insertBefore);</span>
+    }
+<span class="nc" id="L1767">  }</span>
+
+  /**
+   * Returns an array containing all elements in this list in proper sequence (from
+   * first to last element).
+   *
+   * @return an array containing all elements in this list in proper sequence
+   * @see Arrays#asList(Object[])
+   */
+  @Override
+  public Object[] toArray() {
+<span class="nc bnc" id="L1778" title="All 2 branches missed.">    if (sz == 0) {</span>
+<span class="nc" id="L1779">      return EMPTY_OBJECT_ARRAY;</span>
+    }
+<span class="nc" id="L1781">    Object[] result = new Object[sz];</span>
+<span class="nc" id="L1782">    int i = 0;</span>
+<span class="nc bnc" id="L1783" title="All 2 branches missed.">    for (E val : this) {</span>
+<span class="nc" id="L1784">      result[i++] = val;</span>
+<span class="nc" id="L1785">    }</span>
+<span class="nc" id="L1786">    return result;</span>
+  }
+
+  /**
+   * Returns an array containing all elements in this list in proper sequence (from
+   * first to last element); the runtime type of the returned array is that of the
+   * specified array.
+   *
+   * @param a the array into which the elements of this list are to be stored, if
+   *     it is big enough; otherwise, a new array of the same runtime type is
+   *     allocated for this purpose.
+   * @return an array containing the elements of this list
+   * @throws ArrayStoreException if the runtime type of the specified array is
+   *     not a supertype of the runtime type of every element in this list
+   * @throws NullPointerException if the specified array is null
+   */
+  @Override
+  @SuppressWarnings({&quot;unchecked&quot;})
+  public &lt;T&gt; T[] toArray(T[] a) {
+<span class="nc" id="L1805">    Check.notNull(a);</span>
+<span class="nc bnc" id="L1806" title="All 2 branches missed.">    if (a.length &lt; sz) {</span>
+<span class="nc" id="L1807">      a = (T[]) InvokeMethods.newArray(a.getClass(), sz);</span>
+    }
+<span class="nc" id="L1809">    int i = 0;</span>
+<span class="nc" id="L1810">    Object[] result = a;</span>
+<span class="nc bnc" id="L1811" title="All 2 branches missed.">    for (E val : this) {</span>
+<span class="nc" id="L1812">      result[i++] = val;</span>
+<span class="nc" id="L1813">    }</span>
+<span class="nc bnc" id="L1814" title="All 2 branches missed.">    if (a.length &gt; sz) {</span>
+<span class="nc" id="L1815">      a[sz] = null;</span>
+    }
+<span class="nc" id="L1817">    return a;</span>
+  }
+
+  /**
+   * Removes all elements from this list. The list will be empty after this call
+   * returns.
+   */
+  @Override
+  public void clear() {
+<span class="nc" id="L1826">    head = tail = null;</span>
+<span class="nc" id="L1827">    sz = 0;</span>
+<span class="nc" id="L1828">  }</span>
+
+  /**
+   * Returns an {@code Iterator} that traverses the list from the first element to
+   * the last.
+   *
+   * @return an {@code Iterator} that traverses the list's elements from first to the
+   *     last
+   */
+  @Override
+  public Iterator&lt;E&gt; iterator() {
+<span class="nc bnc" id="L1839" title="All 2 branches missed.">    return sz == 0 ? emptyIterator() : new Iterator&lt;&gt;() {</span>
+
+<span class="nc" id="L1841">      private Node&lt;E&gt; curr = justBeforeHead();</span>
+
+      @Override
+      public boolean hasNext() {
+<span class="nc bnc" id="L1845" title="All 2 branches missed.">        return curr != tail;</span>
+      }
+
+      @Override
+      public E next() {
+<span class="nc" id="L1850">        Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
+<span class="nc" id="L1851">        return Check.that(curr = curr.next)</span>
+<span class="nc" id="L1852">            .is(notNull(), concurrentModification())</span>
+<span class="nc" id="L1853">            .ok(Node::value);</span>
+      }
+    };
+  }
+
+  /**
+   * Returns an {@code Iterator} that traverses the list from the last element to the
+   * first. See also {@link #iterator()}.
+   *
+   * @return an {@code Iterator} that traverses the list from the last element to the
+   *     first
+   */
+  public Iterator&lt;E&gt; reverseIterator() {
+<span class="nc bnc" id="L1866" title="All 2 branches missed.">    return sz == 0 ? emptyIterator() : new Iterator&lt;&gt;() {</span>
+
+<span class="nc" id="L1868">      private Node&lt;E&gt; curr = justAfterTail();</span>
+
+      @Override
+      public boolean hasNext() {
+<span class="nc bnc" id="L1872" title="All 2 branches missed.">        return curr != head;</span>
+      }
+
+      @Override
+      public E next() {
+<span class="nc" id="L1877">        Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
+<span class="nc" id="L1878">        return Check.that(curr = curr.prev)</span>
+<span class="nc" id="L1879">            .is(notNull(), concurrentModification())</span>
+<span class="nc" id="L1880">            .ok(Node::value);</span>
+      }
+    };
+  }
+
+  /**
+   * Returns a {@link WiredIterator} that traverses the list from the first element
+   * to the last.
+   *
+   * @return a {@code WiredIterator} that traverses the list from the first element
+   *     to the last
+   */
+  public WiredIterator&lt;E&gt; wiredIterator() {
+<span class="nc" id="L1893">    return new ForwardWiredIterator();</span>
+  }
+
+  /**
+   * Returns a {@link WiredIterator} that traverses the list from the first element
+   * to the last, or the other way round, depending on the value of the argument
+   *
+   * @param reverse Whether to iterate from the first to the last
+   *     ({@code false}), or from the last to the first ({@code true})
+   * @return a {@code WiredIterator} that traverses the list from the first element
+   *     to the last, or the other way round
+   */
+  public WiredIterator&lt;E&gt; wiredIterator(boolean reverse) {
+<span class="nc bnc" id="L1906" title="All 2 branches missed.">    return reverse ? new ReverseWiredIterator() : new ForwardWiredIterator();</span>
+  }
+
+  /**
+   * Returns a list iterator over the elements in this list (in proper sequence).
+   *
+   * @return a list iterator over the elements in this list (in proper sequence)
+   */
+  @Override
+  public ListIterator&lt;E&gt; listIterator() {
+<span class="nc bnc" id="L1916" title="All 2 branches missed.">    return isEmpty() ? emptyListIterator() : new ListItr();</span>
+  }
+
+  /**
+   * Returns a list iterator over the elements in this list (in proper sequence),
+   * starting at the specified position in the list. The specified index indicates
+   * the first element that would be returned by an initial call to
+   * {@link ListIterator#next next}. An initial call to
+   * {@link ListIterator#previous previous} would return the element with the
+   * specified index minus one.
+   *
+   * @param index index of the first element to be returned from the list
+   *     iterator (by a call to {@link ListIterator#next next})
+   * @return a list iterator over the elements in this list (in proper sequence),
+   *     starting at the specified position in the list
+   * @throws IndexOutOfBoundsException if the index is out of range
+   *     ({@code index &lt; 0 || index &gt; size()})
+   */
+  @Override
+  public ListIterator&lt;E&gt; listIterator(int index) {
+<span class="nc" id="L1936">    checkInclusive(index);</span>
+<span class="nc bnc" id="L1937" title="All 2 branches missed.">    if (isEmpty()) {</span>
+<span class="nc" id="L1938">      return emptyListIterator();</span>
+    }
+<span class="nc" id="L1940">    return new ListItr(index);</span>
+  }
+
+  /**
+   * Compares the specified object with this list for equality.  Returns {@code true}
+   * if and only if the specified object is also a list, both lists have the same
+   * size, and all corresponding pairs of elements in the two lists are &lt;i&gt;equal&lt;/i&gt;.
+   * (Two elements {@code e1} and {@code e2} are &lt;i&gt;equal&lt;/i&gt; if
+   * {@code Objects.equals(e1, e2)}.) In other words, two lists are defined to be
+   * equal if they contain the same elements in the same order.  This definition
+   * ensures that the equals method works properly across different implementations
+   * of the {@code List} interface.
+   *
+   * @param o the object to be compared for equality with this list
+   * @return {@code true} if the specified object is equal to this list
+   */
+  @Override
+  public boolean equals(Object o) {
+<span class="nc bnc" id="L1958" title="All 2 branches missed.">    if (this == o) {</span>
+<span class="nc" id="L1959">      return true;</span>
+<span class="nc bnc" id="L1960" title="All 2 branches missed.">    } else if (o instanceof List&lt;?&gt; l) {</span>
+<span class="nc bnc" id="L1961" title="All 2 branches missed.">      if (sz == 0) {</span>
+<span class="nc bnc" id="L1962" title="All 2 branches missed.">        return l.size() == 0;</span>
+<span class="nc bnc" id="L1963" title="All 2 branches missed.">      } else if (sz == l.size()) {</span>
+<span class="nc" id="L1964">        var x = head;</span>
+<span class="nc bnc" id="L1965" title="All 2 branches missed.">        for (Object obj : l) {</span>
+<span class="nc bnc" id="L1966" title="All 2 branches missed.">          if (!Objects.equals(obj, x.val)) {</span>
+<span class="nc" id="L1967">            return false;</span>
+          }
+<span class="nc" id="L1969">          x = x.next;</span>
+<span class="nc" id="L1970">        }</span>
+<span class="nc" id="L1971">        return true;</span>
+      }
+    }
+<span class="nc" id="L1974">    return false;</span>
+  }
+
+  /**
+   * Returns the hash code value for this list.
+   *
+   * @return the hash code value for this list
+   * @see Object#equals(Object)
+   * @see #equals(Object)
+   */
+  @Override
+  public int hashCode() {
+<span class="nc" id="L1986">    int hash = 1;</span>
+<span class="nc bnc" id="L1987" title="All 2 branches missed.">    for (E val : this) {</span>
+<span class="nc" id="L1988">      hash = 31 * hash + Objects.hashCode(val);</span>
+<span class="nc" id="L1989">    }</span>
+<span class="nc" id="L1990">    return hash;</span>
+  }
+
+  /**
+   * Returns a {@code String} representation of this list.
+   *
+   * @return a {@code String} representation of this list
+   */
+  @Override
+  public String toString() {
+<span class="nc" id="L2000">    return '[' + CollectionMethods.implode(this) + ']';</span>
+  }
+
+  /**
+   * Throws an {@code UnsupportedOperationException}. The specification for this
+   * method requires that non-structural changes in the returned list are reflected
+   * in the original list (and vice versa). However, except for the
+   * {@link #set(int, Object)} method, all changes to a {@code WiredList} &lt;i&gt;are&lt;/i&gt;
+   * structural changes. {@code WiredList} does provide a method that returns a
+   * sublist ({@link #copy(int, int) copySegment}). It just has no relation to the
+   * original list any longer.
+   */
+  @Override
+  public List&lt;E&gt; subList(int fromIndex, int toIndex) {
+<span class="nc" id="L2014">    throw new UnsupportedOperationException();</span>
+  }
+
+  ////////////////////////////////////////////////////////////////
+  // IMPORTANT: If you want to reuse nodes or chains, the order of
+  // the operations matter. Always first unlink the node or chain,
+  // and then insert it.
+  ////////////////////////////////////////////////////////////////
+
+  @SuppressWarnings({&quot;unchecked&quot;, &quot;rawtypes&quot;})
+  private void insert(int index, Node node) {
+<span class="nc bnc" id="L2025" title="All 2 branches missed.">    if (sz == 0) {</span>
+<span class="nc" id="L2026">      makeHead(node);</span>
+<span class="nc" id="L2027">      makeTail(node);</span>
+<span class="nc bnc" id="L2028" title="All 2 branches missed.">    } else if (index == 0) {</span>
+<span class="nc" id="L2029">      join(node, head);</span>
+<span class="nc" id="L2030">      makeHead(node);</span>
+<span class="nc bnc" id="L2031" title="All 2 branches missed.">    } else if (index == sz) {</span>
+<span class="nc" id="L2032">      join(tail, node);</span>
+<span class="nc" id="L2033">      makeTail(node);</span>
+    } else {
+<span class="nc" id="L2035">      var x = nodeAt(index);</span>
+<span class="nc" id="L2036">      join(x.prev, node);</span>
+<span class="nc" id="L2037">      join(node, x);</span>
+    }
+<span class="nc" id="L2039">    ++sz;</span>
+<span class="nc" id="L2040">  }</span>
+
+  @SuppressWarnings(&quot;unchecked&quot;)
+  private void insert(int index, Chain chain) {
+<span class="nc bnc" id="L2044" title="All 2 branches missed.">    if (sz == 0) {</span>
+<span class="nc" id="L2045">      makeHead(chain.head);</span>
+<span class="nc" id="L2046">      makeTail(chain.tail);</span>
+<span class="nc bnc" id="L2047" title="All 2 branches missed.">    } else if (index == 0) {</span>
+<span class="nc" id="L2048">      join(chain.tail, head);</span>
+<span class="nc" id="L2049">      makeHead(chain.head);</span>
+<span class="nc bnc" id="L2050" title="All 2 branches missed.">    } else if (index == sz) {</span>
+<span class="nc" id="L2051">      join(tail, chain.head);</span>
+<span class="nc" id="L2052">      makeTail(chain.tail);</span>
+    } else {
+<span class="nc" id="L2054">      var node = nodeAt(index);</span>
+<span class="nc" id="L2055">      join(node.prev, chain.head);</span>
+<span class="nc bnc" id="L2056" title="All 2 branches missed.">      if (chain.length == 1) {</span>
+<span class="nc" id="L2057">        join(chain.head, node);</span>
+      } else {
+<span class="nc" id="L2059">        join(chain.tail, node);</span>
+      }
+    }
+<span class="nc" id="L2062">    sz += chain.length;</span>
+<span class="nc" id="L2063">  }</span>
+
+  // Make garbage collector happy
+  private E destroy(Node&lt;E&gt; node) {
+<span class="nc" id="L2067">    E val = node.val;</span>
+<span class="nc" id="L2068">    unlink(node);</span>
+<span class="nc" id="L2069">    return val;</span>
+  }
+
+  private void unlink(Node&lt;E&gt; node) {
+<span class="nc bnc" id="L2073" title="All 2 branches missed.">    if (sz == 1) {</span>
+<span class="nc" id="L2074">      head = tail = null;</span>
+<span class="nc bnc" id="L2075" title="All 2 branches missed.">    } else if (node == head) {</span>
+<span class="nc" id="L2076">      makeHead(node.next);</span>
+<span class="nc bnc" id="L2077" title="All 2 branches missed.">    } else if (node == tail) {</span>
+<span class="nc" id="L2078">      makeTail(node.prev);</span>
+    } else {
+<span class="nc" id="L2080">      join(node.prev, node.next);</span>
+    }
+<span class="nc" id="L2082">    --sz;</span>
+<span class="nc" id="L2083">  }</span>
+
+  private Chain unlink(int from, int to) {
+<span class="nc" id="L2086">    var first = nodeAt(from);</span>
+<span class="nc" id="L2087">    var last = nodeAfter(first, from, to - 1);</span>
+<span class="nc" id="L2088">    int len = to - from;</span>
+<span class="nc" id="L2089">    return unlink(new Chain(first, last, len));</span>
+  }
+
+  @SuppressWarnings(&quot;unchecked&quot;)
+  private Chain unlink(Chain chain) {
+<span class="nc bnc" id="L2094" title="All 2 branches missed.">    if (chain.length == sz) {</span>
+<span class="nc" id="L2095">      head = tail = null;</span>
+<span class="nc bnc" id="L2096" title="All 2 branches missed.">    } else if (chain.head == head) {</span>
+<span class="nc" id="L2097">      makeHead(chain.tail.next);</span>
+<span class="nc bnc" id="L2098" title="All 2 branches missed.">    } else if (chain.tail == tail) {</span>
+<span class="nc" id="L2099">      makeTail(chain.head.prev);</span>
+    } else {
+<span class="nc" id="L2101">      join(chain.head.prev, chain.tail.next);</span>
+    }
+<span class="nc" id="L2103">    sz -= chain.length;</span>
+<span class="nc" id="L2104">    return chain;</span>
+  }
+
+  /**
+   * Validates the index and then returns {@link #nodeAt(int)}.
+   */
+  private Node&lt;E&gt; node(int index) {
+<span class="nc" id="L2111">    return Check.that(index)</span>
+<span class="nc" id="L2112">        .is(indexInclusiveOf(), this, indexOutOfBounds(index))</span>
+<span class="nc" id="L2113">        .mapToObj(this::nodeAt);</span>
+  }
+
+  /**
+   * Returns the node at the specified position.
+   */
+  // @VisibleForTesting
+  private Node&lt;E&gt; nodeAt(int index) {
+<span class="nc bnc" id="L2121" title="All 2 branches missed.">    if (index &lt; (sz &gt;&gt; 1)) {</span>
+<span class="nc" id="L2122">      Node&lt;E&gt; n = head;</span>
+<span class="nc bnc" id="L2123" title="All 2 branches missed.">      for (int i = 0; i &lt; index; ++i) {</span>
+<span class="nc" id="L2124">        n = n.next;</span>
+      }
+<span class="nc" id="L2126">      return n;</span>
+    } else {
+<span class="nc" id="L2128">      Node&lt;E&gt; n = tail;</span>
+<span class="nc bnc" id="L2129" title="All 2 branches missed.">      for (int i = sz - 1; i &gt; index; --i) {</span>
+<span class="nc" id="L2130">        n = n.prev;</span>
+      }
+<span class="nc" id="L2132">      return n;</span>
+    }
+  }
+
+  /**
+   * Returns a node following another node. Used to minimize the amount of pointers
+   * we need to chase, given that we already have a node in our hands. The startIndex
+   * argument is the index of the node we already have. The index argument is the
+   * index of the node we are interested in. Note that if index is a to-index
+   * (exclusive), this method may return null (namely when index equals sz).
+   */
+  // @VisibleForTesting
+  private Node&lt;E&gt; nodeAfter(Node&lt;E&gt; startNode, int startIndex, int index) {
+    Node&lt;E&gt; n;
+<span class="nc bnc" id="L2146" title="All 2 branches missed.">    if (index &lt; ((sz + startIndex) &gt;&gt; 1)) {</span>
+<span class="nc bnc" id="L2147" title="All 2 branches missed.">      for (n = startNode; startIndex++ &lt; index; n = n.next)</span>
+        ;
+    } else {
+<span class="nc bnc" id="L2150" title="All 2 branches missed.">      for (n = tail; ++index &lt; sz; n = n.prev)</span>
+        ;
+    }
+<span class="nc" id="L2153">    return n;</span>
+  }
+
+  // @VisibleForTesting
+  private Node&lt;E&gt; nodeBefore(Node&lt;E&gt; startNode, int startIndex, int index) {
+    Node&lt;E&gt; n;
+<span class="nc bnc" id="L2159" title="All 2 branches missed.">    if (index &lt; (startIndex &gt;&gt; 1)) {</span>
+<span class="nc bnc" id="L2160" title="All 2 branches missed.">      for (n = head; index-- &gt; 0; n = n.next)</span>
+        ;
+    } else {
+<span class="nc bnc" id="L2163" title="All 2 branches missed.">      for (n = startNode; index++ &lt; startIndex; n = n.prev)</span>
+        ;
+    }
+<span class="nc" id="L2166">    return n;</span>
+  }
+
+  private void makeHead(Node&lt;E&gt; node) {
+<span class="nc" id="L2170">    node.prev = null;</span>
+<span class="nc" id="L2171">    head = node;</span>
+<span class="nc" id="L2172">  }</span>
+
+  private void makeTail(Node&lt;E&gt; node) {
+<span class="nc" id="L2175">    node.next = null;</span>
+<span class="nc" id="L2176">    tail = node;</span>
+<span class="nc" id="L2177">  }</span>
+
+  private static &lt;T&gt; void join(Node&lt;T&gt; prev, Node&lt;T&gt; next) {
+<span class="nc" id="L2180">    prev.next = next;</span>
+<span class="nc" id="L2181">    next.prev = prev;</span>
+<span class="nc" id="L2182">  }</span>
+
+  private Node&lt;E&gt; justBeforeHead() {
+<span class="nc" id="L2185">    Node&lt;E&gt; x = new Node&lt;&gt;(null);</span>
+<span class="nc" id="L2186">    x.next = head;</span>
+<span class="nc" id="L2187">    return x;</span>
+  }
+
+  private Node&lt;E&gt; justAfterTail() {
+<span class="nc" id="L2191">    Node&lt;E&gt; x = new Node&lt;&gt;(null);</span>
+<span class="nc" id="L2192">    x.prev = tail;</span>
+<span class="nc" id="L2193">    return x;</span>
+  }
+
+  private void checkInclusive(int index) {
+<span class="nc" id="L2197">    Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));</span>
+<span class="nc" id="L2198">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

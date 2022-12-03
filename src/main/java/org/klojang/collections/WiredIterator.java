@@ -21,6 +21,7 @@ import java.util.ListIterator;
  * @see WiredList#wiredIterator(boolean)
  */
 public sealed interface WiredIterator<E> extends Iterator<E> permits
+    CrisprList.ForwardWiredIterator, CrisprList.ReverseWiredIterator,
     WiredList.ForwardWiredIterator, WiredList.ReverseWiredIterator {
 
   /**

@@ -64,7 +64,7 @@ import static org.klojang.util.MathMethods.divUp;
  * @param <E> the type of the elements in the list
  * @author Ayco Holleman
  */
-public final class WiredList<E> implements List<E> {
+public final class CrisprList<E> implements List<E> {
 
   // Ubiquitous parameter names within this class
   private static final String WIRED_LIST = "WiredList";
@@ -135,7 +135,7 @@ public final class WiredList<E> implements List<E> {
 
     // must (and will) only be called if values.size() > 0
     static <V> Chain of(Collection<V> values) {
-      if (values instanceof WiredList wl) {
+      if (values instanceof CrisprList wl) {
         return copyOf(wl.head, wl.size());
       }
       Iterator<V> itr = values.iterator();
@@ -253,12 +253,12 @@ public final class WiredList<E> implements List<E> {
       Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());
       Check.that(sz).isNot(zero(), emptyList());
       if (curr == head) {
-        destroy(curr);
+        unlink(curr);
         curr = beforeHead = justBeforeHead();
       } else {
         Check.that(curr = curr.prev)
             .is(notNull(), concurrentModification())
-            .then(prev -> destroy(prev.next));
+            .then(prev -> unlink(prev.next));
       }
     }
 
@@ -372,12 +372,12 @@ public final class WiredList<E> implements List<E> {
       Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());
       Check.that(sz).isNot(zero(), emptyList());
       if (curr == tail) {
-        destroy(curr);
+        unlink(curr);
         curr = afterTail = justAfterTail();
       } else {
         Check.that(curr = curr.next)
             .is(notNull(), concurrentModification())
-            .then(next -> destroy(next.prev));
+            .then(next -> unlink(next.prev));
       }
     }
 
@@ -521,8 +521,8 @@ public final class WiredList<E> implements List<E> {
    * @param <E> the type of the elements in the list
    * @return a new, empty {@code WiredList}
    */
-  public static <E> WiredList<E> of() {
-    return new WiredList<>();
+  public static <E> CrisprList<E> of() {
+    return new CrisprList<>();
   }
 
   /**
@@ -532,8 +532,8 @@ public final class WiredList<E> implements List<E> {
    * @param <E> the type of the elements in the list
    * @return a new {@code WiredList} containing the specified elements
    */
-  public static <E> WiredList<E> of(E e) {
-    return new WiredList<E>().append(e);
+  public static <E> CrisprList<E> of(E e) {
+    return new CrisprList<E>().append(e);
   }
 
   /**
@@ -544,8 +544,8 @@ public final class WiredList<E> implements List<E> {
    * @param <E> the type of the elements in the list
    * @return a new {@code WiredList} containing the specified elements
    */
-  public static <E> WiredList<E> of(E e0, E e1) {
-    return new WiredList<E>().append(e0).append(e1);
+  public static <E> CrisprList<E> of(E e0, E e1) {
+    return new CrisprList<E>().append(e0).append(e1);
   }
 
   /**
@@ -559,9 +559,9 @@ public final class WiredList<E> implements List<E> {
    * @return a new {@code WiredList} containing the specified elements
    */
   @SafeVarargs
-  public static <E> WiredList<E> of(E e0, E e1, E e2, E... moreElems) {
+  public static <E> CrisprList<E> of(E e0, E e1, E e2, E... moreElems) {
     Check.notNull(moreElems, Tag.ARRAY);
-    var wl = new WiredList<E>();
+    var wl = new CrisprList<E>();
     Node<E> head = new Node<>(e0);
     Node<E> tail = head;
     tail = new Node<>(tail, e1);
@@ -583,9 +583,9 @@ public final class WiredList<E> implements List<E> {
    * @return a new {@code WiredList} containing the specified elements
    */
   @SafeVarargs
-  public static <E> WiredList<E> ofElements(E... elements) {
+  public static <E> CrisprList<E> ofElements(E... elements) {
     Check.notNull(elements, Tag.ARRAY);
-    var wl = new WiredList<E>();
+    var wl = new CrisprList<E>();
     if (elements.length != 0) {
       Node<E> head = new Node<>(elements[0]);
       Node<E> tail = head;
@@ -602,15 +602,15 @@ public final class WiredList<E> implements List<E> {
   /**
    * Concatenates the provided {@code WiredList} instances. This is a destructive
    * operation for the {@code WiredList} instances in the provided {@code List}. They
-   * will be empty when the method returns. See {@link #attach(WiredList)}.
+   * will be empty when the method returns. See {@link #attach(CrisprList)}.
    *
    * @param lists the {@code WiredList} instances to concatenate
    * @param <E> the type of the elements in the list
    * @return a new {@code WiredList} containing the elements in the individual
    *     {@code WiredList} instances
    */
-  public static <E> WiredList<E> join(List<WiredList<E>> lists) {
-    WiredList<E> wl = new WiredList<>();
+  public static <E> CrisprList<E> join(List<CrisprList<E>> lists) {
+    CrisprList<E> wl = new CrisprList<>();
     Check.notNull(lists).ok().forEach(wl::attach);
     return wl;
   }
@@ -622,7 +622,7 @@ public final class WiredList<E> implements List<E> {
   /**
    * Creates a new, empty {@code WiredList}.
    */
-  public WiredList() {}
+  public CrisprList() {}
 
   /**
    * Creates a new {@code WiredList} containing the elements in the specified
@@ -630,12 +630,12 @@ public final class WiredList<E> implements List<E> {
    *
    * @param c the collection whose elements to copy to this {@code WiredList}
    */
-  public WiredList(Collection<? extends E> c) {
+  public CrisprList(Collection<? extends E> c) {
     addAll(0, c);
   }
 
   @SuppressWarnings({"unchecked"})
-  private WiredList(Chain chain) {
+  private CrisprList(Chain chain) {
     makeHead(chain.head);
     makeTail(chain.tail);
     sz = chain.length;
@@ -794,7 +794,7 @@ public final class WiredList<E> implements List<E> {
    * @return this {@code WiredList}
    */
   @SuppressWarnings("unchecked")
-  public WiredList<E> set(int index, E e0, E e1, E... moreElems) {
+  public CrisprList<E> set(int index, E e0, E e1, E... moreElems) {
     Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));
     Check.notNull(moreElems, Tag.VARARGS).has(length(), lte(), sz - index - 2);
     Node<E> node = nodeAt(index);
@@ -870,7 +870,7 @@ public final class WiredList<E> implements List<E> {
    * @return {@code true} if this list changed as a result of the call
    * @see #add(Object)
    * @see #appendAll(Collection)
-   * @see #attach(WiredList)
+   * @see #attach(CrisprList)
    */
   @Override
   public boolean addAll(Collection<? extends E> c) {
@@ -908,7 +908,10 @@ public final class WiredList<E> implements List<E> {
    */
   @Override
   public E remove(int index) {
-    return destroy(node(index));
+    var x = node(index);
+    E val = x.val;
+    unlink(x);
+    return val;
   }
 
   /**
@@ -931,7 +934,7 @@ public final class WiredList<E> implements List<E> {
     } else {
       for (var x = head; x != null; ) {
         if (o.equals(x.val)) {
-          destroy(x);
+          unlink(x);
           return true;
         }
         x = x.next;
@@ -954,7 +957,7 @@ public final class WiredList<E> implements List<E> {
     for (var x = head; x != null; ) {
       if (filter.test(x.val)) {
         var next = x.next;
-        destroy(x);
+        unlink(x);
         x = next;
       } else {
         x = x.next;
@@ -1026,7 +1029,7 @@ public final class WiredList<E> implements List<E> {
    * @param value The value to insert
    * @return this {@code WiredList}
    */
-  public WiredList<E> prepend(E value) {
+  public CrisprList<E> prepend(E value) {
     Node<E> n = new Node<>(value);
     if (sz == 0) {
       head = tail = n;
@@ -1045,7 +1048,7 @@ public final class WiredList<E> implements List<E> {
    * @param values The values to prepend to the list
    * @return this {@code WiredList}
    */
-  public WiredList<E> prependAll(Collection<? extends E> values) {
+  public CrisprList<E> prependAll(Collection<? extends E> values) {
     Check.notNull(values, Tag.COLLECTION);
     if (!values.isEmpty()) {
       insert(0, Chain.of(values));
@@ -1060,7 +1063,7 @@ public final class WiredList<E> implements List<E> {
    * @param value The value to append to the list
    * @return this {@code WiredList}
    */
-  public WiredList<E> append(E value) {
+  public CrisprList<E> append(E value) {
     Node<E> n = new Node<>(value);
     if (sz == 0) {
       head = tail = n;
@@ -1078,9 +1081,9 @@ public final class WiredList<E> implements List<E> {
    * @param values The values to append to the list
    * @return this {@code WiredList}
    * @see #addAll(Collection)
-   * @see #attach(WiredList)
+   * @see #attach(CrisprList)
    */
-  public WiredList<E> appendAll(Collection<? extends E> values) {
+  public CrisprList<E> appendAll(Collection<? extends E> values) {
     Check.notNull(values, Tag.COLLECTION);
     if (!values.isEmpty()) {
       insert(sz, Chain.of(values));
@@ -1100,7 +1103,7 @@ public final class WiredList<E> implements List<E> {
    * @param value the value
    * @return this {@code WiredList}
    */
-  public WiredList<E> insert(int index, E value) {
+  public CrisprList<E> insert(int index, E value) {
     checkInclusive(index);
     insert(index, new Node<>(value));
     return this;
@@ -1115,7 +1118,7 @@ public final class WiredList<E> implements List<E> {
    * @return this {@code WiredList}
    * @see #addAll(int, Collection)
    */
-  public WiredList<E> insertAll(int index, Collection<? extends E> values) {
+  public CrisprList<E> insertAll(int index, Collection<? extends E> values) {
     checkInclusive(index);
     Check.notNull(values, Tag.COLLECTION);
     if (!values.isEmpty()) {
@@ -1130,9 +1133,9 @@ public final class WiredList<E> implements List<E> {
    *
    * @return this {@code WiredList}
    */
-  public WiredList<E> deleteFirst() {
+  public CrisprList<E> deleteFirst() {
     Check.that(sz).isNot(zero(), noSuchElement());
-    destroy(head);
+    unlink(head);
     return this;
   }
 
@@ -1142,9 +1145,9 @@ public final class WiredList<E> implements List<E> {
    *
    * @return this {@code WiredList}
    */
-  public WiredList<E> deleteLast() {
+  public CrisprList<E> deleteLast() {
     Check.that(sz).isNot(zero(), noSuchElement());
-    destroy(tail);
+    unlink(tail);
     return this;
   }
 
@@ -1178,9 +1181,9 @@ public final class WiredList<E> implements List<E> {
    * @param toIndex the end index (exclusive) of
    * @param values The values to replace the segment with
    * @return this {@code WiredList}
-   * @see #rewire(int, int, WiredList)
+   * @see #rewire(int, int, CrisprList)
    */
-  public WiredList<E> replace(int fromIndex,
+  public CrisprList<E> replace(int fromIndex,
       int toIndex,
       Collection<? extends E> values) {
     int len = Check.fromTo(this, fromIndex, toIndex);
@@ -1216,13 +1219,13 @@ public final class WiredList<E> implements List<E> {
    * @param other the values to replace the segment with
    * @return this {@code WiredList}
    */
-  public WiredList<E> rewire(int fromIndex,
+  public CrisprList<E> rewire(int fromIndex,
       int toIndex,
-      WiredList<? extends E> other) {
+      CrisprList<? extends E> other) {
     int len = Check.fromTo(this, fromIndex, toIndex);
     Check.notNull(other, WIRED_LIST).isNot(sameAs(), this, autoEmbedNotAllowed());
     if (len != 0) {
-      cut(fromIndex, toIndex).clear();
+      unlink(fromIndex, toIndex);
     }
     if (!other.isEmpty()) {
       insert(fromIndex, other.unlink(0, other.sz));
@@ -1236,8 +1239,8 @@ public final class WiredList<E> implements List<E> {
    *
    * @return a deep copy of this {@code WiredList}
    */
-  public WiredList<E> copy() {
-    return sz > 0 ? new WiredList<>(Chain.copyOf(head, sz)) : WiredList.of();
+  public CrisprList<E> copy() {
+    return sz > 0 ? new CrisprList<>(Chain.copyOf(head, sz)) : CrisprList.of();
   }
 
   /**
@@ -1248,11 +1251,11 @@ public final class WiredList<E> implements List<E> {
    * @param toIndex the end index (exclusive) of the segment
    * @return a deep copy of the specified segment
    */
-  public WiredList<E> copy(int fromIndex, int toIndex) {
+  public CrisprList<E> copy(int fromIndex, int toIndex) {
     int len = Check.fromTo(this, fromIndex, toIndex);
     return len > 0
-        ? new WiredList<>(Chain.copyOf(nodeAt(fromIndex), len))
-        : WiredList.of();
+        ? new CrisprList<>(Chain.copyOf(nodeAt(fromIndex), len))
+        : CrisprList.of();
   }
 
   /**
@@ -1264,29 +1267,13 @@ public final class WiredList<E> implements List<E> {
    * @param toIndex the index (exclusive) of the new end of the list
    * @return this {@code WiredList}
    */
-  @SuppressWarnings("SuspiciousNameCombination")
-  public WiredList<E> shrink(int fromIndex, int toIndex) {
+  public CrisprList<E> shrink(int fromIndex, int toIndex) {
     int len = Check.fromTo(this, fromIndex, toIndex);
     if (len == 0) {
       clear();
     } else if (len != sz) {
-      Node<E> x = head;
-      for (int i = 0; i < fromIndex; ++i) { // make gc happy
-        Node<E> y = x.next;
-        x.next = x.prev = null;
-        x.val = null;
-        x = y;
-      }
-      head = x;
-      x = tail;
-      for (int i = toIndex; i < sz; ++i) {
-        Node<E> y = x.prev;
-        x.next = x.prev = null;
-        x.val = null;
-        x = y;
-      }
-      tail = x;
-      sz -= len;
+      makeHead(nodeAt(fromIndex));
+      makeTail(nodeAt(len));
     }
     return this;
   }
@@ -1298,16 +1285,16 @@ public final class WiredList<E> implements List<E> {
    * @param toIndex the end index (exclusive) of the segment to delete
    * @return the deleted segment
    */
-  public WiredList<E> cut(int fromIndex, int toIndex) {
+  public CrisprList<E> cut(int fromIndex, int toIndex) {
     if (Check.fromTo(this, fromIndex, toIndex) > 0) {
-      return new WiredList<>(unlink(fromIndex, toIndex));
+      return new CrisprList<>(unlink(fromIndex, toIndex));
     }
-    return WiredList.of();
+    return CrisprList.of();
   }
 
   /**
    * Inserts this list into the specified list at the specified position. Equivalent
-   * to {@link #embed(int, WiredList) into.embed(index, this)}. This list will be
+   * to {@link #embed(int, CrisprList) into.embed(index, this)}. This list will be
    * empty afterwards. Note that this method does not return this list but the
    * paste-into list.
    *
@@ -1315,7 +1302,7 @@ public final class WiredList<E> implements List<E> {
    * @param index the index at which to insert this list
    * @return the target list
    */
-  public WiredList<? super E> paste(WiredList<? super E> into, int index) {
+  public CrisprList<? super E> paste(CrisprList<? super E> into, int index) {
     return into.embed(index, this);
   }
 
@@ -1330,16 +1317,12 @@ public final class WiredList<E> implements List<E> {
    * @param other the list to embed
    * @return this {@code WiredList}
    */
-  public WiredList<E> embed(int index, WiredList<? extends E> other) {
+  public CrisprList<E> embed(int index, CrisprList<? extends E> other) {
     checkInclusive(index);
     Check.notNull(other, WIRED_LIST).isNot(sameAs(), this, autoEmbedNotAllowed());
     if (!other.isEmpty()) {
       insert(index, new Chain(other.head, other.tail, other.sz));
-      // Reset but don't clear the embedded list, because that
-      // would nullify the nodes we just embedded in this list
-      other.head = null;
-      other.tail = null;
-      other.sz = 0;
+      other.clear();
     }
     return this;
   }
@@ -1357,9 +1340,9 @@ public final class WiredList<E> implements List<E> {
    *     list
    * @return this {@code WiredList}
    */
-  public WiredList<E> exchange(int myFromIndex,
+  public CrisprList<E> exchange(int myFromIndex,
       int myToIndex,
-      WiredList<E> other,
+      CrisprList<E> other,
       int itsFromIndex,
       int itsToIndex) {
     int len0 = Check.fromTo(this, myFromIndex, myToIndex);
@@ -1424,8 +1407,8 @@ public final class WiredList<E> implements List<E> {
    * @param itsToIndex the end index of the segment (exclusive)
    * @return this {@code WiredList}
    */
-  public WiredList<E> embed(int myIndex,
-      WiredList<? extends E> other,
+  public CrisprList<E> embed(int myIndex,
+      CrisprList<? extends E> other,
       int itsFromIndex,
       int itsToIndex) {
     checkInclusive(myIndex);
@@ -1447,7 +1430,7 @@ public final class WiredList<E> implements List<E> {
    * @return this {@code WiredList}
    * @see #join(List)
    */
-  public WiredList<E> attach(WiredList<? extends E> other) {
+  public CrisprList<E> attach(CrisprList<? extends E> other) {
     Check.notNull(other).isNot(sameAs(), this, autoEmbedNotAllowed());
     if (other.sz != 0) {
       attach0(other);
@@ -1456,7 +1439,7 @@ public final class WiredList<E> implements List<E> {
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  private void attach0(WiredList other) {
+  private void attach0(CrisprList other) {
     if (sz == 0) {
       head = other.head;
     } else {
@@ -1464,9 +1447,7 @@ public final class WiredList<E> implements List<E> {
     }
     tail = other.tail;
     sz += other.sz;
-    other.head = null;
-    other.tail = null;
-    other.sz = 0;
+    other.clear();
   }
 
   /**
@@ -1478,7 +1459,7 @@ public final class WiredList<E> implements List<E> {
    * @param criteria the criteria used to group the elements
    * @return this {@code WiredList}
    */
-  public WiredList<E> defragment(List<Predicate<? super E>> criteria) {
+  public CrisprList<E> defragment(List<Predicate<? super E>> criteria) {
     return defragment(true, criteria);
   }
 
@@ -1493,13 +1474,13 @@ public final class WiredList<E> implements List<E> {
    * @return this {@code WiredList}
    */
   @SuppressWarnings({"rawtypes"})
-  public WiredList<E> defragment(boolean keepRemainder,
+  public CrisprList<E> defragment(boolean keepRemainder,
       List<Predicate<? super E>> criteria) {
     Check.that(criteria).is(deepNotEmpty());
-    List<WiredList<E>> groups = createGroups(criteria);
+    List<CrisprList<E>> groups = createGroups(criteria);
     Chain rest = new Chain(head, tail, sz);
     sz = 0;
-    for (WiredList wl : groups) {
+    for (CrisprList wl : groups) {
       if (!wl.isEmpty()) {
         attach0(wl);
       }
@@ -1558,22 +1539,22 @@ public final class WiredList<E> implements List<E> {
   @SuppressWarnings({"unchecked"})
   public <L0 extends List<E>, L1 extends List<L0>> L1 group(List<Predicate<? super E>> criteria) {
     Check.that(criteria).is(deepNotEmpty());
-    List<WiredList<E>> groups = createGroups(criteria);
-    var result = new WiredList<>(groups);
+    List<CrisprList<E>> groups = createGroups(criteria);
+    var result = new CrisprList<>(groups);
     result.add(this);
     return (L1) result;
   }
 
   @SuppressWarnings({"rawtypes"})
-  private WiredList<WiredList<E>> createGroups(List<Predicate<? super E>> criteria) {
-    WiredList<WiredList<E>> groups = new WiredList<>();
-    criteria.forEach(c -> groups.append(new WiredList<>()));
+  private CrisprList<CrisprList<E>> createGroups(List<Predicate<? super E>> criteria) {
+    CrisprList<CrisprList<E>> groups = new CrisprList<>();
+    criteria.forEach(c -> groups.append(new CrisprList<>()));
     for (Node<E> node = head; node != null; ) {
       var next = node.next;
       for (int i = 0; i < criteria.size(); ++i) {
         if (criteria.get(i).test(node.val)) {
           unlink(node);
-          WiredList wl = groups.get(i);
+          CrisprList wl = groups.get(i);
           wl.insert(wl.size(), node);
           break;
         }
@@ -1610,10 +1591,10 @@ public final class WiredList<E> implements List<E> {
   @SuppressWarnings("unchecked")
   public <L0 extends List<E>, L1 extends List<L0>> L1 partition(int size) {
     Check.that(size).is(gt(), 0);
-    WiredList<WiredList<E>> partitions = new WiredList<>();
+    CrisprList<CrisprList<E>> partitions = new CrisprList<>();
     while (sz > size) {
       Chain chain = new Chain(head, nodeAt(size - 1), size);
-      partitions.append(new WiredList<>(unlink(chain)));
+      partitions.append(new CrisprList<>(unlink(chain)));
     }
     partitions.append(this);
     return (L1) partitions;
@@ -1659,7 +1640,7 @@ public final class WiredList<E> implements List<E> {
    * @return a {@code WiredList} containing all elements preceding the first element
    *     that does not satisfy the condition
    */
-  public WiredList<E> lchop(Predicate<? super E> criterion) {
+  public CrisprList<E> lchop(Predicate<? super E> criterion) {
     Check.notNull(criterion);
     if (sz == 0) {
       return this;
@@ -1672,7 +1653,7 @@ public final class WiredList<E> implements List<E> {
     if (len == sz) {
       return this;
     }
-    return new WiredList<>(unlink(new Chain(first, last, len)));
+    return new CrisprList<>(unlink(new Chain(first, last, len)));
   }
 
   /**
@@ -1688,7 +1669,7 @@ public final class WiredList<E> implements List<E> {
    * @return a {@code WiredList} containing all elements following the last element
    *     that does not satisfy the condition
    */
-  public WiredList<E> rchop(Predicate<? super E> criterion) {
+  public CrisprList<E> rchop(Predicate<? super E> criterion) {
     Check.notNull(criterion);
     if (sz == 0) {
       return this;
@@ -1701,7 +1682,7 @@ public final class WiredList<E> implements List<E> {
     if (len == sz) {
       return this;
     }
-    return new WiredList<>(unlink(new Chain(first, last, len)));
+    return new CrisprList<>(unlink(new Chain(first, last, len)));
   }
 
   /**
@@ -1709,7 +1690,7 @@ public final class WiredList<E> implements List<E> {
    *
    * @return this {@code WiredList}
    */
-  public WiredList<E> reverse() {
+  public CrisprList<E> reverse() {
     if (sz > 1) {
       var x = head;
       var y = tail;
@@ -1734,7 +1715,7 @@ public final class WiredList<E> implements List<E> {
    *     to the very end of the list specify the {@link #size() size} of the list
    * @return this {@code WiredList}
    */
-  public WiredList<E> move(int fromIndex, int toIndex, int newFromIndex) {
+  public CrisprList<E> move(int fromIndex, int toIndex, int newFromIndex) {
     int len = Check.fromTo(this, fromIndex, toIndex);
     Check.that(newFromIndex, "target index").is(indexInclusiveOf(), this);
     if (len != 0) {
@@ -1842,17 +1823,8 @@ public final class WiredList<E> implements List<E> {
    */
   @Override
   public void clear() {
-    if (sz != 0) {
-      var curr = head;
-      do {
-        var next = curr.next;
-        curr.val = null;
-        curr.prev = curr.next = null;
-        curr = next;
-      } while (curr != tail);
-      head = tail = null;
-      sz = 0;
-    }
+    head = tail = null;
+    sz = 0;
   }
 
   /**
@@ -2094,8 +2066,6 @@ public final class WiredList<E> implements List<E> {
   private E destroy(Node<E> node) {
     E val = node.val;
     unlink(node);
-    node.val = null;
-    node.prev = node.next = null;
     return val;
   }
 
