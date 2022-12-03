@@ -36,7 +36,7 @@ import static org.klojang.util.MathMethods.divUp;
  * {@link ListIterator} implementations prescribed by the {@code List} interface are
  * no-frills iterators that throw an {@code UnsupportedOperationException} from all
  * methods designated as optional by the specification. In addition, the
- * {@code WiredList class} also features a {@link #reverseIterator()} and a
+ * {@code CrisprList class} also features a {@link #reverseIterator()} and a
  * {@link #wiredIterator()} method. The latter returns an instance of the
  * {@link WiredIterator} interface. Unlike a {@link ListIterator}, this is a
  * one-way-only iterator, but it still provides the same functionality, and it
@@ -54,12 +54,12 @@ import static org.klojang.util.MathMethods.divUp;
  * <h2>Thread safety</h2>
  * <p>
  * List edits are always destructive, and nearly always don't just change the values
- * in the list, but the underlying data structure itself. The {@code WiredList} class
- * is not thread-safe. Multiple threads mutating the same list can leave it in a
- * seriously corrupted state, with "dangling wires" between the list elements (i.e.
+ * in the list, but the underlying data structure itself. The {@code CrisprList}
+ * class is not thread-safe. Multiple threads mutating the same list can leave it in
+ * a seriously corrupted state, with "dangling wires" between the list elements (i.e.
  * null pointers). While the iterators make a light-touch effort to detect and trap
- * concurrent modifications on the list, {@code WiredList} itself doesn't. Therefore,
- * synchronize carefully when multiple threads access the same list.
+ * concurrent modifications on the list, {@code CrisprList} itself doesn't.
+ * Therefore, synchronize carefully when multiple threads access the same list.
  *
  * @param <E> the type of the elements in the list
  * @author Ayco Holleman
@@ -67,7 +67,7 @@ import static org.klojang.util.MathMethods.divUp;
 public final class CrisprList<E> implements List<E> {
 
   // Ubiquitous parameter names within this class
-  private static final String WIRED_LIST = "WiredList";
+  private static final String WIRED_LIST = "CrisprList";
 
   private static Supplier<IllegalArgumentException> autoEmbedNotAllowed() {
     return () -> new IllegalArgumentException("list cannot be embedded within itself");
@@ -507,56 +507,56 @@ public final class CrisprList<E> implements List<E> {
   //
   //
   // ======================================================= //
-  // ==================== [ WiredList ] ==================== //
+  // ==================== [ CrisprList ] ==================== //
   // ======================================================= //
   //
   //
   //
 
   /**
-   * Returns a new, empty {@code WiredList}. Note that, although the {@code of(..)}
+   * Returns a new, empty {@code CrisprList}. Note that, although the {@code of(..)}
    * methods look like the {@code List.of(...)} methods, they return ordinary,
-   * mutable, {@code null}-accepting {@code WiredList} instances.
+   * mutable, {@code null}-accepting {@code CrisprList} instances.
    *
    * @param <E> the type of the elements in the list
-   * @return a new, empty {@code WiredList}
+   * @return a new, empty {@code CrisprList}
    */
   public static <E> CrisprList<E> of() {
     return new CrisprList<>();
   }
 
   /**
-   * Returns a new {@code WiredList} containing the specified element.
+   * Returns a new {@code CrisprList} containing the specified element.
    *
    * @param e the element
    * @param <E> the type of the elements in the list
-   * @return a new {@code WiredList} containing the specified elements
+   * @return a new {@code CrisprList} containing the specified elements
    */
   public static <E> CrisprList<E> of(E e) {
     return new CrisprList<E>().append(e);
   }
 
   /**
-   * Returns a new {@code WiredList} containing the specified elements.
+   * Returns a new {@code CrisprList} containing the specified elements.
    *
    * @param e0 the first element in the list
    * @param e1 the second element in the list
    * @param <E> the type of the elements in the list
-   * @return a new {@code WiredList} containing the specified elements
+   * @return a new {@code CrisprList} containing the specified elements
    */
   public static <E> CrisprList<E> of(E e0, E e1) {
     return new CrisprList<E>().append(e0).append(e1);
   }
 
   /**
-   * Returns a new {@code WiredList} containing the specified elements.
+   * Returns a new {@code CrisprList} containing the specified elements.
    *
    * @param e0 the first element in the list
    * @param e1 the second element in the list
    * @param e2 the third element in the list
    * @param moreElems more elements to include in the list
    * @param <E> the type of the elements in the list
-   * @return a new {@code WiredList} containing the specified elements
+   * @return a new {@code CrisprList} containing the specified elements
    */
   @SafeVarargs
   public static <E> CrisprList<E> of(E e0, E e1, E e2, E... moreElems) {
@@ -576,11 +576,11 @@ public final class CrisprList<E> implements List<E> {
   }
 
   /**
-   * Returns a new {@code WiredList} containing the specified elements.
+   * Returns a new {@code CrisprList} containing the specified elements.
    *
    * @param elements the elements to add to the list
    * @param <E> the type of the elements in the list
-   * @return a new {@code WiredList} containing the specified elements
+   * @return a new {@code CrisprList} containing the specified elements
    */
   @SafeVarargs
   public static <E> CrisprList<E> ofElements(E... elements) {
@@ -600,14 +600,14 @@ public final class CrisprList<E> implements List<E> {
   }
 
   /**
-   * Concatenates the provided {@code WiredList} instances. This is a destructive
-   * operation for the {@code WiredList} instances in the provided {@code List}. They
-   * will be empty when the method returns. See {@link #attach(CrisprList)}.
+   * Concatenates the provided {@code CrisprList} instances. This is a destructive
+   * operation for the {@code CrisprList} instances in the provided {@code List}.
+   * They will be empty when the method returns. See {@link #attach(CrisprList)}.
    *
-   * @param lists the {@code WiredList} instances to concatenate
+   * @param lists the {@code CrisprList} instances to concatenate
    * @param <E> the type of the elements in the list
-   * @return a new {@code WiredList} containing the elements in the individual
-   *     {@code WiredList} instances
+   * @return a new {@code CrisprList} containing the elements in the individual
+   *     {@code CrisprList} instances
    */
   public static <E> CrisprList<E> join(List<CrisprList<E>> lists) {
     CrisprList<E> wl = new CrisprList<>();
@@ -620,15 +620,15 @@ public final class CrisprList<E> implements List<E> {
   private int sz;
 
   /**
-   * Creates a new, empty {@code WiredList}.
+   * Creates a new, empty {@code CrisprList}.
    */
   public CrisprList() {}
 
   /**
-   * Creates a new {@code WiredList} containing the elements in the specified
+   * Creates a new {@code CrisprList} containing the elements in the specified
    * {@code Collection}.
    *
-   * @param c the collection whose elements to copy to this {@code WiredList}
+   * @param c the collection whose elements to copy to this {@code CrisprList}
    */
   public CrisprList(Collection<? extends E> c) {
     addAll(0, c);
@@ -791,7 +791,7 @@ public final class CrisprList<E> implements List<E> {
    * @param e0 the first value to write
    * @param e1 the second value to write
    * @param moreElems more values to write
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   @SuppressWarnings("unchecked")
   public CrisprList<E> set(int index, E e0, E e1, E... moreElems) {
@@ -1027,7 +1027,7 @@ public final class CrisprList<E> implements List<E> {
    * original elements.
    *
    * @param value The value to insert
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   public CrisprList<E> prepend(E value) {
     Node<E> n = new Node<>(value);
@@ -1046,7 +1046,7 @@ public final class CrisprList<E> implements List<E> {
    * original elements.
    *
    * @param values The values to prepend to the list
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   public CrisprList<E> prependAll(Collection<? extends E> values) {
     Check.notNull(values, Tag.COLLECTION);
@@ -1061,7 +1061,7 @@ public final class CrisprList<E> implements List<E> {
    * {@link #add(Object) add(value)}.
    *
    * @param value The value to append to the list
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   public CrisprList<E> append(E value) {
     Node<E> n = new Node<>(value);
@@ -1076,10 +1076,10 @@ public final class CrisprList<E> implements List<E> {
   }
 
   /**
-   * Appends the specified collection to this {@code WiredList}.
+   * Appends the specified collection to this {@code CrisprList}.
    *
    * @param values The values to append to the list
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    * @see #addAll(Collection)
    * @see #attach(CrisprList)
    */
@@ -1101,7 +1101,7 @@ public final class CrisprList<E> implements List<E> {
    *
    * @param index the index at which to insert the value
    * @param value the value
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   public CrisprList<E> insert(int index, E value) {
     checkInclusive(index);
@@ -1115,7 +1115,7 @@ public final class CrisprList<E> implements List<E> {
    *
    * @param index the index at which to insert the collection
    * @param values The collection to insert into the list
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    * @see #addAll(int, Collection)
    */
   public CrisprList<E> insertAll(int index, Collection<? extends E> values) {
@@ -1131,7 +1131,7 @@ public final class CrisprList<E> implements List<E> {
    * Removes the first element from the list, left-shifting the remaining elements. A
    * {@link NoSuchElementException} is thrown if the list is empty.
    *
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   public CrisprList<E> deleteFirst() {
     Check.that(sz).isNot(zero(), noSuchElement());
@@ -1143,7 +1143,7 @@ public final class CrisprList<E> implements List<E> {
    * Removes the last element from the list. A {@link NoSuchElementException} is
    * thrown if the list is empty.
    *
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   public CrisprList<E> deleteLast() {
     Check.that(sz).isNot(zero(), noSuchElement());
@@ -1180,7 +1180,7 @@ public final class CrisprList<E> implements List<E> {
    * @param fromIndex the start index (inclusive) of the segment to replace
    * @param toIndex the end index (exclusive) of
    * @param values The values to replace the segment with
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    * @see #rewire(int, int, CrisprList)
    */
   public CrisprList<E> replace(int fromIndex,
@@ -1217,7 +1217,7 @@ public final class CrisprList<E> implements List<E> {
    * @param fromIndex the start index (inclusive) of the segment to replace
    * @param toIndex the end index (exclusive) of
    * @param other the values to replace the segment with
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   public CrisprList<E> rewire(int fromIndex,
       int toIndex,
@@ -1234,10 +1234,10 @@ public final class CrisprList<E> implements List<E> {
   }
 
   /**
-   * Returns a copy of this {@code WiredList}. Changes made to the copy will not
+   * Returns a copy of this {@code CrisprList}. Changes made to the copy will not
    * propagate to this instance, and vice versa.
    *
-   * @return a deep copy of this {@code WiredList}
+   * @return a deep copy of this {@code CrisprList}
    */
   public CrisprList<E> copy() {
     return sz > 0 ? new CrisprList<>(Chain.copyOf(head, sz)) : CrisprList.of();
@@ -1265,15 +1265,17 @@ public final class CrisprList<E> implements List<E> {
    *
    * @param fromIndex the index (inclusive) of the new start of the list
    * @param toIndex the index (exclusive) of the new end of the list
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   public CrisprList<E> shrink(int fromIndex, int toIndex) {
     int len = Check.fromTo(this, fromIndex, toIndex);
     if (len == 0) {
       clear();
     } else if (len != sz) {
-      makeHead(nodeAt(fromIndex));
-      makeTail(nodeAt(len));
+      Node<E> x = nodeAt(fromIndex);
+      Node<E> y = nodeAfter(x, fromIndex, toIndex - 1);
+      makeHead(x);
+      makeTail(y);
     }
     return this;
   }
@@ -1315,7 +1317,7 @@ public final class CrisprList<E> implements List<E> {
    *
    * @param index the index at which to embed the list
    * @param other the list to embed
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   public CrisprList<E> embed(int index, CrisprList<? extends E> other) {
     checkInclusive(index);
@@ -1338,7 +1340,7 @@ public final class CrisprList<E> implements List<E> {
    *     other list
    * @param itsToIndex the end index (exclusive) of the segment within the other
    *     list
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   public CrisprList<E> exchange(int myFromIndex,
       int myToIndex,
@@ -1405,7 +1407,7 @@ public final class CrisprList<E> implements List<E> {
    * @param other the list to remove the segment from
    * @param itsFromIndex the start index of the segment (inclusive)
    * @param itsToIndex the end index of the segment (exclusive)
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   public CrisprList<E> embed(int myIndex,
       CrisprList<? extends E> other,
@@ -1427,7 +1429,7 @@ public final class CrisprList<E> implements List<E> {
    * don't want this to happen, use {@code appendAll} or {@code addAll}.
    *
    * @param other the list to embed
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    * @see #join(List)
    */
   public CrisprList<E> attach(CrisprList<? extends E> other) {
@@ -1457,7 +1459,7 @@ public final class CrisprList<E> implements List<E> {
    * elements that did not satisfy any criterion will come last in the list.
    *
    * @param criteria the criteria used to group the elements
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   public CrisprList<E> defragment(List<Predicate<? super E>> criteria) {
     return defragment(true, criteria);
@@ -1471,7 +1473,7 @@ public final class CrisprList<E> implements List<E> {
    * @param keepRemainder whether to keep the elements that did not satisfy any
    *     criterion, and move them to the end of the list
    * @param criteria the criteria used to group the elements
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   @SuppressWarnings({"rawtypes"})
   public CrisprList<E> defragment(boolean keepRemainder,
@@ -1509,7 +1511,7 @@ public final class CrisprList<E> implements List<E> {
    * <p>
    * Groups the elements according to the provided criteria. The return value is a
    * list-of-lists where each inner {@code List} constitutes a group. <i>This</i>
-   * {@code WiredList} is left with all elements that did not satisfy any criterion,
+   * {@code CrisprList} is left with all elements that did not satisfy any criterion,
    * and it will be the last element in the returned list-of-lists. In other words,
    * the size of the returned list-of-lists is the number of criteria plus one. You
    * can use the {@link #join(List) join} method to create a single "defragmented"
@@ -1519,16 +1521,16 @@ public final class CrisprList<E> implements List<E> {
    * found to satisfy a criterion it is placed in the corresponding group and the
    * remaining criteria are skipped.
    * <p>
-   * The runtime type of the returned list-of-lists {@code WiredList<WiredList<E>>}.
-   * If you don't care about the exact type of the returned {@code List}, you can
-   * simply write:
+   * The runtime type of the returned list-of-lists
+   * {@code CrisprList<CrisprList<E>>}. If you don't care about the exact type of the
+   * returned {@code List}, you can simply write:
    *
    * <blockquote><pre>{@code
-   * WiredList<String> wl = ...;
+   * CrisprList<String> wl = ...;
    * List<List<String>> groups = wl.group(...);
    * }</pre></blockquote>
    * <p>
-   * Otherwise use any combination of {@code List} and {@code WiredList} that suits
+   * Otherwise use any combination of {@code List} and {@code CrisprList} that suits
    * your needs.
    *
    * @param criteria the criteria used to group the elements
@@ -1565,28 +1567,28 @@ public final class CrisprList<E> implements List<E> {
   }
 
   /**
-   * Splits this {@code WiredList} into multiple {@code WiredList} instances of the
-   * specified size. The partitions are chopped off from the {@code WiredList} and
-   * then placed in a separate {@code WiredList}. The last element in the returned
-   * list-of-lists is <i>this</i> {@code WiredList}, and it will now contain at most
+   * Splits this {@code CrisprList} into multiple {@code CrisprList} instances of the
+   * specified size. The partitions are chopped off from the {@code CrisprList} and
+   * then placed in a separate {@code CrisprList}. The last element in the returned
+   * list-of-lists is <i>this</i> {@code CrisprList}, and it will now contain at most
    * {@code size} elements.
    * <p>
-   * The runtime type of the return value is {@code WiredList<WiredList<E>>}. If you
-   * don't care about the exact type of the returned {@code List}, you can simply
+   * The runtime type of the return value is {@code CrisprList<CrisprList<E>>}. If
+   * you don't care about the exact type of the returned {@code List}, you can simply
    * write:
    *
    * <blockquote><pre>{@code
-   * WiredList<String> wl = ...;
+   * CrisprList<String> wl = ...;
    * List<List<String>> partitions = wl.partition(3);
    * }</pre></blockquote>
    * <p>
-   * Otherwise use any combination of {@code List} and {@code WiredList} that suits
+   * Otherwise use any combination of {@code List} and {@code CrisprList} that suits
    * your needs.
    *
    * @param size The desired size of the partitions
    * @param <L0> the type of the lists within the returned list
    * @param <L1> the type of returned list
-   * @return a list of {@code WiredList} instances of the specified size
+   * @return a list of {@code CrisprList} instances of the specified size
    */
   @SuppressWarnings("unchecked")
   public <L0 extends List<E>, L1 extends List<L0>> L1 partition(int size) {
@@ -1601,26 +1603,26 @@ public final class CrisprList<E> implements List<E> {
   }
 
   /**
-   * Splits this {@code WiredList} into the specified number of equally-sized
-   * {@code WiredList} instances. The last element in the returned list-of-lists is
-   * this {@code WiredList}, and it will contain the remainder of the elements after
+   * Splits this {@code CrisprList} into the specified number of equally-sized
+   * {@code CrisprList} instances. The last element in the returned list-of-lists is
+   * this {@code CrisprList}, and it will contain the remainder of the elements after
    * dividing the list size by {@code numPartitions}. The runtime type of the return
-   * value is {@code WiredList<WiredList<E>>}. If you don't care about the exact type
-   * of the returned {@code List}, you can simply write:
+   * value is {@code CrisprList<CrisprList<E>>}. If you don't care about the exact
+   * type of the returned {@code List}, you can simply write:
    *
    * <blockquote><pre>{@code
-   * WiredList<String> wl = ...;
+   * CrisprList<String> wl = ...;
    * List<List<String>> partitions = wl.split(3);
    * }</pre></blockquote>
    * <p>
-   * Otherwise use any combination of {@code List} and {@code WiredList} that suits
+   * Otherwise use any combination of {@code List} and {@code CrisprList} that suits
    * your needs.
    *
-   * @param numPartitions The number of {@code WiredList} instances to split this
-   *     {@code WiredList} into
+   * @param numPartitions The number of {@code CrisprList} instances to split
+   *     this {@code CrisprList} into
    * @param <L0> the type of the lists within the returned list
    * @param <L1> the type of returned list
-   * @return a list containing the specified number of {@code WiredList} instances
+   * @return a list containing the specified number of {@code CrisprList} instances
    */
   public <L0 extends List<E>, L1 extends List<L0>> L1 split(int numPartitions) {
     Check.that(numPartitions).is(gt(), 0);
@@ -1637,7 +1639,7 @@ public final class CrisprList<E> implements List<E> {
    *
    * @param criterion the criterion that the elements in the returned segment
    *     will satisfy
-   * @return a {@code WiredList} containing all elements preceding the first element
+   * @return a {@code CrisprList} containing all elements preceding the first element
    *     that does not satisfy the condition
    */
   public CrisprList<E> lchop(Predicate<? super E> criterion) {
@@ -1666,7 +1668,7 @@ public final class CrisprList<E> implements List<E> {
    *
    * @param criterion the criterion that the elements in the returned segment
    *     will satisfy
-   * @return a {@code WiredList} containing all elements following the last element
+   * @return a {@code CrisprList} containing all elements following the last element
    *     that does not satisfy the condition
    */
   public CrisprList<E> rchop(Predicate<? super E> criterion) {
@@ -1686,9 +1688,9 @@ public final class CrisprList<E> implements List<E> {
   }
 
   /**
-   * Reverses the order of the elements in this {@code WiredList}.
+   * Reverses the order of the elements in this {@code CrisprList}.
    *
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   public CrisprList<E> reverse() {
     if (sz > 1) {
@@ -1713,7 +1715,7 @@ public final class CrisprList<E> implements List<E> {
    * @param newFromIndex the index to which to move the segment. To move the
    *     segment to the very start of the list, specify 0 (zero). To move the segment
    *     to the very end of the list specify the {@link #size() size} of the list
-   * @return this {@code WiredList}
+   * @return this {@code CrisprList}
    */
   public CrisprList<E> move(int fromIndex, int toIndex, int newFromIndex) {
     int len = Check.fromTo(this, fromIndex, toIndex);
@@ -2004,8 +2006,8 @@ public final class CrisprList<E> implements List<E> {
    * Throws an {@code UnsupportedOperationException}. The specification for this
    * method requires that non-structural changes in the returned list are reflected
    * in the original list (and vice versa). However, except for the
-   * {@link #set(int, Object)} method, all changes to a {@code WiredList} <i>are</i>
-   * structural changes. {@code WiredList} does provide a method that returns a
+   * {@link #set(int, Object)} method, all changes to a {@code CrisprList} <i>are</i>
+   * structural changes. {@code CrisprList} does provide a method that returns a
    * sublist ({@link #copy(int, int) copySegment}). It just has no relation to the
    * original list any longer.
    */
