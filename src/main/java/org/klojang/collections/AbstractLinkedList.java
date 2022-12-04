@@ -228,6 +228,97 @@ abstract class AbstractLinkedList<E> implements List<E> {
   int sz;
 
   /**
+   * Returns the index of the first occurrence of the specified element in this list,
+   * or -1 if this list does not contain the element. More formally, returns the
+   * lowest index {@code i} such that {@code Objects.equals(o, get(i))}, or -1 if
+   * there is no such index.
+   *
+   * @param o element to search for
+   * @return the index of the first occurrence of the specified element in this list,
+   *     or -1 if this list does not contain the element
+   */
+  @Override
+  public int indexOf(Object o) {
+    var n = head;
+    if (o == null) {
+      for (int i = 0; i < sz; ++i) {
+        if (n.val == null) {
+          return i;
+        }
+        n = n.next;
+      }
+    } else {
+      for (int i = 0; i < sz; ++i) {
+        if (o.equals(n.val)) {
+          return i;
+        }
+        n = n.next;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Returns the index of the last occurrence of the specified element in this list,
+   * or -1 if this list does not contain the element. More formally, returns the
+   * highest index {@code i} such that {@code Objects.equals(o, get(i))}, or -1 if
+   * there is no such index.
+   *
+   * @param o element to search for
+   * @return the index of the last occurrence of the specified element in this list,
+   *     or -1 if this list does not contain the element
+   */
+  @Override
+  public int lastIndexOf(Object o) {
+    var n = tail;
+    if (o == null) {
+      for (int i = sz - 1; i >= 0; --i) {
+        if (n.val == null) {
+          return i;
+        }
+        n = n.prev;
+      }
+    } else {
+      for (int i = sz - 1; i >= 0; --i) {
+        if (o.equals(n.val)) {
+          return i;
+        }
+        n = n.prev;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Returns the element at the specified position in this list.
+   *
+   * @param index index of the element to return
+   * @return the element at the specified position in this list
+   * @throws IndexOutOfBoundsException if the index is out of range
+   *     ({@code index < 0 || index >= size()})
+   */
+  @Override
+  public E get(int index) {
+    return node(index).val;
+  }
+
+  /**
+   * Replaces the element at the specified position in this list with the specified
+   * element.
+   *
+   * @param index index of the element to replace
+   * @param element element to be stored at the specified position
+   * @return the element previously at the specified position
+   */
+  @Override
+  public E set(int index, E element) {
+    var node = node(index);
+    E old = node.val;
+    node.val = element;
+    return old;
+  }
+
+  /**
    * Appends the specified element to the end of this list.
    *
    * @param e element to be appended to this list
@@ -440,6 +531,17 @@ abstract class AbstractLinkedList<E> implements List<E> {
   @Override
   public String toString() {
     return '[' + CollectionMethods.implode(this) + ']';
+  }
+
+  void prepend0(E value) {
+    Node<E> n = new Node<>(value);
+    if (sz == 0) {
+      head = tail = n;
+    } else {
+      join(n, head);
+      head = n;
+    }
+    ++sz;
   }
 
   void replace0(int fromIndex, int toIndex, Collection<? extends E> values) {

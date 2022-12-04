@@ -495,97 +495,6 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
   }
 
   /**
-   * Returns the index of the first occurrence of the specified element in this list,
-   * or -1 if this list does not contain the element. More formally, returns the
-   * lowest index {@code i} such that {@code Objects.equals(o, get(i))}, or -1 if
-   * there is no such index.
-   *
-   * @param o element to search for
-   * @return the index of the first occurrence of the specified element in this list,
-   *     or -1 if this list does not contain the element
-   */
-  @Override
-  public int indexOf(Object o) {
-<span class="fc" id="L509">    var n = head;</span>
-<span class="fc bfc" id="L510" title="All 2 branches covered.">    if (o == null) {</span>
-<span class="pc bpc" id="L511" title="1 of 2 branches missed.">      for (int i = 0; i &lt; sz; ++i) {</span>
-<span class="fc bfc" id="L512" title="All 2 branches covered.">        if (n.val == null) {</span>
-<span class="fc" id="L513">          return i;</span>
-        }
-<span class="fc" id="L515">        n = n.next;</span>
-      }
-    } else {
-<span class="fc bfc" id="L518" title="All 2 branches covered.">      for (int i = 0; i &lt; sz; ++i) {</span>
-<span class="fc bfc" id="L519" title="All 2 branches covered.">        if (o.equals(n.val)) {</span>
-<span class="fc" id="L520">          return i;</span>
-        }
-<span class="fc" id="L522">        n = n.next;</span>
-      }
-    }
-<span class="fc" id="L525">    return -1;</span>
-  }
-
-  /**
-   * Returns the index of the last occurrence of the specified element in this list,
-   * or -1 if this list does not contain the element. More formally, returns the
-   * highest index {@code i} such that {@code Objects.equals(o, get(i))}, or -1 if
-   * there is no such index.
-   *
-   * @param o element to search for
-   * @return the index of the last occurrence of the specified element in this list,
-   *     or -1 if this list does not contain the element
-   */
-  @Override
-  public int lastIndexOf(Object o) {
-<span class="fc" id="L540">    var n = tail;</span>
-<span class="fc bfc" id="L541" title="All 2 branches covered.">    if (o == null) {</span>
-<span class="pc bpc" id="L542" title="1 of 2 branches missed.">      for (int i = sz - 1; i &gt;= 0; --i) {</span>
-<span class="fc bfc" id="L543" title="All 2 branches covered.">        if (n.val == null) {</span>
-<span class="fc" id="L544">          return i;</span>
-        }
-<span class="fc" id="L546">        n = n.prev;</span>
-      }
-    } else {
-<span class="fc bfc" id="L549" title="All 2 branches covered.">      for (int i = sz - 1; i &gt;= 0; --i) {</span>
-<span class="fc bfc" id="L550" title="All 2 branches covered.">        if (o.equals(n.val)) {</span>
-<span class="fc" id="L551">          return i;</span>
-        }
-<span class="fc" id="L553">        n = n.prev;</span>
-      }
-    }
-<span class="fc" id="L556">    return -1;</span>
-  }
-
-  /**
-   * Returns the element at the specified position in this list.
-   *
-   * @param index index of the element to return
-   * @return the element at the specified position in this list
-   * @throws IndexOutOfBoundsException if the index is out of range
-   *     ({@code index &lt; 0 || index &gt;= size()})
-   */
-  @Override
-  public E get(int index) {
-<span class="fc" id="L569">    return node(index).val;</span>
-  }
-
-  /**
-   * Replaces the element at the specified position in this list with the specified
-   * element.
-   *
-   * @param index index of the element to replace
-   * @param element element to be stored at the specified position
-   * @return the element previously at the specified position
-   */
-  @Override
-  public E set(int index, E element) {
-<span class="fc" id="L582">    var node = node(index);</span>
-<span class="fc" id="L583">    E old = node.val;</span>
-<span class="fc" id="L584">    node.val = element;</span>
-<span class="fc" id="L585">    return old;</span>
-  }
-
-  /**
    * Overwrites the elements at, and following the specified index with the provided
    * values. For linked lists this is more efficient than setting each of the
    * elements individually, especially if the elements are somewhere in the middle of
@@ -599,20 +508,20 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @SuppressWarnings(&quot;unchecked&quot;)
   public WiredList&lt;E&gt; set(int index, E e0, E e1, E... moreElems) {
-<span class="fc" id="L602">    Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));</span>
-<span class="fc" id="L603">    Check.notNull(moreElems, Tag.VARARGS).has(length(), lte(), sz - index - 2);</span>
-<span class="fc" id="L604">    Node&lt;E&gt; node = nodeAt(index);</span>
-<span class="fc" id="L605">    node.val = e0;</span>
-<span class="fc" id="L606">    node = node.next;</span>
-<span class="fc" id="L607">    node.val = e1;</span>
-<span class="fc bfc" id="L608" title="All 2 branches covered.">    if (moreElems.length != 0) {</span>
-<span class="fc" id="L609">      node = node.next;</span>
-<span class="fc bfc" id="L610" title="All 2 branches covered.">      for (E e : moreElems) {</span>
-<span class="fc" id="L611">        node.val = e;</span>
-<span class="fc" id="L612">        node = node.next;</span>
+<span class="fc" id="L511">    Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));</span>
+<span class="fc" id="L512">    Check.notNull(moreElems, Tag.VARARGS).has(length(), lte(), sz - index - 2);</span>
+<span class="fc" id="L513">    Node&lt;E&gt; node = nodeAt(index);</span>
+<span class="fc" id="L514">    node.val = e0;</span>
+<span class="fc" id="L515">    node = node.next;</span>
+<span class="fc" id="L516">    node.val = e1;</span>
+<span class="fc bfc" id="L517" title="All 2 branches covered.">    if (moreElems.length != 0) {</span>
+<span class="fc" id="L518">      node = node.next;</span>
+<span class="fc bfc" id="L519" title="All 2 branches covered.">      for (E e : moreElems) {</span>
+<span class="fc" id="L520">        node.val = e;</span>
+<span class="fc" id="L521">        node = node.next;</span>
       }
     }
-<span class="fc" id="L615">    return this;</span>
+<span class="fc" id="L524">    return this;</span>
   }
 
   /**
@@ -629,13 +538,13 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return The original value
    */
   public E setIf(int index, Predicate&lt;? super E&gt; condition, E value) {
-<span class="fc" id="L632">    Check.notNull(condition, Tag.TEST);</span>
-<span class="fc" id="L633">    var node = node(index);</span>
-<span class="fc" id="L634">    E old = node.val;</span>
-<span class="fc bfc" id="L635" title="All 2 branches covered.">    if (condition.test(old)) {</span>
-<span class="fc" id="L636">      node.val = value;</span>
+<span class="fc" id="L541">    Check.notNull(condition, Tag.TEST);</span>
+<span class="fc" id="L542">    var node = node(index);</span>
+<span class="fc" id="L543">    E old = node.val;</span>
+<span class="fc bfc" id="L544" title="All 2 branches covered.">    if (condition.test(old)) {</span>
+<span class="fc" id="L545">      node.val = value;</span>
     }
-<span class="fc" id="L638">    return old;</span>
+<span class="fc" id="L547">    return old;</span>
   }
 
 
@@ -649,7 +558,7 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @Override
   public E remove(int index) {
-<span class="fc" id="L652">    return destroy(node(index));</span>
+<span class="fc" id="L561">    return destroy(node(index));</span>
   }
 
   /**
@@ -661,24 +570,24 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @Override
   public boolean remove(Object o) {
-<span class="fc bfc" id="L664" title="All 2 branches covered.">    if (o == null) {</span>
-<span class="pc bpc" id="L665" title="1 of 2 branches missed.">      for (var x = head; x != null; ) {</span>
-<span class="fc bfc" id="L666" title="All 2 branches covered.">        if (x.val == null) {</span>
-<span class="fc" id="L667">          unlink(x);</span>
-<span class="fc" id="L668">          return true;</span>
+<span class="fc bfc" id="L573" title="All 2 branches covered.">    if (o == null) {</span>
+<span class="pc bpc" id="L574" title="1 of 2 branches missed.">      for (var x = head; x != null; ) {</span>
+<span class="fc bfc" id="L575" title="All 2 branches covered.">        if (x.val == null) {</span>
+<span class="fc" id="L576">          unlink(x);</span>
+<span class="fc" id="L577">          return true;</span>
         }
-<span class="pc" id="L670">        x = x.next;</span>
+<span class="pc" id="L579">        x = x.next;</span>
       }
     } else {
-<span class="fc bfc" id="L673" title="All 2 branches covered.">      for (var x = head; x != null; ) {</span>
-<span class="fc bfc" id="L674" title="All 2 branches covered.">        if (o.equals(x.val)) {</span>
-<span class="fc" id="L675">          destroy(x);</span>
-<span class="fc" id="L676">          return true;</span>
+<span class="fc bfc" id="L582" title="All 2 branches covered.">      for (var x = head; x != null; ) {</span>
+<span class="fc bfc" id="L583" title="All 2 branches covered.">        if (o.equals(x.val)) {</span>
+<span class="fc" id="L584">          destroy(x);</span>
+<span class="fc" id="L585">          return true;</span>
         }
-<span class="fc" id="L678">        x = x.next;</span>
+<span class="fc" id="L587">        x = x.next;</span>
       }
     }
-<span class="fc" id="L681">    return false;</span>
+<span class="fc" id="L590">    return false;</span>
   }
 
   /**
@@ -690,18 +599,18 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @Override
   public boolean removeIf(Predicate&lt;? super E&gt; filter) {
-<span class="fc" id="L693">    Check.notNull(filter, Tag.TEST);</span>
-<span class="fc" id="L694">    int size = sz;</span>
-<span class="fc bfc" id="L695" title="All 2 branches covered.">    for (var x = head; x != null; ) {</span>
-<span class="fc bfc" id="L696" title="All 2 branches covered.">      if (filter.test(x.val)) {</span>
-<span class="fc" id="L697">        var next = x.next;</span>
-<span class="fc" id="L698">        destroy(x);</span>
-<span class="fc" id="L699">        x = next;</span>
-<span class="fc" id="L700">      } else {</span>
-<span class="fc" id="L701">        x = x.next;</span>
+<span class="fc" id="L602">    Check.notNull(filter, Tag.TEST);</span>
+<span class="fc" id="L603">    int size = sz;</span>
+<span class="fc bfc" id="L604" title="All 2 branches covered.">    for (var x = head; x != null; ) {</span>
+<span class="fc bfc" id="L605" title="All 2 branches covered.">      if (filter.test(x.val)) {</span>
+<span class="fc" id="L606">        var next = x.next;</span>
+<span class="fc" id="L607">        destroy(x);</span>
+<span class="fc" id="L608">        x = next;</span>
+<span class="fc" id="L609">      } else {</span>
+<span class="fc" id="L610">        x = x.next;</span>
       }
     }
-<span class="fc bfc" id="L704" title="All 2 branches covered.">    return size != this.sz;</span>
+<span class="fc bfc" id="L613" title="All 2 branches covered.">    return size != this.sz;</span>
   }
 
   /**
@@ -715,10 +624,10 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @Override
   public boolean removeAll(Collection&lt;?&gt; c) {
-<span class="fc" id="L718">    Check.notNull(c, Tag.COLLECTION);</span>
-<span class="fc" id="L719">    int size = this.sz;</span>
-<span class="fc" id="L720">    removeIf(c::contains);</span>
-<span class="fc bfc" id="L721" title="All 2 branches covered.">    return size != this.sz;</span>
+<span class="fc" id="L627">    Check.notNull(c, Tag.COLLECTION);</span>
+<span class="fc" id="L628">    int size = this.sz;</span>
+<span class="fc" id="L629">    removeIf(c::contains);</span>
+<span class="fc bfc" id="L630" title="All 2 branches covered.">    return size != this.sz;</span>
   }
 
   /**
@@ -732,10 +641,10 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @Override
   public boolean retainAll(Collection&lt;?&gt; c) {
-<span class="fc" id="L735">    Check.notNull(c, Tag.COLLECTION);</span>
-<span class="fc" id="L736">    int sz = this.sz;</span>
-<span class="fc bfc" id="L737" title="All 2 branches covered.">    removeIf(e -&gt; !c.contains(e));</span>
-<span class="fc bfc" id="L738" title="All 2 branches covered.">    return sz != this.sz;</span>
+<span class="fc" id="L644">    Check.notNull(c, Tag.COLLECTION);</span>
+<span class="fc" id="L645">    int sz = this.sz;</span>
+<span class="fc bfc" id="L646" title="All 2 branches covered.">    removeIf(e -&gt; !c.contains(e));</span>
+<span class="fc bfc" id="L647" title="All 2 branches covered.">    return sz != this.sz;</span>
   }
 
   /**
@@ -745,8 +654,8 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return the first element of the list
    */
   public E first() {
-<span class="fc" id="L748">    Check.that(sz).isNot(zero(), noSuchElement());</span>
-<span class="fc" id="L749">    return head.val;</span>
+<span class="fc" id="L657">    Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="fc" id="L658">    return head.val;</span>
   }
 
   /**
@@ -756,8 +665,8 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return the last element of the list
    */
   public E last() {
-<span class="fc" id="L759">    Check.that(sz).isNot(zero(), noSuchElement());</span>
-<span class="fc" id="L760">    return tail.val;</span>
+<span class="fc" id="L668">    Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="fc" id="L669">    return tail.val;</span>
   }
 
   /**
@@ -768,15 +677,8 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; prepend(E value) {
-<span class="fc" id="L771">    Node&lt;E&gt; n = new Node&lt;&gt;(value);</span>
-<span class="fc bfc" id="L772" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L773">      head = tail = n;</span>
-    } else {
-<span class="fc" id="L775">      join(n, head);</span>
-<span class="fc" id="L776">      head = n;</span>
-    }
-<span class="fc" id="L778">    ++sz;</span>
-<span class="fc" id="L779">    return this;</span>
+<span class="fc" id="L680">    prepend0(value);</span>
+<span class="fc" id="L681">    return this;</span>
   }
 
   /**
@@ -787,11 +689,11 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; prependAll(Collection&lt;? extends E&gt; values) {
-<span class="fc" id="L790">    Check.notNull(values, Tag.COLLECTION);</span>
-<span class="fc bfc" id="L791" title="All 2 branches covered.">    if (!values.isEmpty()) {</span>
-<span class="fc" id="L792">      insert(0, Chain.of(values));</span>
+<span class="fc" id="L692">    Check.notNull(values, Tag.COLLECTION);</span>
+<span class="fc bfc" id="L693" title="All 2 branches covered.">    if (!values.isEmpty()) {</span>
+<span class="fc" id="L694">      insert(0, Chain.of(values));</span>
     }
-<span class="fc" id="L794">    return this;</span>
+<span class="fc" id="L696">    return this;</span>
   }
 
   /**
@@ -802,8 +704,8 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; append(E value) {
-<span class="fc" id="L805">    add(value);</span>
-<span class="fc" id="L806">    return this;</span>
+<span class="fc" id="L707">    add(value);</span>
+<span class="fc" id="L708">    return this;</span>
   }
 
   /**
@@ -815,11 +717,11 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @see #attach(WiredList)
    */
   public WiredList&lt;E&gt; appendAll(Collection&lt;? extends E&gt; values) {
-<span class="fc" id="L818">    Check.notNull(values, Tag.COLLECTION);</span>
-<span class="fc bfc" id="L819" title="All 2 branches covered.">    if (!values.isEmpty()) {</span>
-<span class="fc" id="L820">      insert(sz, Chain.of(values));</span>
+<span class="fc" id="L720">    Check.notNull(values, Tag.COLLECTION);</span>
+<span class="fc bfc" id="L721" title="All 2 branches covered.">    if (!values.isEmpty()) {</span>
+<span class="fc" id="L722">      insert(sz, Chain.of(values));</span>
     }
-<span class="fc" id="L822">    return this;</span>
+<span class="fc" id="L724">    return this;</span>
   }
 
   /**
@@ -835,9 +737,9 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; insert(int index, E value) {
-<span class="fc" id="L838">    checkInclusive(index);</span>
-<span class="fc" id="L839">    insert(index, new Node&lt;&gt;(value));</span>
-<span class="fc" id="L840">    return this;</span>
+<span class="fc" id="L740">    checkInclusive(index);</span>
+<span class="fc" id="L741">    insert(index, new Node&lt;&gt;(value));</span>
+<span class="fc" id="L742">    return this;</span>
   }
 
   /**
@@ -850,12 +752,12 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @see #addAll(int, Collection)
    */
   public WiredList&lt;E&gt; insertAll(int index, Collection&lt;? extends E&gt; values) {
-<span class="fc" id="L853">    checkInclusive(index);</span>
-<span class="fc" id="L854">    Check.notNull(values, Tag.COLLECTION);</span>
-<span class="fc bfc" id="L855" title="All 2 branches covered.">    if (!values.isEmpty()) {</span>
-<span class="fc" id="L856">      insert(index, Chain.of(values));</span>
+<span class="fc" id="L755">    checkInclusive(index);</span>
+<span class="fc" id="L756">    Check.notNull(values, Tag.COLLECTION);</span>
+<span class="fc bfc" id="L757" title="All 2 branches covered.">    if (!values.isEmpty()) {</span>
+<span class="fc" id="L758">      insert(index, Chain.of(values));</span>
     }
-<span class="fc" id="L858">    return this;</span>
+<span class="fc" id="L760">    return this;</span>
   }
 
   /**
@@ -865,9 +767,9 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; deleteFirst() {
-<span class="fc" id="L868">    Check.that(sz).isNot(zero(), noSuchElement());</span>
-<span class="fc" id="L869">    destroy(head);</span>
-<span class="fc" id="L870">    return this;</span>
+<span class="fc" id="L770">    Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="fc" id="L771">    destroy(head);</span>
+<span class="fc" id="L772">    return this;</span>
   }
 
   /**
@@ -877,9 +779,9 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; deleteLast() {
-<span class="fc" id="L880">    Check.that(sz).isNot(zero(), noSuchElement());</span>
-<span class="fc" id="L881">    destroy(tail);</span>
-<span class="fc" id="L882">    return this;</span>
+<span class="fc" id="L782">    Check.that(sz).isNot(zero(), noSuchElement());</span>
+<span class="fc" id="L783">    destroy(tail);</span>
+<span class="fc" id="L784">    return this;</span>
   }
 
   /**
@@ -894,15 +796,15 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @Override
   public void replaceAll(UnaryOperator&lt;E&gt; operator) {
-<span class="fc bfc" id="L897" title="All 2 branches covered.">    if (sz != 0) {</span>
-<span class="fc" id="L898">      for (var x = head; ; x = x.next) {</span>
-<span class="fc" id="L899">        x.val = operator.apply(x.val);</span>
-<span class="fc bfc" id="L900" title="All 2 branches covered.">        if (x == tail) {</span>
-<span class="fc" id="L901">          break;</span>
+<span class="fc bfc" id="L799" title="All 2 branches covered.">    if (sz != 0) {</span>
+<span class="fc" id="L800">      for (var x = head; ; x = x.next) {</span>
+<span class="fc" id="L801">        x.val = operator.apply(x.val);</span>
+<span class="fc bfc" id="L802" title="All 2 branches covered.">        if (x == tail) {</span>
+<span class="fc" id="L803">          break;</span>
         }
       }
     }
-<span class="fc" id="L905">  }</span>
+<span class="fc" id="L807">  }</span>
 
   /**
    * Replaces the segment between {@code fromIndex} and {@code toIndex} with the
@@ -917,8 +819,8 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
   public WiredList&lt;E&gt; replace(int fromIndex,
       int toIndex,
       Collection&lt;? extends E&gt; values) {
-<span class="fc" id="L920">    replace0(fromIndex, toIndex, values);</span>
-<span class="fc" id="L921">    return this;</span>
+<span class="fc" id="L822">    replace0(fromIndex, toIndex, values);</span>
+<span class="fc" id="L823">    return this;</span>
   }
 
   /**
@@ -936,15 +838,15 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
   public WiredList&lt;E&gt; rewire(int fromIndex,
       int toIndex,
       WiredList&lt;? extends E&gt; other) {
-<span class="fc" id="L939">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
-<span class="fc" id="L940">    Check.notNull(other, MY_NAME).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
-<span class="pc bpc" id="L941" title="1 of 2 branches missed.">    if (len != 0) {</span>
-<span class="fc" id="L942">      cut(fromIndex, toIndex).clear();</span>
+<span class="fc" id="L841">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="fc" id="L842">    Check.notNull(other, MY_NAME).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="pc bpc" id="L843" title="1 of 2 branches missed.">    if (len != 0) {</span>
+<span class="fc" id="L844">      cut(fromIndex, toIndex).clear();</span>
     }
-<span class="fc bfc" id="L944" title="All 2 branches covered.">    if (!other.isEmpty()) {</span>
-<span class="fc" id="L945">      insert(fromIndex, other.unlink(0, other.sz));</span>
+<span class="fc bfc" id="L846" title="All 2 branches covered.">    if (!other.isEmpty()) {</span>
+<span class="fc" id="L847">      insert(fromIndex, other.unlink(0, other.sz));</span>
     }
-<span class="fc" id="L947">    return this;</span>
+<span class="fc" id="L849">    return this;</span>
   }
 
   /**
@@ -954,7 +856,7 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return a deep copy of this {@code WiredList}
    */
   public WiredList&lt;E&gt; copy() {
-<span class="fc bfc" id="L957" title="All 2 branches covered.">    return sz &gt; 0 ? new WiredList&lt;&gt;(Chain.copyOf(head, sz)) : WiredList.of();</span>
+<span class="fc bfc" id="L859" title="All 2 branches covered.">    return sz &gt; 0 ? new WiredList&lt;&gt;(Chain.copyOf(head, sz)) : WiredList.of();</span>
   }
 
   /**
@@ -966,10 +868,10 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return a deep copy of the specified segment
    */
   public WiredList&lt;E&gt; copy(int fromIndex, int toIndex) {
-<span class="fc" id="L969">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
-<span class="fc bfc" id="L970" title="All 2 branches covered.">    return len &gt; 0</span>
-<span class="fc" id="L971">        ? new WiredList&lt;&gt;(Chain.copyOf(nodeAt(fromIndex), len))</span>
-<span class="fc" id="L972">        : WiredList.of();</span>
+<span class="fc" id="L871">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="fc bfc" id="L872" title="All 2 branches covered.">    return len &gt; 0</span>
+<span class="fc" id="L873">        ? new WiredList&lt;&gt;(Chain.copyOf(nodeAt(fromIndex), len))</span>
+<span class="fc" id="L874">        : WiredList.of();</span>
   }
 
   /**
@@ -983,29 +885,29 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @SuppressWarnings(&quot;SuspiciousNameCombination&quot;)
   public WiredList&lt;E&gt; shrink(int fromIndex, int toIndex) {
-<span class="fc" id="L986">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
-<span class="fc bfc" id="L987" title="All 2 branches covered.">    if (len == 0) {</span>
-<span class="fc" id="L988">      clear();</span>
-<span class="fc bfc" id="L989" title="All 2 branches covered.">    } else if (len != sz) {</span>
-<span class="fc" id="L990">      Node&lt;E&gt; x = head;</span>
-<span class="fc bfc" id="L991" title="All 2 branches covered.">      for (int i = 0; i &lt; fromIndex; ++i) { // make gc happy</span>
-<span class="fc" id="L992">        Node&lt;E&gt; y = x.next;</span>
-<span class="fc" id="L993">        x.next = x.prev = null;</span>
-<span class="fc" id="L994">        x.val = null;</span>
-<span class="fc" id="L995">        x = y;</span>
+<span class="fc" id="L888">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="fc bfc" id="L889" title="All 2 branches covered.">    if (len == 0) {</span>
+<span class="fc" id="L890">      clear();</span>
+<span class="fc bfc" id="L891" title="All 2 branches covered.">    } else if (len != sz) {</span>
+<span class="fc" id="L892">      Node&lt;E&gt; x = head;</span>
+<span class="fc bfc" id="L893" title="All 2 branches covered.">      for (int i = 0; i &lt; fromIndex; ++i) { // make gc happy</span>
+<span class="fc" id="L894">        Node&lt;E&gt; y = x.next;</span>
+<span class="fc" id="L895">        x.next = x.prev = null;</span>
+<span class="fc" id="L896">        x.val = null;</span>
+<span class="fc" id="L897">        x = y;</span>
       }
-<span class="fc" id="L997">      head = x;</span>
-<span class="fc" id="L998">      x = tail;</span>
-<span class="fc bfc" id="L999" title="All 2 branches covered.">      for (int i = toIndex; i &lt; sz; ++i) {</span>
-<span class="fc" id="L1000">        Node&lt;E&gt; y = x.prev;</span>
-<span class="fc" id="L1001">        x.next = x.prev = null;</span>
-<span class="fc" id="L1002">        x.val = null;</span>
-<span class="fc" id="L1003">        x = y;</span>
+<span class="fc" id="L899">      head = x;</span>
+<span class="fc" id="L900">      x = tail;</span>
+<span class="fc bfc" id="L901" title="All 2 branches covered.">      for (int i = toIndex; i &lt; sz; ++i) {</span>
+<span class="fc" id="L902">        Node&lt;E&gt; y = x.prev;</span>
+<span class="fc" id="L903">        x.next = x.prev = null;</span>
+<span class="fc" id="L904">        x.val = null;</span>
+<span class="fc" id="L905">        x = y;</span>
       }
-<span class="fc" id="L1005">      tail = x;</span>
-<span class="fc" id="L1006">      sz -= len;</span>
+<span class="fc" id="L907">      tail = x;</span>
+<span class="fc" id="L908">      sz -= len;</span>
     }
-<span class="fc" id="L1008">    return this;</span>
+<span class="fc" id="L910">    return this;</span>
   }
 
   /**
@@ -1016,10 +918,10 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return the deleted segment
    */
   public WiredList&lt;E&gt; cut(int fromIndex, int toIndex) {
-<span class="fc bfc" id="L1019" title="All 2 branches covered.">    if (Check.fromTo(this, fromIndex, toIndex) &gt; 0) {</span>
-<span class="fc" id="L1020">      return new WiredList&lt;&gt;(unlink(fromIndex, toIndex));</span>
+<span class="fc bfc" id="L921" title="All 2 branches covered.">    if (Check.fromTo(this, fromIndex, toIndex) &gt; 0) {</span>
+<span class="fc" id="L922">      return new WiredList&lt;&gt;(unlink(fromIndex, toIndex));</span>
     }
-<span class="fc" id="L1022">    return WiredList.of();</span>
+<span class="fc" id="L924">    return WiredList.of();</span>
   }
 
   /**
@@ -1033,7 +935,7 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return the target list
    */
   public WiredList&lt;? super E&gt; paste(WiredList&lt;? super E&gt; into, int index) {
-<span class="fc" id="L1036">    return into.embed(index, this);</span>
+<span class="fc" id="L938">    return into.embed(index, this);</span>
   }
 
   /**
@@ -1048,17 +950,17 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; embed(int index, WiredList&lt;? extends E&gt; other) {
-<span class="fc" id="L1051">    checkInclusive(index);</span>
-<span class="fc" id="L1052">    Check.notNull(other, MY_NAME).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
-<span class="fc bfc" id="L1053" title="All 2 branches covered.">    if (!other.isEmpty()) {</span>
-<span class="fc" id="L1054">      insert(index, new Chain(other.head, other.tail, other.sz));</span>
+<span class="fc" id="L953">    checkInclusive(index);</span>
+<span class="fc" id="L954">    Check.notNull(other, MY_NAME).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="fc bfc" id="L955" title="All 2 branches covered.">    if (!other.isEmpty()) {</span>
+<span class="fc" id="L956">      insert(index, new Chain(other.head, other.tail, other.sz));</span>
       // Reset but don't clear the embedded list, because that
       // would nullify the nodes we just embedded in this list
-<span class="fc" id="L1057">      other.head = null;</span>
-<span class="fc" id="L1058">      other.tail = null;</span>
-<span class="fc" id="L1059">      other.sz = 0;</span>
+<span class="fc" id="L959">      other.head = null;</span>
+<span class="fc" id="L960">      other.tail = null;</span>
+<span class="fc" id="L961">      other.sz = 0;</span>
     }
-<span class="fc" id="L1061">    return this;</span>
+<span class="fc" id="L963">    return this;</span>
   }
 
   /**
@@ -1079,57 +981,57 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
       WiredList&lt;E&gt; other,
       int itsFromIndex,
       int itsToIndex) {
-<span class="fc" id="L1082">    int len0 = Check.fromTo(this, myFromIndex, myToIndex);</span>
-<span class="fc" id="L1083">    int len1 = Check.fromTo(other, itsFromIndex, itsToIndex);</span>
-<span class="fc" id="L1084">    Check.that(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
-<span class="fc bfc" id="L1085" title="All 2 branches covered.">    if (len0 == 0) {</span>
-<span class="fc bfc" id="L1086" title="All 2 branches covered.">      if (len1 != 0) {</span>
-<span class="fc" id="L1087">        insert(myFromIndex, other.unlink(itsFromIndex, itsToIndex));</span>
+<span class="fc" id="L984">    int len0 = Check.fromTo(this, myFromIndex, myToIndex);</span>
+<span class="fc" id="L985">    int len1 = Check.fromTo(other, itsFromIndex, itsToIndex);</span>
+<span class="fc" id="L986">    Check.that(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="fc bfc" id="L987" title="All 2 branches covered.">    if (len0 == 0) {</span>
+<span class="fc bfc" id="L988" title="All 2 branches covered.">      if (len1 != 0) {</span>
+<span class="fc" id="L989">        insert(myFromIndex, other.unlink(itsFromIndex, itsToIndex));</span>
       }
-<span class="fc" id="L1089">      return this;</span>
-<span class="fc bfc" id="L1090" title="All 2 branches covered.">    } else if (len1 == 0) {</span>
-<span class="fc" id="L1091">      other.insert(itsFromIndex, unlink(myFromIndex, myToIndex));</span>
-<span class="fc" id="L1092">      return this;</span>
+<span class="fc" id="L991">      return this;</span>
+<span class="fc bfc" id="L992" title="All 2 branches covered.">    } else if (len1 == 0) {</span>
+<span class="fc" id="L993">      other.insert(itsFromIndex, unlink(myFromIndex, myToIndex));</span>
+<span class="fc" id="L994">      return this;</span>
     }
 
     // segment boundary nodes
-<span class="fc" id="L1096">    var seg0L = nodeAt(myFromIndex);</span>
-<span class="fc" id="L1097">    var seg0R = nodeAfter(seg0L, myFromIndex, myToIndex - 1);</span>
-<span class="fc" id="L1098">    var seg1L = other.nodeAt(itsFromIndex);</span>
-<span class="fc" id="L1099">    var seg1R = other.nodeAfter(seg1L, itsFromIndex, itsToIndex - 1);</span>
+<span class="fc" id="L998">    var seg0L = nodeAt(myFromIndex);</span>
+<span class="fc" id="L999">    var seg0R = nodeAfter(seg0L, myFromIndex, myToIndex - 1);</span>
+<span class="fc" id="L1000">    var seg1L = other.nodeAt(itsFromIndex);</span>
+<span class="fc" id="L1001">    var seg1R = other.nodeAfter(seg1L, itsFromIndex, itsToIndex - 1);</span>
 
     // attach-to nodes
-<span class="fc" id="L1102">    var att0L = seg0L.prev;</span>
-<span class="fc" id="L1103">    var att0R = seg0R.next;</span>
-<span class="fc" id="L1104">    var att1L = seg1L.prev;</span>
-<span class="fc" id="L1105">    var att1R = seg1R.next;</span>
+<span class="fc" id="L1004">    var att0L = seg0L.prev;</span>
+<span class="fc" id="L1005">    var att0R = seg0R.next;</span>
+<span class="fc" id="L1006">    var att1L = seg1L.prev;</span>
+<span class="fc" id="L1007">    var att1R = seg1R.next;</span>
 
-<span class="fc bfc" id="L1107" title="All 2 branches covered.">    if (att0L == null) {</span>
-<span class="fc" id="L1108">      makeHead(seg1L);</span>
+<span class="fc bfc" id="L1009" title="All 2 branches covered.">    if (att0L == null) {</span>
+<span class="fc" id="L1010">      makeHead(seg1L);</span>
     } else {
-<span class="fc" id="L1110">      join(att0L, seg1L);</span>
+<span class="fc" id="L1012">      join(att0L, seg1L);</span>
     }
-<span class="fc bfc" id="L1112" title="All 2 branches covered.">    if (att0R == null) {</span>
-<span class="fc" id="L1113">      makeTail(seg1R);</span>
+<span class="fc bfc" id="L1014" title="All 2 branches covered.">    if (att0R == null) {</span>
+<span class="fc" id="L1015">      makeTail(seg1R);</span>
     } else {
-<span class="fc" id="L1115">      join(seg1R, att0R);</span>
-    }
-
-<span class="fc bfc" id="L1118" title="All 2 branches covered.">    if (att1L == null) {</span>
-<span class="fc" id="L1119">      other.makeHead(seg0L);</span>
-    } else {
-<span class="fc" id="L1121">      join(att1L, seg0L);</span>
-    }
-<span class="fc bfc" id="L1123" title="All 2 branches covered.">    if (att1R == null) {</span>
-<span class="fc" id="L1124">      other.makeTail(seg0R);</span>
-    } else {
-<span class="fc" id="L1126">      join(seg0R, att1R);</span>
+<span class="fc" id="L1017">      join(seg1R, att0R);</span>
     }
 
-<span class="fc" id="L1129">    sz = sz - len0 + len1;</span>
-<span class="fc" id="L1130">    other.sz = other.sz - len1 + len0;</span>
+<span class="fc bfc" id="L1020" title="All 2 branches covered.">    if (att1L == null) {</span>
+<span class="fc" id="L1021">      other.makeHead(seg0L);</span>
+    } else {
+<span class="fc" id="L1023">      join(att1L, seg0L);</span>
+    }
+<span class="fc bfc" id="L1025" title="All 2 branches covered.">    if (att1R == null) {</span>
+<span class="fc" id="L1026">      other.makeTail(seg0R);</span>
+    } else {
+<span class="fc" id="L1028">      join(seg0R, att1R);</span>
+    }
 
-<span class="fc" id="L1132">    return this;</span>
+<span class="fc" id="L1031">    sz = sz - len0 + len1;</span>
+<span class="fc" id="L1032">    other.sz = other.sz - len1 + len0;</span>
+
+<span class="fc" id="L1034">    return this;</span>
   }
 
   /**
@@ -1145,13 +1047,13 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
       WiredList&lt;? extends E&gt; other,
       int itsFromIndex,
       int itsToIndex) {
-<span class="fc" id="L1148">    checkInclusive(myIndex);</span>
-<span class="fc" id="L1149">    int len = Check.fromTo(other, itsFromIndex, itsToIndex);</span>
-<span class="fc" id="L1150">    Check.that(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
-<span class="fc bfc" id="L1151" title="All 2 branches covered.">    if (len &gt; 0) {</span>
-<span class="fc" id="L1152">      insert(myIndex, other.unlink(itsFromIndex, itsToIndex));</span>
+<span class="fc" id="L1050">    checkInclusive(myIndex);</span>
+<span class="fc" id="L1051">    int len = Check.fromTo(other, itsFromIndex, itsToIndex);</span>
+<span class="fc" id="L1052">    Check.that(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="fc bfc" id="L1053" title="All 2 branches covered.">    if (len &gt; 0) {</span>
+<span class="fc" id="L1054">      insert(myIndex, other.unlink(itsFromIndex, itsToIndex));</span>
     }
-<span class="fc" id="L1154">    return this;</span>
+<span class="fc" id="L1056">    return this;</span>
   }
 
   /**
@@ -1165,26 +1067,26 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @see #join(List)
    */
   public WiredList&lt;E&gt; attach(WiredList&lt;? extends E&gt; other) {
-<span class="fc" id="L1168">    Check.notNull(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
-<span class="fc bfc" id="L1169" title="All 2 branches covered.">    if (other.sz != 0) {</span>
-<span class="fc" id="L1170">      attach0(other);</span>
+<span class="fc" id="L1070">    Check.notNull(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="fc bfc" id="L1071" title="All 2 branches covered.">    if (other.sz != 0) {</span>
+<span class="fc" id="L1072">      attach0(other);</span>
     }
-<span class="fc" id="L1172">    return this;</span>
+<span class="fc" id="L1074">    return this;</span>
   }
 
   @SuppressWarnings({&quot;rawtypes&quot;, &quot;unchecked&quot;})
   private void attach0(WiredList other) {
-<span class="fc bfc" id="L1177" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L1178">      head = other.head;</span>
+<span class="fc bfc" id="L1079" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L1080">      head = other.head;</span>
     } else {
-<span class="fc" id="L1180">      join(tail, other.head);</span>
+<span class="fc" id="L1082">      join(tail, other.head);</span>
     }
-<span class="fc" id="L1182">    tail = other.tail;</span>
-<span class="fc" id="L1183">    sz += other.sz;</span>
-<span class="fc" id="L1184">    other.head = null;</span>
-<span class="fc" id="L1185">    other.tail = null;</span>
-<span class="fc" id="L1186">    other.sz = 0;</span>
-<span class="fc" id="L1187">  }</span>
+<span class="fc" id="L1084">    tail = other.tail;</span>
+<span class="fc" id="L1085">    sz += other.sz;</span>
+<span class="fc" id="L1086">    other.head = null;</span>
+<span class="fc" id="L1087">    other.tail = null;</span>
+<span class="fc" id="L1088">    other.sz = 0;</span>
+<span class="fc" id="L1089">  }</span>
 
   /**
    * Reorders the elements according to the specified criteria. The elements
@@ -1196,7 +1098,7 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; defragment(List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
-<span class="fc" id="L1199">    return defragment(true, criteria);</span>
+<span class="fc" id="L1101">    return defragment(true, criteria);</span>
   }
 
   /**
@@ -1212,19 +1114,19 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
   @SuppressWarnings({&quot;rawtypes&quot;})
   public WiredList&lt;E&gt; defragment(boolean keepRemainder,
       List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
-<span class="fc" id="L1215">    Check.that(criteria).is(deepNotEmpty());</span>
-<span class="fc" id="L1216">    List&lt;WiredList&lt;E&gt;&gt; groups = createGroups(criteria);</span>
-<span class="fc" id="L1217">    Chain rest = new Chain(head, tail, sz);</span>
-<span class="fc" id="L1218">    sz = 0;</span>
-<span class="fc bfc" id="L1219" title="All 2 branches covered.">    for (WiredList wl : groups) {</span>
-<span class="fc bfc" id="L1220" title="All 2 branches covered.">      if (!wl.isEmpty()) {</span>
-<span class="fc" id="L1221">        attach0(wl);</span>
+<span class="fc" id="L1117">    Check.that(criteria).is(deepNotEmpty());</span>
+<span class="fc" id="L1118">    List&lt;WiredList&lt;E&gt;&gt; groups = createGroups(criteria);</span>
+<span class="fc" id="L1119">    Chain rest = new Chain(head, tail, sz);</span>
+<span class="fc" id="L1120">    sz = 0;</span>
+<span class="fc bfc" id="L1121" title="All 2 branches covered.">    for (WiredList wl : groups) {</span>
+<span class="fc bfc" id="L1122" title="All 2 branches covered.">      if (!wl.isEmpty()) {</span>
+<span class="fc" id="L1123">        attach0(wl);</span>
       }
-<span class="fc" id="L1223">    }</span>
-<span class="fc bfc" id="L1224" title="All 4 branches covered.">    if (keepRemainder &amp;&amp; rest.length != 0) {</span>
-<span class="fc" id="L1225">      insert(sz, rest);</span>
+<span class="fc" id="L1125">    }</span>
+<span class="fc bfc" id="L1126" title="All 4 branches covered.">    if (keepRemainder &amp;&amp; rest.length != 0) {</span>
+<span class="fc" id="L1127">      insert(sz, rest);</span>
     }
-<span class="fc" id="L1227">    return this;</span>
+<span class="fc" id="L1129">    return this;</span>
   }
 
   /**
@@ -1238,7 +1140,7 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @see #group(List)
    */
   public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 group(Predicate&lt;? super E&gt; criterion) {
-<span class="nc" id="L1241">    return group(singletonList(criterion));</span>
+<span class="nc" id="L1143">    return group(singletonList(criterion));</span>
   }
 
   /**
@@ -1274,30 +1176,30 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @SuppressWarnings({&quot;unchecked&quot;})
   public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 group(List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
-<span class="fc" id="L1277">    Check.that(criteria).is(deepNotEmpty());</span>
-<span class="fc" id="L1278">    List&lt;WiredList&lt;E&gt;&gt; groups = createGroups(criteria);</span>
-<span class="fc" id="L1279">    var result = new WiredList&lt;&gt;(groups);</span>
-<span class="fc" id="L1280">    result.add(this);</span>
-<span class="fc" id="L1281">    return (L1) result;</span>
+<span class="fc" id="L1179">    Check.that(criteria).is(deepNotEmpty());</span>
+<span class="fc" id="L1180">    List&lt;WiredList&lt;E&gt;&gt; groups = createGroups(criteria);</span>
+<span class="fc" id="L1181">    var result = new WiredList&lt;&gt;(groups);</span>
+<span class="fc" id="L1182">    result.add(this);</span>
+<span class="fc" id="L1183">    return (L1) result;</span>
   }
 
   @SuppressWarnings({&quot;rawtypes&quot;})
   private WiredList&lt;WiredList&lt;E&gt;&gt; createGroups(List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
-<span class="fc" id="L1286">    WiredList&lt;WiredList&lt;E&gt;&gt; groups = new WiredList&lt;&gt;();</span>
-<span class="fc" id="L1287">    criteria.forEach(c -&gt; groups.append(new WiredList&lt;&gt;()));</span>
-<span class="fc bfc" id="L1288" title="All 2 branches covered.">    for (Node&lt;E&gt; node = head; node != null; ) {</span>
-<span class="fc" id="L1289">      var next = node.next;</span>
-<span class="fc bfc" id="L1290" title="All 2 branches covered.">      for (int i = 0; i &lt; criteria.size(); ++i) {</span>
-<span class="fc bfc" id="L1291" title="All 2 branches covered.">        if (criteria.get(i).test(node.val)) {</span>
-<span class="fc" id="L1292">          unlink(node);</span>
-<span class="fc" id="L1293">          WiredList wl = groups.get(i);</span>
-<span class="fc" id="L1294">          wl.insert(wl.size(), node);</span>
-<span class="fc" id="L1295">          break;</span>
+<span class="fc" id="L1188">    WiredList&lt;WiredList&lt;E&gt;&gt; groups = new WiredList&lt;&gt;();</span>
+<span class="fc" id="L1189">    criteria.forEach(c -&gt; groups.append(new WiredList&lt;&gt;()));</span>
+<span class="fc bfc" id="L1190" title="All 2 branches covered.">    for (Node&lt;E&gt; node = head; node != null; ) {</span>
+<span class="fc" id="L1191">      var next = node.next;</span>
+<span class="fc bfc" id="L1192" title="All 2 branches covered.">      for (int i = 0; i &lt; criteria.size(); ++i) {</span>
+<span class="fc bfc" id="L1193" title="All 2 branches covered.">        if (criteria.get(i).test(node.val)) {</span>
+<span class="fc" id="L1194">          unlink(node);</span>
+<span class="fc" id="L1195">          WiredList wl = groups.get(i);</span>
+<span class="fc" id="L1196">          wl.insert(wl.size(), node);</span>
+<span class="fc" id="L1197">          break;</span>
         }
       }
-<span class="fc" id="L1298">      node = next;</span>
-<span class="fc" id="L1299">    }</span>
-<span class="fc" id="L1300">    return groups;</span>
+<span class="fc" id="L1200">      node = next;</span>
+<span class="fc" id="L1201">    }</span>
+<span class="fc" id="L1202">    return groups;</span>
   }
 
   /**
@@ -1326,14 +1228,14 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @SuppressWarnings(&quot;unchecked&quot;)
   public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 partition(int size) {
-<span class="fc" id="L1329">    Check.that(size).is(gt(), 0);</span>
-<span class="fc" id="L1330">    WiredList&lt;WiredList&lt;E&gt;&gt; partitions = new WiredList&lt;&gt;();</span>
-<span class="fc bfc" id="L1331" title="All 2 branches covered.">    while (sz &gt; size) {</span>
-<span class="fc" id="L1332">      Chain chain = new Chain(head, nodeAt(size - 1), size);</span>
-<span class="fc" id="L1333">      partitions.append(new WiredList&lt;&gt;(unlink(chain)));</span>
-<span class="fc" id="L1334">    }</span>
-<span class="fc" id="L1335">    partitions.append(this);</span>
-<span class="fc" id="L1336">    return (L1) partitions;</span>
+<span class="fc" id="L1231">    Check.that(size).is(gt(), 0);</span>
+<span class="fc" id="L1232">    WiredList&lt;WiredList&lt;E&gt;&gt; partitions = new WiredList&lt;&gt;();</span>
+<span class="fc bfc" id="L1233" title="All 2 branches covered.">    while (sz &gt; size) {</span>
+<span class="fc" id="L1234">      Chain chain = new Chain(head, nodeAt(size - 1), size);</span>
+<span class="fc" id="L1235">      partitions.append(new WiredList&lt;&gt;(unlink(chain)));</span>
+<span class="fc" id="L1236">    }</span>
+<span class="fc" id="L1237">    partitions.append(this);</span>
+<span class="fc" id="L1238">    return (L1) partitions;</span>
   }
 
   /**
@@ -1359,8 +1261,8 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return a list containing the specified number of {@code WiredList} instances
    */
   public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 split(int numPartitions) {
-<span class="fc" id="L1362">    Check.that(numPartitions).is(gt(), 0);</span>
-<span class="fc" id="L1363">    return partition(divUp(sz, numPartitions));</span>
+<span class="fc" id="L1264">    Check.that(numPartitions).is(gt(), 0);</span>
+<span class="fc" id="L1265">    return partition(divUp(sz, numPartitions));</span>
   }
 
   /**
@@ -1377,19 +1279,19 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    *     that does not satisfy the condition
    */
   public WiredList&lt;E&gt; lchop(Predicate&lt;? super E&gt; criterion) {
-<span class="fc" id="L1380">    Check.notNull(criterion);</span>
-<span class="fc bfc" id="L1381" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L1382">      return this;</span>
+<span class="fc" id="L1282">    Check.notNull(criterion);</span>
+<span class="fc bfc" id="L1283" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L1284">      return this;</span>
     }
-<span class="fc" id="L1384">    Node&lt;E&gt; first = head;</span>
-<span class="fc" id="L1385">    Node&lt;E&gt; last = justBeforeHead();</span>
-<span class="fc" id="L1386">    int len = 0;</span>
-<span class="fc bfc" id="L1387" title="All 4 branches covered.">    for (; criterion.test(last.next.val) &amp;&amp; ++len != sz; last = last.next)</span>
+<span class="fc" id="L1286">    Node&lt;E&gt; first = head;</span>
+<span class="fc" id="L1287">    Node&lt;E&gt; last = justBeforeHead();</span>
+<span class="fc" id="L1288">    int len = 0;</span>
+<span class="fc bfc" id="L1289" title="All 4 branches covered.">    for (; criterion.test(last.next.val) &amp;&amp; ++len != sz; last = last.next)</span>
       ;
-<span class="fc bfc" id="L1389" title="All 2 branches covered.">    if (len == sz) {</span>
-<span class="fc" id="L1390">      return this;</span>
+<span class="fc bfc" id="L1291" title="All 2 branches covered.">    if (len == sz) {</span>
+<span class="fc" id="L1292">      return this;</span>
     }
-<span class="fc" id="L1392">    return new WiredList&lt;&gt;(unlink(new Chain(first, last, len)));</span>
+<span class="fc" id="L1294">    return new WiredList&lt;&gt;(unlink(new Chain(first, last, len)));</span>
   }
 
   /**
@@ -1406,19 +1308,19 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    *     that does not satisfy the condition
    */
   public WiredList&lt;E&gt; rchop(Predicate&lt;? super E&gt; criterion) {
-<span class="fc" id="L1409">    Check.notNull(criterion);</span>
-<span class="fc bfc" id="L1410" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L1411">      return this;</span>
+<span class="fc" id="L1311">    Check.notNull(criterion);</span>
+<span class="fc bfc" id="L1312" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L1313">      return this;</span>
     }
-<span class="fc" id="L1413">    Node&lt;E&gt; last = tail;</span>
-<span class="fc" id="L1414">    Node&lt;E&gt; first = justAfterTail();</span>
-<span class="fc" id="L1415">    int len = 0;</span>
-<span class="fc bfc" id="L1416" title="All 4 branches covered.">    for (; criterion.test(first.prev.val) &amp;&amp; ++len != sz; first = first.prev)</span>
+<span class="fc" id="L1315">    Node&lt;E&gt; last = tail;</span>
+<span class="fc" id="L1316">    Node&lt;E&gt; first = justAfterTail();</span>
+<span class="fc" id="L1317">    int len = 0;</span>
+<span class="fc bfc" id="L1318" title="All 4 branches covered.">    for (; criterion.test(first.prev.val) &amp;&amp; ++len != sz; first = first.prev)</span>
       ;
-<span class="fc bfc" id="L1418" title="All 2 branches covered.">    if (len == sz) {</span>
-<span class="fc" id="L1419">      return this;</span>
+<span class="fc bfc" id="L1320" title="All 2 branches covered.">    if (len == sz) {</span>
+<span class="fc" id="L1321">      return this;</span>
     }
-<span class="fc" id="L1421">    return new WiredList&lt;&gt;(unlink(new Chain(first, last, len)));</span>
+<span class="fc" id="L1323">    return new WiredList&lt;&gt;(unlink(new Chain(first, last, len)));</span>
   }
 
   /**
@@ -1427,8 +1329,8 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; reverse() {
-<span class="fc" id="L1430">    reverse0();</span>
-<span class="fc" id="L1431">    return this;</span>
+<span class="fc" id="L1332">    reverse0();</span>
+<span class="fc" id="L1333">    return this;</span>
   }
 
   /**
@@ -1442,16 +1344,16 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return this {@code WiredList}
    */
   public WiredList&lt;E&gt; move(int fromIndex, int toIndex, int newFromIndex) {
-<span class="fc" id="L1445">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
-<span class="fc" id="L1446">    Check.that(newFromIndex, &quot;target index&quot;).is(indexInclusiveOf(), this);</span>
-<span class="pc bpc" id="L1447" title="1 of 2 branches missed.">    if (len != 0) {</span>
-<span class="fc bfc" id="L1448" title="All 2 branches covered.">      if (newFromIndex &gt; fromIndex) {</span>
-<span class="fc" id="L1449">        moveToTail(fromIndex, toIndex, newFromIndex);</span>
-<span class="pc bpc" id="L1450" title="1 of 2 branches missed.">      } else if (newFromIndex &lt; fromIndex) {</span>
-<span class="fc" id="L1451">        moveToHead(fromIndex, toIndex, newFromIndex);</span>
+<span class="fc" id="L1347">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="fc" id="L1348">    Check.that(newFromIndex, &quot;target index&quot;).is(indexInclusiveOf(), this);</span>
+<span class="pc bpc" id="L1349" title="1 of 2 branches missed.">    if (len != 0) {</span>
+<span class="fc bfc" id="L1350" title="All 2 branches covered.">      if (newFromIndex &gt; fromIndex) {</span>
+<span class="fc" id="L1351">        moveToTail(fromIndex, toIndex, newFromIndex);</span>
+<span class="pc bpc" id="L1352" title="1 of 2 branches missed.">      } else if (newFromIndex &lt; fromIndex) {</span>
+<span class="fc" id="L1353">        moveToHead(fromIndex, toIndex, newFromIndex);</span>
       }
     }
-<span class="fc" id="L1454">    return this;</span>
+<span class="fc" id="L1356">    return this;</span>
   }
 
   /**
@@ -1460,18 +1362,18 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @Override
   public void clear() {
-<span class="pc bpc" id="L1463" title="1 of 2 branches missed.">    if (sz != 0) {</span>
-<span class="fc" id="L1464">      var curr = head;</span>
+<span class="pc bpc" id="L1365" title="1 of 2 branches missed.">    if (sz != 0) {</span>
+<span class="fc" id="L1366">      var curr = head;</span>
       do {
-<span class="fc" id="L1466">        var next = curr.next;</span>
-<span class="fc" id="L1467">        curr.val = null;</span>
-<span class="fc" id="L1468">        curr.prev = curr.next = null;</span>
-<span class="fc" id="L1469">        curr = next;</span>
-<span class="fc bfc" id="L1470" title="All 2 branches covered.">      } while (curr != tail);</span>
-<span class="fc" id="L1471">      head = tail = null;</span>
-<span class="fc" id="L1472">      sz = 0;</span>
+<span class="fc" id="L1368">        var next = curr.next;</span>
+<span class="fc" id="L1369">        curr.val = null;</span>
+<span class="fc" id="L1370">        curr.prev = curr.next = null;</span>
+<span class="fc" id="L1371">        curr = next;</span>
+<span class="fc bfc" id="L1372" title="All 2 branches covered.">      } while (curr != tail);</span>
+<span class="fc" id="L1373">      head = tail = null;</span>
+<span class="fc" id="L1374">      sz = 0;</span>
     }
-<span class="fc" id="L1474">  }</span>
+<span class="fc" id="L1376">  }</span>
 
   /**
    * Returns a {@link WiredIterator} that traverses the list from the first element
@@ -1481,7 +1383,7 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    *     to the last
    */
   public WiredIterator&lt;E&gt; wiredIterator() {
-<span class="fc" id="L1484">    return new ForwardWiredIterator();</span>
+<span class="fc" id="L1386">    return new ForwardWiredIterator();</span>
   }
 
   /**
@@ -1494,7 +1396,7 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    *     to the last, or the other way round
    */
   public WiredIterator&lt;E&gt; wiredIterator(boolean reverse) {
-<span class="fc bfc" id="L1497" title="All 2 branches covered.">    return reverse ? new ReverseWiredIterator() : new ForwardWiredIterator();</span>
+<span class="fc bfc" id="L1399" title="All 2 branches covered.">    return reverse ? new ReverseWiredIterator() : new ForwardWiredIterator();</span>
   }
 
   /**
@@ -1508,16 +1410,16 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @Override
   public List&lt;E&gt; subList(int fromIndex, int toIndex) {
-<span class="nc" id="L1511">    throw new UnsupportedOperationException();</span>
+<span class="nc" id="L1413">    throw new UnsupportedOperationException();</span>
   }
 
   // Make garbage collector happy
   private E destroy(Node&lt;E&gt; node) {
-<span class="fc" id="L1516">    E val = node.val;</span>
-<span class="fc" id="L1517">    unlink(node);</span>
-<span class="fc" id="L1518">    node.val = null;</span>
-<span class="fc" id="L1519">    node.prev = node.next = null;</span>
-<span class="fc" id="L1520">    return val;</span>
+<span class="fc" id="L1418">    E val = node.val;</span>
+<span class="fc" id="L1419">    unlink(node);</span>
+<span class="fc" id="L1420">    node.val = null;</span>
+<span class="fc" id="L1421">    node.prev = node.next = null;</span>
+<span class="fc" id="L1422">    return val;</span>
   }
 
 }
