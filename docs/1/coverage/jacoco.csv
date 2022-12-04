@@ -1,6 +1,5 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
 Klojang Collections,org.klojang.collections,ArraySet.new Iterator() {...},0,42,0,2,0,5,0,4,0,3
-Klojang Collections,org.klojang.collections,WiredList.ListItr,7,223,3,17,1,37,3,18,0,11
 Klojang Collections,org.klojang.collections,FixedTypeMap,4,20,0,0,1,6,1,4,1,4
 Klojang Collections,org.klojang.collections,CrisprList.ForwardWiredIterator,173,220,6,6,30,36,7,13,4,10
 Klojang Collections,org.klojang.collections,BasicTypeComparator,0,84,1,21,0,22,1,13,0,3
@@ -9,12 +8,12 @@ Klojang Collections,org.klojang.collections,TypeSet,135,0,2,0,26,0,23,0,22,0
 Klojang Collections,org.klojang.collections,WiredList.ForwardWiredIterator,0,395,0,12,0,66,0,20,0,14
 Klojang Collections,org.klojang.collections,ImmutableSet,28,3,0,0,7,1,7,1,7,1
 Klojang Collections,org.klojang.collections,WiredList.new Iterator() {...},0,44,0,2,0,7,0,4,0,3
-Klojang Collections,org.klojang.collections,AbstractLinkedList,10,16,0,0,0,5,2,6,2,6
+Klojang Collections,org.klojang.collections,AbstractLinkedList,14,290,1,29,0,64,3,33,2,19
 Klojang Collections,org.klojang.collections,WiredList.new Iterator() {...},0,44,0,2,0,7,0,4,0,3
+Klojang Collections,org.klojang.collections,AbstractLinkedList.ListItr,7,223,3,17,1,37,3,18,0,11
 Klojang Collections,org.klojang.collections,AbstractTypeSet,88,0,2,0,15,0,12,0,11,0
 Klojang Collections,org.klojang.collections,TypeMap,4,112,0,0,1,24,1,12,1,12
 Klojang Collections,org.klojang.collections,TypeTreeMap,5,37,0,0,1,10,1,6,1,6
-Klojang Collections,org.klojang.collections,CrisprList.ListItr,143,87,12,8,24,14,14,7,7,4
 Klojang Collections,org.klojang.collections,TypeSet.new AbstractTypeSet() {...},21,0,0,0,5,0,2,0,2,0
 Klojang Collections,org.klojang.collections,TypeSet.new AbstractTypeSet() {...},21,0,0,0,5,0,2,0,2,0
 Klojang Collections,org.klojang.collections,TypeSet.new AbstractTypeSet() {...},21,0,0,0,5,0,2,0,2,0
@@ -22,7 +21,7 @@ Klojang Collections,org.klojang.collections,NativeTypeMapBuilder,18,134,0,8,3,26
 Klojang Collections,org.klojang.collections,FixedTypeMapBuilder,18,55,0,0,2,11,2,6,2,6
 Klojang Collections,org.klojang.collections,GreedyTypeMapBuilder,18,46,0,0,2,10,2,4,2,4
 Klojang Collections,org.klojang.collections,AbstractLinkedList.Node,4,21,0,0,1,7,1,3,1,3
-Klojang Collections,org.klojang.collections,WiredList,42,2320,15,245,8,538,17,208,3,92
+Klojang Collections,org.klojang.collections,WiredList,38,2046,14,216,8,479,16,181,3,79
 Klojang Collections,org.klojang.collections,CrisprList.ReverseWiredIterator,199,198,6,6,34,32,8,12,5,9
 Klojang Collections,org.klojang.collections,TypeSet.new AbstractTypeSet() {...},21,0,0,0,5,0,2,0,2,0
 Klojang Collections,org.klojang.collections,NativeTypeMapBuilder.WritableTypeNode,15,173,3,21,5,46,2,16,0,6
@@ -34,7 +33,7 @@ Klojang Collections,org.klojang.collections,CrisprList.new Iterator() {...},0,44
 Klojang Collections,org.klojang.collections,CrisprList.new Iterator() {...},0,44,0,2,0,7,0,4,0,3
 Klojang Collections,org.klojang.collections,NonExpandingTypeMap,13,285,0,50,3,75,3,38,3,13
 Klojang Collections,org.klojang.collections,PrettyTypeComparator,149,0,42,0,45,0,23,0,2,0
-Klojang Collections,org.klojang.collections,CrisprList,66,2208,16,236,14,511,19,202,5,90
+Klojang Collections,org.klojang.collections,CrisprList,54,1934,15,207,11,452,17,175,4,77
 Klojang Collections,org.klojang.collections,ArraySet,132,110,29,9,27,25,22,12,6,9
 Klojang Collections,org.klojang.collections,TreeTypeMapBuilder,18,49,0,0,2,10,2,4,2,4
 Klojang Collections,org.klojang.collections,NativeTypeMap,49,356,14,52,12,77,13,35,3,12
