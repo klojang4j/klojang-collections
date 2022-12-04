@@ -17,7 +17,8 @@ import static org.klojang.check.CommonExceptions.indexOutOfBounds;
 import static org.klojang.check.CommonExceptions.noSuchElement;
 import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
 
-abstract class AbstractLinkedList<E> implements List<E> {
+abstract sealed class AbstractLinkedList<E> implements List<E>
+    permits WiredList, CrisprList {
 
   static Supplier<IllegalArgumentException> autoEmbedNotAllowed() {
     return () -> new IllegalArgumentException("list cannot be embedded within itself");
@@ -44,6 +45,7 @@ abstract class AbstractLinkedList<E> implements List<E> {
   //
   //
   //
+
   static final class Node<V> {
 
     V val;
@@ -79,7 +81,7 @@ abstract class AbstractLinkedList<E> implements List<E> {
   //
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  static class Chain {
+  static final class Chain {
 
     // must (and will) only be called if values.size() > 0
     static <V> Chain of(Collection<V> values) {
@@ -222,6 +224,8 @@ abstract class AbstractLinkedList<E> implements List<E> {
   //
   //
   //
+
+  final String className = getClass().getSimpleName();
 
   Node<E> head;
   Node<E> tail;
@@ -385,6 +389,55 @@ abstract class AbstractLinkedList<E> implements List<E> {
   }
 
   /**
+   * Returns the number of elements in this list. If this list contains more than
+   * {@code Integer.MAX_VALUE} elements, returns {@code Integer.MAX_VALUE}.
+   *
+   * @return the number of elements in this list
+   */
+  @Override
+  public int size() {
+    return sz;
+  }
+
+  /**
+   * Returns {@code true} if this list contains no elements.
+   *
+   * @return {@code true} if this list contains no elements
+   */
+  @Override
+  public boolean isEmpty() {
+    return sz == 0;
+  }
+
+  /**
+   * Returns {@code true} if this list contains the specified element. More formally,
+   * returns {@code true} if and only if this list contains at least one element
+   * {@code e} such that {@code Objects.equals(o, e)}.
+   *
+   * @param o element whose presence in this list is to be tested
+   * @return {@code true} if this list contains the specified element
+   */
+  @Override
+  public boolean contains(Object o) {
+    return indexOf(o) != -1;
+  }
+
+  /**
+   * Returns {@code true} if this list contains all of the elements of the specified
+   * collection.
+   *
+   * @param c collection to be checked for containment in this list
+   * @return {@code true} if this list contains all of the elements of the specified
+   *     collection
+   * @see #contains(Object)
+   */
+  @Override
+  public boolean containsAll(Collection<?> c) {
+    Check.notNull(c);
+    return new HashSet<>(this).containsAll(c);
+  }
+
+  /**
    * Returns an {@code Iterator} that traverses the list from the first element to
    * the last.
    *
@@ -412,14 +465,7 @@ abstract class AbstractLinkedList<E> implements List<E> {
     };
   }
 
-  /**
-   * Returns an {@code Iterator} that traverses the list from the last element to the
-   * first. See also {@link #iterator()}.
-   *
-   * @return an {@code Iterator} that traverses the list from the last element to the
-   *     first
-   */
-  public Iterator<E> reverseIterator() {
+  Iterator<E> reverseIterator() {
     return sz == 0 ? emptyIterator() : new Iterator<>() {
 
       private Node<E> curr = justAfterTail();

@@ -60,9 +60,6 @@ import static org.klojang.util.MathMethods.divUp;
  */
 public final class WiredList<E> extends AbstractLinkedList<E> {
 
-  // Ubiquitous parameter names within this class
-  private static final String MY_NAME = "WiredList";
-
   //
   //
   //
@@ -446,55 +443,6 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
   }
 
   /**
-   * Returns the number of elements in this list. If this list contains more than
-   * {@code Integer.MAX_VALUE} elements, returns {@code Integer.MAX_VALUE}.
-   *
-   * @return the number of elements in this list
-   */
-  @Override
-  public int size() {
-    return sz;
-  }
-
-  /**
-   * Returns {@code true} if this list contains no elements.
-   *
-   * @return {@code true} if this list contains no elements
-   */
-  @Override
-  public boolean isEmpty() {
-    return sz == 0;
-  }
-
-  /**
-   * Returns {@code true} if this list contains the specified element. More formally,
-   * returns {@code true} if and only if this list contains at least one element
-   * {@code e} such that {@code Objects.equals(o, e)}.
-   *
-   * @param o element whose presence in this list is to be tested
-   * @return {@code true} if this list contains the specified element
-   */
-  @Override
-  public boolean contains(Object o) {
-    return indexOf(o) != -1;
-  }
-
-  /**
-   * Returns {@code true} if this list contains all of the elements of the specified
-   * collection.
-   *
-   * @param c collection to be checked for containment in this list
-   * @return {@code true} if this list contains all of the elements of the specified
-   *     collection
-   * @see #contains(Object)
-   */
-  @Override
-  public boolean containsAll(Collection<?> c) {
-    Check.notNull(c);
-    return new HashSet<>(this).containsAll(c);
-  }
-
-  /**
    * Overwrites the elements at, and following the specified index with the provided
    * values. For linked lists this is more efficient than setting each of the
    * elements individually, especially if the elements are somewhere in the middle of
@@ -839,7 +787,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
       int toIndex,
       WiredList<? extends E> other) {
     int len = Check.fromTo(this, fromIndex, toIndex);
-    Check.notNull(other, MY_NAME).isNot(sameAs(), this, autoEmbedNotAllowed());
+    Check.notNull(other, className).isNot(sameAs(), this, autoEmbedNotAllowed());
     if (len != 0) {
       cut(fromIndex, toIndex).clear();
     }
@@ -951,7 +899,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    */
   public WiredList<E> embed(int index, WiredList<? extends E> other) {
     checkInclusive(index);
-    Check.notNull(other, MY_NAME).isNot(sameAs(), this, autoEmbedNotAllowed());
+    Check.notNull(other, className).isNot(sameAs(), this, autoEmbedNotAllowed());
     if (!other.isEmpty()) {
       insert(index, new Chain(other.head, other.tail, other.sz));
       // Reset but don't clear the embedded list, because that
@@ -1374,6 +1322,18 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
       sz = 0;
     }
   }
+
+  /**
+   * Returns an {@code Iterator} that traverses the list from the last element to the
+   * first. See also {@link #iterator()}.
+   *
+   * @return an {@code Iterator} that traverses the list from the last element to the
+   *     first
+   */
+  public Iterator<E> reverseIterator() {
+    return super.reverseIterator();
+  }
+
 
   /**
    * Returns a {@link WiredIterator} that traverses the list from the first element

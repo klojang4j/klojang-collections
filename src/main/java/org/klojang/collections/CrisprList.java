@@ -17,51 +17,20 @@ import static org.klojang.util.MathMethods.divUp;
 /**
  * A doubly-linked list, much like the JDK's {@link LinkedList}, but exclusively
  * focused on list manipulation while disregarding the queue-like aspects of linked
- * lists. As with any doubly-linked list, index-based retrieval is relatively costly
- * compared to {@link ArrayList}. It is very efficient, however, at inserting,
- * deleting and moving around chunks of list elements (i.e. structural changes). The
- * larger the chunks, the bigger the gain - again compared to {@code ArrayList}.
- *
- * <h2>Iteration</h2>
- * <p>
- * You should always use an {@code Iterator} to iterate over the elements in the list
- * (which you implicitly would when executing a {@code forEach} loop). Using an
- * index/get loop is possible, but performs poorly. The {@link Iterator} and
- * {@link ListIterator} implementations prescribed by the {@code List} interface are
- * no-frills iterators that throw an {@code UnsupportedOperationException} from all
- * methods designated as optional by the specification. In addition, the
- * {@code CrisprList class} also features a {@link #reverseIterator()} and a
- * {@link #wiredIterator()} method. The latter returns an instance of the
- * {@link WiredIterator} interface. Unlike a {@link ListIterator}, this is a
- * one-way-only iterator, but it still provides the same functionality, and it
- * <i>does</i> implement the methods that are optional in the {@code ListIterator}
- * interface.
- *
- * <h2>Fluent API</h2>
- * <p>
- * Many of the methods that go beyond those prescribed by the {@code List} interface
- * form part of a fluent API. This causes some overlap in functionality between
- * {@code List} methods and methods taking part in the fluent API. They are
- * implemented exactly alike, so there is intrinsic reason to prefer one over the
- * other.
- *
- * <h2>Thread safety</h2>
- * <p>
- * List edits are always destructive, and nearly always don't just change the values
- * in the list, but the underlying data structure itself. The {@code CrisprList}
- * class is not thread-safe. Multiple threads mutating the same list can leave it in
- * a seriously corrupted state, with "dangling wires" between the list elements (i.e.
- * null pointers). While the iterators make a light-touch effort to detect and trap
- * concurrent modifications on the list, {@code CrisprList} itself doesn't.
- * Therefore, synchronize carefully when multiple threads access the same list.
+ * lists. Functionally, this class is exactly equivalent to {@link WiredList}. The
+ * difference lies in how the two classes deal with removed elements and list
+ * segments. {@code WiredList} (like {@code LinkedList}) meticulously nullifies
+ * everything that can be nullified about them. {@code CrisprList} just leaves them
+ * floating in deep space (the heap). In principle the first strategy should make it
+ * easier for the garbage collector to detect unreachable chunks of heap memory. The
+ * extra administration can itself become non-negligible, however, when removing
+ * large list segments, or when repetitively removing medium-sized list segments.
  *
  * @param <E> the type of the elements in the list
  * @author Ayco Holleman
+ * @see WiredList
  */
 public final class CrisprList<E> extends AbstractLinkedList<E> {
-
-  // Ubiquitous parameter names within this class
-  private static final String MY_NAME = "CrisprList";
 
   //
   //
@@ -446,55 +415,6 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   }
 
   /**
-   * Returns the number of elements in this list. If this list contains more than
-   * {@code Integer.MAX_VALUE} elements, returns {@code Integer.MAX_VALUE}.
-   *
-   * @return the number of elements in this list
-   */
-  @Override
-  public int size() {
-    return sz;
-  }
-
-  /**
-   * Returns {@code true} if this list contains no elements.
-   *
-   * @return {@code true} if this list contains no elements
-   */
-  @Override
-  public boolean isEmpty() {
-    return sz == 0;
-  }
-
-  /**
-   * Returns {@code true} if this list contains the specified element. More formally,
-   * returns {@code true} if and only if this list contains at least one element
-   * {@code e} such that {@code Objects.equals(o, e)}.
-   *
-   * @param o element whose presence in this list is to be tested
-   * @return {@code true} if this list contains the specified element
-   */
-  @Override
-  public boolean contains(Object o) {
-    return indexOf(o) != -1;
-  }
-
-  /**
-   * Returns {@code true} if this list contains all of the elements of the specified
-   * collection.
-   *
-   * @param c collection to be checked for containment in this list
-   * @return {@code true} if this list contains all of the elements of the specified
-   *     collection
-   * @see #contains(Object)
-   */
-  @Override
-  public boolean containsAll(Collection<?> c) {
-    Check.notNull(c);
-    return new HashSet<>(this).containsAll(c);
-  }
-
-  /**
    * Overwrites the elements at, and following the specified index with the provided
    * values. For linked lists this is more efficient than setting each of the
    * elements individually, especially if the elements are somewhere in the middle of
@@ -841,7 +761,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
       int toIndex,
       CrisprList<? extends E> other) {
     int len = Check.fromTo(this, fromIndex, toIndex);
-    Check.notNull(other, MY_NAME).isNot(sameAs(), this, autoEmbedNotAllowed());
+    Check.notNull(other, className).isNot(sameAs(), this, autoEmbedNotAllowed());
     if (len != 0) {
       unlink(fromIndex, toIndex);
     }
@@ -939,7 +859,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    */
   public CrisprList<E> embed(int index, CrisprList<? extends E> other) {
     checkInclusive(index);
-    Check.notNull(other, MY_NAME).isNot(sameAs(), this, autoEmbedNotAllowed());
+    Check.notNull(other, className).isNot(sameAs(), this, autoEmbedNotAllowed());
     if (!other.isEmpty()) {
       insert(index, new Chain(other.head, other.tail, other.sz));
       other.clear();
@@ -1346,6 +1266,17 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   public void clear() {
     head = tail = null;
     sz = 0;
+  }
+
+  /**
+   * Returns an {@code Iterator} that traverses the list from the last element to the
+   * first. See also {@link #iterator()}.
+   *
+   * @return an {@code Iterator} that traverses the list from the last element to the
+   *     first
+   */
+  public Iterator<E> reverseIterator() {
+    return super.reverseIterator();
   }
 
   /**
