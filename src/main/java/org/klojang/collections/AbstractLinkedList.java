@@ -228,6 +228,39 @@ abstract class AbstractLinkedList<E> implements List<E> {
   int sz;
 
   /**
+   * Appends the specified element to the end of this list.
+   *
+   * @param e element to be appended to this list
+   * @return {@code true} (as specified by {@link Collection#add})
+   */
+  @Override
+  public boolean add(E e) {
+    Node<E> n = new Node<>(e);
+    if (sz == 0) {
+      head = tail = n;
+    } else {
+      join(tail, n);
+      tail = n;
+    }
+    ++sz;
+    return true;
+  }
+
+  /**
+   * Inserts the specified element at the specified position in this list. Shifts the
+   * element currently at that position (if any) and any subsequent elements to the
+   * right (adds one to their indices).
+   *
+   * @param index index at which the specified element is to be inserted
+   * @param element element to be inserted
+   */
+  @Override
+  public void add(int index, E element) {
+    checkInclusive(index);
+    insert(index, new Node<>(element));
+  }
+
+  /**
    * Appends all elements in the specified collection to the end of this list, in the
    * order that they are returned by the specified collection's iterator.
    *
@@ -259,7 +292,6 @@ abstract class AbstractLinkedList<E> implements List<E> {
     }
     return !c.isEmpty();
   }
-
 
   /**
    * Returns an {@code Iterator} that traverses the list from the first element to

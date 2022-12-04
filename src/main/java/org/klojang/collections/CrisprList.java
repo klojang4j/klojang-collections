@@ -639,34 +639,6 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   }
 
   /**
-   * Appends the specified element to the end of this list.
-   *
-   * @param e element to be appended to this list
-   * @return {@code true} (as specified by {@link Collection#add})
-   * @see #append(Object)
-   */
-  @Override
-  public boolean add(E e) {
-    append(e);
-    return true;
-  }
-
-  /**
-   * Inserts the specified element at the specified position in this list. Shifts the
-   * element currently at that position (if any) and any subsequent elements to the
-   * right (adds one to their indices).
-   *
-   * @param index index at which the specified element is to be inserted
-   * @param element element to be inserted
-   * @see #insert(int, Object)
-   */
-  @Override
-  public void add(int index, E element) {
-    checkInclusive(index);
-    insert(index, new Node<>(element));
-  }
-
-  /**
    * Removes the element at the specified position in this list.
    *
    * @param index the index of the element to be removed
@@ -832,14 +804,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @return this {@code CrisprList}
    */
   public CrisprList<E> append(E value) {
-    Node<E> n = new Node<>(value);
-    if (sz == 0) {
-      head = tail = n;
-    } else {
-      join(tail, n);
-      tail = n;
-    }
-    ++sz;
+    add(value);
     return this;
   }
 
