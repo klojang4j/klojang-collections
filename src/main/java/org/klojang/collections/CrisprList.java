@@ -2,19 +2,16 @@ package org.klojang.collections;
 
 import org.klojang.check.Check;
 import org.klojang.check.Tag;
-import org.klojang.util.CollectionMethods;
-import org.klojang.util.InvokeMethods;
 
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-import static java.util.Collections.*;
+import static java.util.Collections.singletonList;
 import static org.klojang.check.CommonChecks.*;
 import static org.klojang.check.CommonExceptions.indexOutOfBounds;
 import static org.klojang.check.CommonExceptions.noSuchElement;
 import static org.klojang.check.CommonProperties.length;
-import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
 import static org.klojang.util.MathMethods.divUp;
 
 /**
@@ -1500,17 +1497,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @return this {@code CrisprList}
    */
   public CrisprList<E> reverse() {
-    if (sz > 1) {
-      var x = head;
-      var y = tail;
-      for (int i = 0; i < sz / 2; ++i) {
-        E tmp = x.val;
-        x.val = y.val;
-        y.val = tmp;
-        x = x.next;
-        y = y.prev;
-      }
-    }
+    reverse0();
     return this;
   }
 
@@ -1537,95 +1524,6 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
     return this;
   }
 
-  private void moveToTail(int from, int to, int newFrom) {
-    int indexOfLast = to - 1;
-    int steps = newFrom - from;
-    Node<E> first = nodeAt(from);
-    Node<E> last = nodeAfter(first, from, indexOfLast);
-    Node<E> insertAfter = nodeAfter(last, indexOfLast, indexOfLast + steps);
-    if (first == head) {
-      makeHead(last.next);
-    } else {
-      join(first.prev, last.next);
-    }
-    if (insertAfter == tail) {
-      join(insertAfter, first);
-      makeTail(last);
-    } else {
-      join(last, insertAfter.next);
-      join(insertAfter, first);
-    }
-  }
-
-  private void moveToHead(int from, int to, int newFrom) {
-    Node<E> first = nodeAt(from);
-    Node<E> last = nodeAfter(first, from, to - 1);
-    Node<E> insertBefore = nodeBefore(first, from, newFrom);
-    if (last == tail) {
-      makeTail(first.prev);
-    } else {
-      join(first.prev, last.next);
-    }
-    if (insertBefore == head) {
-      join(last, insertBefore);
-      makeHead(first);
-    } else {
-      join(insertBefore.prev, first);
-      join(last, insertBefore);
-    }
-  }
-
-  /**
-   * Returns an array containing all elements in this list in proper sequence (from
-   * first to last element).
-   *
-   * @return an array containing all elements in this list in proper sequence
-   * @see Arrays#asList(Object[])
-   */
-  @Override
-  public Object[] toArray() {
-    if (sz == 0) {
-      return EMPTY_OBJECT_ARRAY;
-    }
-    Object[] result = new Object[sz];
-    int i = 0;
-    for (E val : this) {
-      result[i++] = val;
-    }
-    return result;
-  }
-
-  /**
-   * Returns an array containing all elements in this list in proper sequence (from
-   * first to last element); the runtime type of the returned array is that of the
-   * specified array.
-   *
-   * @param a the array into which the elements of this list are to be stored, if
-   *     it is big enough; otherwise, a new array of the same runtime type is
-   *     allocated for this purpose.
-   * @return an array containing the elements of this list
-   * @throws ArrayStoreException if the runtime type of the specified array is
-   *     not a supertype of the runtime type of every element in this list
-   * @throws NullPointerException if the specified array is null
-   */
-  @Override
-  @SuppressWarnings({"unchecked"})
-  public <T> T[] toArray(T[] a) {
-    Check.notNull(a);
-    if (a.length < sz) {
-      a = (T[]) InvokeMethods.newArray(a.getClass(), sz);
-    }
-    int i = 0;
-    Object[] result = a;
-    for (E val : this) {
-      result[i++] = val;
-    }
-    if (a.length > sz) {
-      a[sz] = null;
-    }
-    return a;
-  }
-
   /**
    * Removes all elements from this list. The list will be empty after this call
    * returns.
@@ -1634,61 +1532,6 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   public void clear() {
     head = tail = null;
     sz = 0;
-  }
-
-  /**
-   * Returns an {@code Iterator} that traverses the list from the first element to
-   * the last.
-   *
-   * @return an {@code Iterator} that traverses the list's elements from first to the
-   *     last
-   */
-  @Override
-  public Iterator<E> iterator() {
-    return sz == 0 ? emptyIterator() : new Iterator<>() {
-
-      private Node<E> curr = justBeforeHead();
-
-      @Override
-      public boolean hasNext() {
-        return curr != tail;
-      }
-
-      @Override
-      public E next() {
-        Check.that(curr).isNot(sameAs(), tail, noSuchElement());
-        return Check.that(curr = curr.next)
-            .is(notNull(), concurrentModification())
-            .ok(Node::value);
-      }
-    };
-  }
-
-  /**
-   * Returns an {@code Iterator} that traverses the list from the last element to the
-   * first. See also {@link #iterator()}.
-   *
-   * @return an {@code Iterator} that traverses the list from the last element to the
-   *     first
-   */
-  public Iterator<E> reverseIterator() {
-    return sz == 0 ? emptyIterator() : new Iterator<>() {
-
-      private Node<E> curr = justAfterTail();
-
-      @Override
-      public boolean hasNext() {
-        return curr != head;
-      }
-
-      @Override
-      public E next() {
-        Check.that(curr).isNot(sameAs(), head, noSuchElement());
-        return Check.that(curr = curr.prev)
-            .is(notNull(), concurrentModification())
-            .ok(Node::value);
-      }
-    };
   }
 
   /**
@@ -1716,100 +1559,6 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   }
 
   /**
-   * Returns a list iterator over the elements in this list (in proper sequence).
-   *
-   * @return a list iterator over the elements in this list (in proper sequence)
-   */
-  @Override
-  public ListIterator<E> listIterator() {
-    return isEmpty() ? emptyListIterator() : new ListItr();
-  }
-
-  /**
-   * Returns a list iterator over the elements in this list (in proper sequence),
-   * starting at the specified position in the list. The specified index indicates
-   * the first element that would be returned by an initial call to
-   * {@link ListIterator#next next}. An initial call to
-   * {@link ListIterator#previous previous} would return the element with the
-   * specified index minus one.
-   *
-   * @param index index of the first element to be returned from the list
-   *     iterator (by a call to {@link ListIterator#next next})
-   * @return a list iterator over the elements in this list (in proper sequence),
-   *     starting at the specified position in the list
-   * @throws IndexOutOfBoundsException if the index is out of range
-   *     ({@code index < 0 || index > size()})
-   */
-  @Override
-  public ListIterator<E> listIterator(int index) {
-    checkInclusive(index);
-    if (isEmpty()) {
-      return emptyListIterator();
-    }
-    return new ListItr(index);
-  }
-
-  /**
-   * Compares the specified object with this list for equality.  Returns {@code true}
-   * if and only if the specified object is also a list, both lists have the same
-   * size, and all corresponding pairs of elements in the two lists are <i>equal</i>.
-   * (Two elements {@code e1} and {@code e2} are <i>equal</i> if
-   * {@code Objects.equals(e1, e2)}.) In other words, two lists are defined to be
-   * equal if they contain the same elements in the same order.  This definition
-   * ensures that the equals method works properly across different implementations
-   * of the {@code List} interface.
-   *
-   * @param o the object to be compared for equality with this list
-   * @return {@code true} if the specified object is equal to this list
-   */
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    } else if (o instanceof List<?> l) {
-      if (sz == 0) {
-        return l.size() == 0;
-      } else if (sz == l.size()) {
-        var x = head;
-        for (Object obj : l) {
-          if (!Objects.equals(obj, x.val)) {
-            return false;
-          }
-          x = x.next;
-        }
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Returns the hash code value for this list.
-   *
-   * @return the hash code value for this list
-   * @see Object#equals(Object)
-   * @see #equals(Object)
-   */
-  @Override
-  public int hashCode() {
-    int hash = 1;
-    for (E val : this) {
-      hash = 31 * hash + Objects.hashCode(val);
-    }
-    return hash;
-  }
-
-  /**
-   * Returns a {@code String} representation of this list.
-   *
-   * @return a {@code String} representation of this list
-   */
-  @Override
-  public String toString() {
-    return '[' + CollectionMethods.implode(this) + ']';
-  }
-
-  /**
    * Throws an {@code UnsupportedOperationException}. The specification for this
    * method requires that non-structural changes in the returned list are reflected
    * in the original list (and vice versa). However, except for the
@@ -1821,54 +1570,6 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   @Override
   public List<E> subList(int fromIndex, int toIndex) {
     throw new UnsupportedOperationException();
-  }
-
-  ////////////////////////////////////////////////////////////////
-  // IMPORTANT: If you want to reuse nodes or chains, the order of
-  // the operations matter. Always first unlink the node or chain,
-  // and then insert it.
-  ////////////////////////////////////////////////////////////////
-
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  private void insert(int index, Node node) {
-    if (sz == 0) {
-      makeHead(node);
-      makeTail(node);
-    } else if (index == 0) {
-      join(node, head);
-      makeHead(node);
-    } else if (index == sz) {
-      join(tail, node);
-      makeTail(node);
-    } else {
-      var x = nodeAt(index);
-      join(x.prev, node);
-      join(node, x);
-    }
-    ++sz;
-  }
-
-  @SuppressWarnings("unchecked")
-  private void insert(int index, Chain chain) {
-    if (sz == 0) {
-      makeHead(chain.head);
-      makeTail(chain.tail);
-    } else if (index == 0) {
-      join(chain.tail, head);
-      makeHead(chain.head);
-    } else if (index == sz) {
-      join(tail, chain.head);
-      makeTail(chain.tail);
-    } else {
-      var node = nodeAt(index);
-      join(node.prev, chain.head);
-      if (chain.length == 1) {
-        join(chain.head, node);
-      } else {
-        join(chain.tail, node);
-      }
-    }
-    sz += chain.length;
   }
 
 }
