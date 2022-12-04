@@ -987,24 +987,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
   public WiredList<E> replace(int fromIndex,
       int toIndex,
       Collection<? extends E> values) {
-    int len = Check.fromTo(this, fromIndex, toIndex);
-    Check.notNull(values, Tag.COLLECTION);
-    if (len == 0) {
-      if (!values.isEmpty()) {
-        insert(fromIndex, Chain.of(values));
-      }
-    } else if (len == values.size()) {
-      var node = nodeAt(fromIndex);
-      for (E e : values) {
-        node.val = e;
-        node = node.next;
-      }
-    } else {
-      unlink(fromIndex, toIndex);
-      if (!values.isEmpty()) {
-        insert(fromIndex, Chain.of(values));
-      }
-    }
+    replace0(fromIndex, toIndex, values);
     return this;
   }
 

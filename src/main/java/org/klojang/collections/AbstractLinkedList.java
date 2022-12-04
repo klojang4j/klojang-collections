@@ -1,6 +1,7 @@
 package org.klojang.collections;
 
 import org.klojang.check.Check;
+import org.klojang.check.Tag;
 import org.klojang.util.CollectionMethods;
 import org.klojang.util.InvokeMethods;
 
@@ -373,6 +374,27 @@ abstract class AbstractLinkedList<E> implements List<E> {
   @Override
   public String toString() {
     return '[' + CollectionMethods.implode(this) + ']';
+  }
+
+  void replace0(int fromIndex, int toIndex, Collection<? extends E> values) {
+    int len = Check.fromTo(this, fromIndex, toIndex);
+    Check.notNull(values, Tag.COLLECTION);
+    if (len == 0) {
+      if (!values.isEmpty()) {
+        insert(fromIndex, Chain.of(values));
+      }
+    } else if (len == values.size()) {
+      var node = nodeAt(fromIndex);
+      for (E e : values) {
+        node.val = e;
+        node = node.next;
+      }
+    } else {
+      unlink(fromIndex, toIndex);
+      if (!values.isEmpty()) {
+        insert(fromIndex, Chain.of(values));
+      }
+    }
   }
 
   void reverse0() {
