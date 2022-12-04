@@ -7,7 +7,6 @@ import org.klojang.util.InvokeMethods;
 
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import static java.lang.Boolean.FALSE;
@@ -64,99 +63,11 @@ import static org.klojang.util.MathMethods.divUp;
  * @param <E> the type of the elements in the list
  * @author Ayco Holleman
  */
-public final class WiredList<E> implements List<E> {
+public final class WiredList<E> extends AbstractLinkedList<E> {
 
   // Ubiquitous parameter names within this class
-  private static final String WIRED_LIST = "WiredList";
+  private static final String MY_NAME = "WiredList";
 
-  private static Supplier<IllegalArgumentException> autoEmbedNotAllowed() {
-    return () -> new IllegalArgumentException("list cannot be embedded within itself");
-  }
-
-  private static Supplier<IllegalStateException> callNextFirst() {
-    return () -> new IllegalStateException("Iterator.next() must be called first");
-  }
-
-  private static Supplier<IllegalStateException> emptyList() {
-    return () -> new IllegalStateException("illegal operation on empty list");
-  }
-
-  private static Supplier<ConcurrentModificationException> concurrentModification() {
-    return ConcurrentModificationException::new;
-  }
-
-  //
-  //
-  //
-  // ======================================================= //
-  // ======================= [ Node ] ====================== //
-  // ======================================================= //
-  //
-  //
-  //
-
-  // @VisibleForTesting
-  private static final class Node<V> {
-
-    V val;
-    Node<V> prev;
-    Node<V> next;
-
-    Node(V val) {this.val = val;}
-
-    Node(Node<V> prev, V val) {
-      this.prev = prev;
-      this.val = val;
-      prev.next = this;
-    }
-
-    V value() {
-      return val;
-    }
-
-    public String toString() {
-      return String.valueOf(val);
-    }
-
-  }
-
-  //
-  //
-  //
-  // ======================================================= //
-  // ====================== [ Chain ] ====================== //
-  // ======================================================= //
-  //
-  //
-  //
-
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  private record Chain(Node head, Node tail, int length) {
-
-    // must (and will) only be called if values.size() > 0
-    static <V> Chain of(Collection<V> values) {
-      if (values instanceof WiredList wl) {
-        return copyOf(wl.head, wl.size());
-      }
-      Iterator<V> itr = values.iterator();
-      var head = new Node<>(itr.next());
-      var tail = head;
-      while (itr.hasNext()) {
-        tail = new Node<>(tail, itr.next());
-      }
-      return new Chain(head, tail, values.size());
-    }
-
-    static Chain copyOf(Node node, int len) {
-      var head = new Node(node.val);
-      var tail = head;
-      for (int i = 1; i < len; ++i) {
-        tail = new Node(tail, (node = node.next).val);
-      }
-      return new Chain(head, tail, len);
-    }
-
-  }
 
   //
   //
@@ -615,9 +526,6 @@ public final class WiredList<E> implements List<E> {
     return wl;
   }
 
-  private Node<E> head;
-  private Node<E> tail;
-  private int sz;
 
   /**
    * Creates a new, empty {@code WiredList}.
@@ -1220,7 +1128,7 @@ public final class WiredList<E> implements List<E> {
       int toIndex,
       WiredList<? extends E> other) {
     int len = Check.fromTo(this, fromIndex, toIndex);
-    Check.notNull(other, WIRED_LIST).isNot(sameAs(), this, autoEmbedNotAllowed());
+    Check.notNull(other, MY_NAME).isNot(sameAs(), this, autoEmbedNotAllowed());
     if (len != 0) {
       cut(fromIndex, toIndex).clear();
     }
@@ -1332,7 +1240,7 @@ public final class WiredList<E> implements List<E> {
    */
   public WiredList<E> embed(int index, WiredList<? extends E> other) {
     checkInclusive(index);
-    Check.notNull(other, WIRED_LIST).isNot(sameAs(), this, autoEmbedNotAllowed());
+    Check.notNull(other, MY_NAME).isNot(sameAs(), this, autoEmbedNotAllowed());
     if (!other.isEmpty()) {
       insert(index, new Chain(other.head, other.tail, other.sz));
       // Reset but don't clear the embedded list, because that
