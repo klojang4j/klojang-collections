@@ -667,42 +667,6 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   }
 
   /**
-   * Appends all elements in the specified collection to the end of this list, in the
-   * order that they are returned by the specified collection's iterator.
-   *
-   * @param c collection containing elements to be added to this list
-   * @return {@code true} if this list changed as a result of the call
-   * @see #add(Object)
-   * @see #appendAll(Collection)
-   * @see #attach(CrisprList)
-   */
-  @Override
-  public boolean addAll(Collection<? extends E> c) {
-    return addAll(sz, c);
-  }
-
-  /**
-   * Inserts all elements in the specified collection into this list at the specified
-   * position (optional operation). Shifts the element currently at that position (if
-   * any) and any subsequent elements to the right (increases their indices).
-   *
-   * @param index index at which to insert the first element from the specified
-   *     collection
-   * @param c collection containing elements to be added to this list
-   * @return {@code true} if this list changed as a result of the call
-   * @see #insertAll(int, Collection)
-   */
-  @Override
-  public boolean addAll(int index, Collection<? extends E> c) {
-    checkInclusive(index);
-    Check.notNull(c, Tag.COLLECTION);
-    if (!c.isEmpty()) {
-      insert(index, Chain.of(c));
-    }
-    return !c.isEmpty();
-  }
-
-  /**
    * Removes the element at the specified position in this list.
    *
    * @param index the index of the element to be removed
