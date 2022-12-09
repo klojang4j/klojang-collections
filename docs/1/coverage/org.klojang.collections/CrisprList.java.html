@@ -1250,9 +1250,9 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
 <span class="fc" id="L1250">    Check.that(newFromIndex, &quot;target index&quot;).is(indexInclusiveOf(), this);</span>
 <span class="pc bpc" id="L1251" title="1 of 2 branches missed.">    if (len != 0) {</span>
 <span class="fc bfc" id="L1252" title="All 2 branches covered.">      if (newFromIndex &gt; fromIndex) {</span>
-<span class="fc" id="L1253">        moveToTail(fromIndex, toIndex, newFromIndex);</span>
+<span class="fc" id="L1253">        moveRight(fromIndex, toIndex, newFromIndex);</span>
 <span class="pc bpc" id="L1254" title="1 of 2 branches missed.">      } else if (newFromIndex &lt; fromIndex) {</span>
-<span class="fc" id="L1255">        moveToHead(fromIndex, toIndex, newFromIndex);</span>
+<span class="fc" id="L1255">        moveLeft(fromIndex, toIndex, newFromIndex);</span>
       }
     }
 <span class="fc" id="L1258">    return this;</span>

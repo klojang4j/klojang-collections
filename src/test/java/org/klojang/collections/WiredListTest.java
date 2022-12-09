@@ -2233,4 +2233,74 @@ public class WiredListTest {
     assertEquals(List.of("00", "11", "22", "33", "44", "55"), wl1);
   }
 
+  @Test
+  public void swap00() {
+    var wl0 = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    wl0.swap(0, 3, 8, 10);
+    assertEquals(List.of(8, 9, 3, 4, 5, 6, 7, 0, 1, 2), wl0);
+  }
+
+  @Test
+  public void swap01() {
+    var wl0 = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    wl0.swap(0, 3, 7, 8);
+    assertEquals(List.of(7, 3, 4, 5, 6, 0, 1, 2, 8, 9), wl0);
+  }
+
+  @Test
+  public void swap02() {
+    var wl0 = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    wl0.swap(4, 5, 6, 7);
+    assertEquals(List.of(0, 1, 2, 3, 6, 5, 4, 7, 8, 9), wl0);
+  }
+
+  @Test
+  public void swap03() {
+    var wl0 = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    wl0.swap(0, 5, 5, 10);
+    assertEquals(List.of(5, 6, 7, 8, 9, 0, 1, 2, 3, 4), wl0);
+  }
+
+  @Test
+  public void swap04() {
+    var wl0 = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    wl0.swap(4, 5, 5, 6);
+    assertEquals(List.of(0, 1, 2, 3, 5, 4, 6, 7, 8, 9), wl0);
+  }
+
+  @Test
+  public void swap05() {
+    var wl0 = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    wl0.swap(3, 5, 5, 7);
+    assertEquals(List.of(0, 1, 2, 5, 6, 3, 4, 7, 8, 9), wl0);
+  }
+
+  @Test
+  public void swap06() {
+    var wl0 = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    wl0.swap(0, 5, 5, 6);
+    assertEquals(List.of(5, 0, 1, 2, 3, 4, 6, 7, 8, 9), wl0);
+  }
+
+  @Test
+  public void swap08() {
+    var wl0 = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    wl0.swap(4, 5, 6, 7);
+    assertEquals(List.of(0, 1, 2, 3, 6, 5, 4, 7, 8, 9), wl0);
+  }
+
+  @Test
+  public void swap09() {
+    var wl0 = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    wl0.swap(0, 1, 9, 10);
+    assertEquals(List.of(9, 1, 2, 3, 4, 5, 6, 7, 8, 0), wl0);
+  }
+
+  @Test
+  public void swap10() {
+    var wl0 = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    wl0.swap(1, 2, 8, 9);
+    assertEquals(List.of(0, 8, 2, 3, 4, 5, 6, 7, 1, 9), wl0);
+  }
+
 }

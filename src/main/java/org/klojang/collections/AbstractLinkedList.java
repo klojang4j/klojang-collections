@@ -6,6 +6,7 @@ import org.klojang.util.CollectionMethods;
 import org.klojang.util.InvokeMethods;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static java.lang.Boolean.FALSE;
@@ -32,8 +33,16 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     return () -> new IllegalStateException("illegal operation on empty list");
   }
 
+  static Function<String, IllegalArgumentException> emptySegment() {
+    return s -> new IllegalArgumentException("zero-length segment not allowed");
+  }
+
   static Supplier<ConcurrentModificationException> concurrentModification() {
     return ConcurrentModificationException::new;
+  }
+
+  static Function<String, IllegalArgumentException> overlapNotAllowed() {
+    return s -> new IllegalArgumentException("list segments must not overlap");
   }
 
   //
@@ -452,7 +461,7 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
 
       @Override
       public boolean hasNext() {
-        return curr != tail;
+        return curr != tail && curr.next != null;
       }
 
       @Override
@@ -625,7 +634,7 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     }
   }
 
-  void moveToTail(int from, int to, int newFrom) {
+  void moveRight(int from, int to, int newFrom) {
     int indexOfLast = to - 1;
     int steps = newFrom - from;
     Node<E> first = nodeAt(from);
@@ -645,7 +654,7 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     }
   }
 
-  void moveToHead(int from, int to, int newFrom) {
+  void moveLeft(int from, int to, int newFrom) {
     Node<E> first = nodeAt(from);
     Node<E> last = nodeAfter(first, from, to - 1);
     Node<E> insertBefore = nodeBefore(first, from, newFrom);

@@ -495,7 +495,6 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
     return old;
   }
 
-
   /**
    * Removes the element at the specified position in this list.
    *
@@ -912,6 +911,82 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
   }
 
   /**
+   * Swaps the two list segments defined by the specified boundary indexes. The list
+   * segments must not overlap and must both contain at least one element.
+   *
+   * @param from1 the from-index (inclusive) of the first segment
+   * @param to1 the to-index (exclusive) of the first segment
+   * @param from2 the from-index (inclusive) of the second segment
+   * @param to2 the to-index (exclusive) of the second segment
+   * @return this {@code WiredList}
+   */
+  public WiredList<E> swap(int from1, int to1, int from2, int to2) {
+    int len1 = Check.fromTo(this, from1, to1);
+    int len2 = Check.fromTo(this, from2, to2);
+    Check.on(emptySegment(), len1).is(ne(), 0).and(len2).is(ne(), 0);
+
+    int x0, x1, y0, y1;
+    if (from1 < from2) {
+      x0 = from1;
+      x1 = to1;
+      y0 = from2;
+      y1 = to2;
+    } else {
+      x0 = from2;
+      x1 = to2;
+      y0 = from1;
+      y1 = to1;
+    }
+
+    Check.on(overlapNotAllowed(), x1).is(lte(), y0);
+
+    var seg1L = nodeAt(x0);
+    var seg1R = nodeAfter(seg1L, x0, x1 - 1);
+    var seg2L = nodeAfter(seg1R, x1 - 1, y0);
+    var seg2R = nodeAfter(seg2L, y0, y1 - 1);
+
+    if (x1 == y0) {
+      if (seg2R == tail) {
+        makeTail(seg1R);
+      } else {
+        join(seg1R, seg2R.next);
+      }
+      if (seg1L == head) {
+        makeHead(seg2L);
+      } else {
+        join(seg1L.prev, seg2L);
+      }
+      join(seg2R, seg1L);
+      return this;
+    }
+
+    if (seg1L == head) {
+      head = seg2L;
+    } else {
+      seg1L.prev.next = seg2L;
+    }
+
+    if (seg2R == tail) {
+      tail = seg1R;
+    } else {
+      seg2R.next.prev = seg1R;
+    }
+
+    seg1R.next.prev = seg2R;
+    seg2L.prev.next = seg1L;
+
+    var tmp = seg1L.prev;
+    seg1L.prev = seg2L.prev;
+    seg2L.prev = tmp;
+
+    tmp = seg1R.next;
+    seg1R.next = seg2R.next;
+    seg2R.next = tmp;
+
+    return this;
+  }
+
+  /**
    * Exchanges list segments between this list and the specified list.
    *
    * @param myFromIndex the start index (inclusive) of the segment within this
@@ -1296,9 +1371,9 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
     Check.that(newFromIndex, "target index").is(indexInclusiveOf(), this);
     if (len != 0) {
       if (newFromIndex > fromIndex) {
-        moveToTail(fromIndex, toIndex, newFromIndex);
+        moveRight(fromIndex, toIndex, newFromIndex);
       } else if (newFromIndex < fromIndex) {
-        moveToHead(fromIndex, toIndex, newFromIndex);
+        moveLeft(fromIndex, toIndex, newFromIndex);
       }
     }
     return this;
@@ -1333,7 +1408,6 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
   public Iterator<E> reverseIterator() {
     return super.reverseIterator();
   }
-
 
   /**
    * Returns a {@link WiredIterator} that traverses the list from the first element

@@ -1250,9 +1250,9 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
     Check.that(newFromIndex, "target index").is(indexInclusiveOf(), this);
     if (len != 0) {
       if (newFromIndex > fromIndex) {
-        moveToTail(fromIndex, toIndex, newFromIndex);
+        moveRight(fromIndex, toIndex, newFromIndex);
       } else if (newFromIndex < fromIndex) {
-        moveToHead(fromIndex, toIndex, newFromIndex);
+        moveLeft(fromIndex, toIndex, newFromIndex);
       }
     }
     return this;
