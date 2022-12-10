@@ -474,7 +474,7 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     };
   }
 
-  Iterator<E> reverseIterator() {
+  Iterator<E> reverseIterator0() {
     return sz == 0 ? emptyIterator() : new Iterator<>() {
 
       private Node<E> curr = justAfterTail();
@@ -588,7 +588,7 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     return '[' + CollectionMethods.implode(this) + ']';
   }
 
-  void prepend0(E value) {
+  final void prepend0(E value) {
     Node<E> n = new Node<>(value);
     if (sz == 0) {
       head = tail = n;
@@ -599,7 +599,7 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     ++sz;
   }
 
-  void replace0(int fromIndex, int toIndex, Collection<? extends E> values) {
+  final void replace0(int fromIndex, int toIndex, Collection<? extends E> values) {
     int len = Check.fromTo(this, fromIndex, toIndex);
     Check.notNull(values, Tag.COLLECTION);
     if (len == 0) {
@@ -620,7 +620,7 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     }
   }
 
-  void reverse0() {
+  final void reverse0() {
     if (sz > 1) {
       var x = head;
       var y = tail;
@@ -631,6 +631,65 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
         x = x.next;
         y = y.prev;
       }
+    }
+  }
+
+  final void swap0(int from1, int to1, int from2, int to2) {
+    int len1 = Check.fromTo(this, from1, to1);
+    int len2 = Check.fromTo(this, from2, to2);
+    Check.on(emptySegment(), len1).is(ne(), 0).and(len2).is(ne(), 0);
+
+    int x0, x1, y0, y1;
+    if (from1 < from2) {
+      x0 = from1;
+      x1 = to1;
+      y0 = from2;
+      y1 = to2;
+    } else {
+      x0 = from2;
+      x1 = to2;
+      y0 = from1;
+      y1 = to1;
+    }
+
+    Check.on(overlapNotAllowed(), x1).is(lte(), y0);
+
+    var seg1L = nodeAt(x0);
+    var seg1R = nodeAfter(seg1L, x0, x1 - 1);
+    var seg2L = nodeAfter(seg1R, x1 - 1, y0);
+    var seg2R = nodeAfter(seg2L, y0, y1 - 1);
+
+    if (x1 == y0) {
+      if (seg2R == tail) {
+        makeTail(seg1R);
+      } else {
+        join(seg1R, seg2R.next);
+      }
+      if (seg1L == head) {
+        makeHead(seg2L);
+      } else {
+        join(seg1L.prev, seg2L);
+      }
+      join(seg2R, seg1L);
+    } else {
+      if (seg1L == head) {
+        head = seg2L;
+      } else {
+        seg1L.prev.next = seg2L;
+      }
+      if (seg2R == tail) {
+        tail = seg1R;
+      } else {
+        seg2R.next.prev = seg1R;
+      }
+      seg1R.next.prev = seg2R;
+      seg2L.prev.next = seg1L;
+      var tmp = seg1L.prev;
+      seg1L.prev = seg2L.prev;
+      seg2L.prev = tmp;
+      tmp = seg1R.next;
+      seg1R.next = seg2R.next;
+      seg2R.next = tmp;
     }
   }
 

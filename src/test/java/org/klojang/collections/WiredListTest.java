@@ -826,7 +826,7 @@ public class WiredListTest {
   @Test
   public void reverseIterator00() {
     var wl0 = WiredList.of(0, 1, 2);
-    var itr = wl0.reverseIterator();
+    var itr = wl0.reverseIterator0();
     assertTrue(itr.hasNext());
     assertEquals(2, (int) itr.next());
     assertTrue(itr.hasNext());
@@ -839,7 +839,7 @@ public class WiredListTest {
   @Test
   public void reverseIterator01() {
     var wl0 = WiredList.of();
-    var itr = wl0.reverseIterator();
+    var itr = wl0.reverseIterator0();
     assertFalse(itr.hasNext());
   }
 
@@ -2280,6 +2280,13 @@ public class WiredListTest {
     var wl0 = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     wl0.swap(0, 5, 5, 6);
     assertEquals(List.of(5, 0, 1, 2, 3, 4, 6, 7, 8, 9), wl0);
+  }
+
+  @Test
+  public void swap07() {
+    var wl0 = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    wl0.swap(0, 2, 3, 8);
+    assertEquals(List.of(3, 4, 5, 6, 7, 2, 0, 1, 8, 9), wl0);
   }
 
   @Test

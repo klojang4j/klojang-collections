@@ -961,6 +961,24 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   }
 
   /**
+   * Swaps the two list segments defined by the specified boundary indexes. In other
+   * words, once this method returns, the first list segment will start where the
+   * second list segment originally started, and vice versa. The list segments must
+   * not overlap and they must both contain at least one element. They need not have
+   * the same number of elements, though.
+   *
+   * @param from1 the from-index (inclusive) of the first segment
+   * @param to1 the to-index (exclusive) of the first segment
+   * @param from2 the from-index (inclusive) of the second segment
+   * @param to2 the to-index (exclusive) of the second segment
+   * @return this {@code WiredList}
+   */
+  public CrisprList<E> swap(int from1, int to1, int from2, int to2) {
+    swap0(from1, to1, from2, to2);
+    return this;
+  }
+
+  /**
    * Appends the specified list to this list. This method is functionally equivalent
    * {@link #appendAll(Collection) appendAll} and {@link #addAll(Collection) addAll},
    * but more efficient. However, it will leave the specified list empty. If you
@@ -1275,8 +1293,8 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @return an {@code Iterator} that traverses the list from the last element to the
    *     first
    */
-  public Iterator<E> reverseIterator() {
-    return super.reverseIterator();
+  public Iterator<E> reverseIterator0() {
+    return super.reverseIterator0();
   }
 
   /**

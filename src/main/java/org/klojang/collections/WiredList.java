@@ -30,7 +30,7 @@ import static org.klojang.util.MathMethods.divUp;
  * {@link ListIterator} implementations prescribed by the {@code List} interface are
  * no-frills iterators that throw an {@code UnsupportedOperationException} from all
  * methods designated as optional by the specification. In addition, the
- * {@code WiredList class} also features a {@link #reverseIterator()} and a
+ * {@code WiredList class} also features a {@link #reverseIterator0()} and a
  * {@link #wiredIterator()} method. The latter returns an instance of the
  * {@link WiredIterator} interface. Unlike a {@link ListIterator}, this is a
  * one-way-only iterator, but it still provides the same functionality, and it
@@ -911,8 +911,11 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
   }
 
   /**
-   * Swaps the two list segments defined by the specified boundary indexes. The list
-   * segments must not overlap and must both contain at least one element.
+   * Swaps the two list segments defined by the specified boundary indexes. In other
+   * words, once this method returns, the first list segment will start where the
+   * second list segment originally started, and vice versa. The list segments must
+   * not overlap and they must both contain at least one element. They need not have
+   * the same number of elements, though.
    *
    * @param from1 the from-index (inclusive) of the first segment
    * @param to1 the to-index (exclusive) of the first segment
@@ -921,68 +924,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * @return this {@code WiredList}
    */
   public WiredList<E> swap(int from1, int to1, int from2, int to2) {
-    int len1 = Check.fromTo(this, from1, to1);
-    int len2 = Check.fromTo(this, from2, to2);
-    Check.on(emptySegment(), len1).is(ne(), 0).and(len2).is(ne(), 0);
-
-    int x0, x1, y0, y1;
-    if (from1 < from2) {
-      x0 = from1;
-      x1 = to1;
-      y0 = from2;
-      y1 = to2;
-    } else {
-      x0 = from2;
-      x1 = to2;
-      y0 = from1;
-      y1 = to1;
-    }
-
-    Check.on(overlapNotAllowed(), x1).is(lte(), y0);
-
-    var seg1L = nodeAt(x0);
-    var seg1R = nodeAfter(seg1L, x0, x1 - 1);
-    var seg2L = nodeAfter(seg1R, x1 - 1, y0);
-    var seg2R = nodeAfter(seg2L, y0, y1 - 1);
-
-    if (x1 == y0) {
-      if (seg2R == tail) {
-        makeTail(seg1R);
-      } else {
-        join(seg1R, seg2R.next);
-      }
-      if (seg1L == head) {
-        makeHead(seg2L);
-      } else {
-        join(seg1L.prev, seg2L);
-      }
-      join(seg2R, seg1L);
-      return this;
-    }
-
-    if (seg1L == head) {
-      head = seg2L;
-    } else {
-      seg1L.prev.next = seg2L;
-    }
-
-    if (seg2R == tail) {
-      tail = seg1R;
-    } else {
-      seg2R.next.prev = seg1R;
-    }
-
-    seg1R.next.prev = seg2R;
-    seg2L.prev.next = seg1L;
-
-    var tmp = seg1L.prev;
-    seg1L.prev = seg2L.prev;
-    seg2L.prev = tmp;
-
-    tmp = seg1R.next;
-    seg1R.next = seg2R.next;
-    seg2R.next = tmp;
-
+    swap0(from1, to1, from2, to2);
     return this;
   }
 
@@ -1406,7 +1348,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    *     first
    */
   public Iterator<E> reverseIterator() {
-    return super.reverseIterator();
+    return super.reverseIterator0();
   }
 
   /**

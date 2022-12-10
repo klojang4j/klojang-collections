@@ -961,6 +961,24 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
   }
 
   /**
+   * Swaps the two list segments defined by the specified boundary indexes. In other
+   * words, once this method returns, the first list segment will start where the
+   * second list segment originally started, and vice versa. The list segments must
+   * not overlap and they must both contain at least one element. They need not have
+   * the same number of elements, though.
+   *
+   * @param from1 the from-index (inclusive) of the first segment
+   * @param to1 the to-index (exclusive) of the first segment
+   * @param from2 the from-index (inclusive) of the second segment
+   * @param to2 the to-index (exclusive) of the second segment
+   * @return this {@code WiredList}
+   */
+  public CrisprList&lt;E&gt; swap(int from1, int to1, int from2, int to2) {
+<span class="fc" id="L977">    swap0(from1, to1, from2, to2);</span>
+<span class="fc" id="L978">    return this;</span>
+  }
+
+  /**
    * Appends the specified list to this list. This method is functionally equivalent
    * {@link #appendAll(Collection) appendAll} and {@link #addAll(Collection) addAll},
    * but more efficient. However, it will leave the specified list empty. If you
@@ -971,24 +989,24 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @see #join(List)
    */
   public CrisprList&lt;E&gt; attach(CrisprList&lt;? extends E&gt; other) {
-<span class="fc" id="L974">    Check.notNull(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
-<span class="fc bfc" id="L975" title="All 2 branches covered.">    if (other.sz != 0) {</span>
-<span class="fc" id="L976">      attach0(other);</span>
+<span class="fc" id="L992">    Check.notNull(other).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
+<span class="fc bfc" id="L993" title="All 2 branches covered.">    if (other.sz != 0) {</span>
+<span class="fc" id="L994">      attach0(other);</span>
     }
-<span class="fc" id="L978">    return this;</span>
+<span class="fc" id="L996">    return this;</span>
   }
 
   @SuppressWarnings({&quot;rawtypes&quot;, &quot;unchecked&quot;})
   private void attach0(CrisprList other) {
-<span class="fc bfc" id="L983" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L984">      head = other.head;</span>
+<span class="fc bfc" id="L1001" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L1002">      head = other.head;</span>
     } else {
-<span class="fc" id="L986">      join(tail, other.head);</span>
+<span class="fc" id="L1004">      join(tail, other.head);</span>
     }
-<span class="fc" id="L988">    tail = other.tail;</span>
-<span class="fc" id="L989">    sz += other.sz;</span>
-<span class="fc" id="L990">    other.clear();</span>
-<span class="fc" id="L991">  }</span>
+<span class="fc" id="L1006">    tail = other.tail;</span>
+<span class="fc" id="L1007">    sz += other.sz;</span>
+<span class="fc" id="L1008">    other.clear();</span>
+<span class="fc" id="L1009">  }</span>
 
   /**
    * Reorders the elements according to the specified criteria. The elements
@@ -1000,7 +1018,7 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return this {@code CrisprList}
    */
   public CrisprList&lt;E&gt; defragment(List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
-<span class="fc" id="L1003">    return defragment(true, criteria);</span>
+<span class="fc" id="L1021">    return defragment(true, criteria);</span>
   }
 
   /**
@@ -1016,19 +1034,19 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
   @SuppressWarnings({&quot;rawtypes&quot;})
   public CrisprList&lt;E&gt; defragment(boolean keepRemainder,
       List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
-<span class="fc" id="L1019">    Check.that(criteria).is(deepNotEmpty());</span>
-<span class="fc" id="L1020">    List&lt;CrisprList&lt;E&gt;&gt; groups = createGroups(criteria);</span>
-<span class="fc" id="L1021">    Chain rest = new Chain(head, tail, sz);</span>
-<span class="fc" id="L1022">    sz = 0;</span>
-<span class="fc bfc" id="L1023" title="All 2 branches covered.">    for (CrisprList wl : groups) {</span>
-<span class="fc bfc" id="L1024" title="All 2 branches covered.">      if (!wl.isEmpty()) {</span>
-<span class="fc" id="L1025">        attach0(wl);</span>
+<span class="fc" id="L1037">    Check.that(criteria).is(deepNotEmpty());</span>
+<span class="fc" id="L1038">    List&lt;CrisprList&lt;E&gt;&gt; groups = createGroups(criteria);</span>
+<span class="fc" id="L1039">    Chain rest = new Chain(head, tail, sz);</span>
+<span class="fc" id="L1040">    sz = 0;</span>
+<span class="fc bfc" id="L1041" title="All 2 branches covered.">    for (CrisprList wl : groups) {</span>
+<span class="fc bfc" id="L1042" title="All 2 branches covered.">      if (!wl.isEmpty()) {</span>
+<span class="fc" id="L1043">        attach0(wl);</span>
       }
-<span class="fc" id="L1027">    }</span>
-<span class="fc bfc" id="L1028" title="All 4 branches covered.">    if (keepRemainder &amp;&amp; rest.length != 0) {</span>
-<span class="fc" id="L1029">      insert(sz, rest);</span>
+<span class="fc" id="L1045">    }</span>
+<span class="fc bfc" id="L1046" title="All 4 branches covered.">    if (keepRemainder &amp;&amp; rest.length != 0) {</span>
+<span class="fc" id="L1047">      insert(sz, rest);</span>
     }
-<span class="fc" id="L1031">    return this;</span>
+<span class="fc" id="L1049">    return this;</span>
   }
 
   /**
@@ -1042,7 +1060,7 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @see #group(List)
    */
   public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 group(Predicate&lt;? super E&gt; criterion) {
-<span class="nc" id="L1045">    return group(singletonList(criterion));</span>
+<span class="nc" id="L1063">    return group(singletonList(criterion));</span>
   }
 
   /**
@@ -1078,30 +1096,30 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @SuppressWarnings({&quot;unchecked&quot;})
   public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 group(List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
-<span class="fc" id="L1081">    Check.that(criteria).is(deepNotEmpty());</span>
-<span class="fc" id="L1082">    List&lt;CrisprList&lt;E&gt;&gt; groups = createGroups(criteria);</span>
-<span class="fc" id="L1083">    var result = new CrisprList&lt;&gt;(groups);</span>
-<span class="fc" id="L1084">    result.add(this);</span>
-<span class="fc" id="L1085">    return (L1) result;</span>
+<span class="fc" id="L1099">    Check.that(criteria).is(deepNotEmpty());</span>
+<span class="fc" id="L1100">    List&lt;CrisprList&lt;E&gt;&gt; groups = createGroups(criteria);</span>
+<span class="fc" id="L1101">    var result = new CrisprList&lt;&gt;(groups);</span>
+<span class="fc" id="L1102">    result.add(this);</span>
+<span class="fc" id="L1103">    return (L1) result;</span>
   }
 
   @SuppressWarnings({&quot;rawtypes&quot;})
   private CrisprList&lt;CrisprList&lt;E&gt;&gt; createGroups(List&lt;Predicate&lt;? super E&gt;&gt; criteria) {
-<span class="fc" id="L1090">    CrisprList&lt;CrisprList&lt;E&gt;&gt; groups = new CrisprList&lt;&gt;();</span>
-<span class="fc" id="L1091">    criteria.forEach(c -&gt; groups.append(new CrisprList&lt;&gt;()));</span>
-<span class="fc bfc" id="L1092" title="All 2 branches covered.">    for (Node&lt;E&gt; node = head; node != null; ) {</span>
-<span class="fc" id="L1093">      var next = node.next;</span>
-<span class="fc bfc" id="L1094" title="All 2 branches covered.">      for (int i = 0; i &lt; criteria.size(); ++i) {</span>
-<span class="fc bfc" id="L1095" title="All 2 branches covered.">        if (criteria.get(i).test(node.val)) {</span>
-<span class="fc" id="L1096">          unlink(node);</span>
-<span class="fc" id="L1097">          CrisprList wl = groups.get(i);</span>
-<span class="fc" id="L1098">          wl.insert(wl.size(), node);</span>
-<span class="fc" id="L1099">          break;</span>
+<span class="fc" id="L1108">    CrisprList&lt;CrisprList&lt;E&gt;&gt; groups = new CrisprList&lt;&gt;();</span>
+<span class="fc" id="L1109">    criteria.forEach(c -&gt; groups.append(new CrisprList&lt;&gt;()));</span>
+<span class="fc bfc" id="L1110" title="All 2 branches covered.">    for (Node&lt;E&gt; node = head; node != null; ) {</span>
+<span class="fc" id="L1111">      var next = node.next;</span>
+<span class="fc bfc" id="L1112" title="All 2 branches covered.">      for (int i = 0; i &lt; criteria.size(); ++i) {</span>
+<span class="fc bfc" id="L1113" title="All 2 branches covered.">        if (criteria.get(i).test(node.val)) {</span>
+<span class="fc" id="L1114">          unlink(node);</span>
+<span class="fc" id="L1115">          CrisprList wl = groups.get(i);</span>
+<span class="fc" id="L1116">          wl.insert(wl.size(), node);</span>
+<span class="fc" id="L1117">          break;</span>
         }
       }
-<span class="fc" id="L1102">      node = next;</span>
-<span class="fc" id="L1103">    }</span>
-<span class="fc" id="L1104">    return groups;</span>
+<span class="fc" id="L1120">      node = next;</span>
+<span class="fc" id="L1121">    }</span>
+<span class="fc" id="L1122">    return groups;</span>
   }
 
   /**
@@ -1130,14 +1148,14 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @SuppressWarnings(&quot;unchecked&quot;)
   public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 partition(int size) {
-<span class="fc" id="L1133">    Check.that(size).is(gt(), 0);</span>
-<span class="fc" id="L1134">    CrisprList&lt;CrisprList&lt;E&gt;&gt; partitions = new CrisprList&lt;&gt;();</span>
-<span class="fc bfc" id="L1135" title="All 2 branches covered.">    while (sz &gt; size) {</span>
-<span class="fc" id="L1136">      Chain chain = new Chain(head, nodeAt(size - 1), size);</span>
-<span class="fc" id="L1137">      partitions.append(new CrisprList&lt;&gt;(unlink(chain)));</span>
-<span class="fc" id="L1138">    }</span>
-<span class="fc" id="L1139">    partitions.append(this);</span>
-<span class="fc" id="L1140">    return (L1) partitions;</span>
+<span class="fc" id="L1151">    Check.that(size).is(gt(), 0);</span>
+<span class="fc" id="L1152">    CrisprList&lt;CrisprList&lt;E&gt;&gt; partitions = new CrisprList&lt;&gt;();</span>
+<span class="fc bfc" id="L1153" title="All 2 branches covered.">    while (sz &gt; size) {</span>
+<span class="fc" id="L1154">      Chain chain = new Chain(head, nodeAt(size - 1), size);</span>
+<span class="fc" id="L1155">      partitions.append(new CrisprList&lt;&gt;(unlink(chain)));</span>
+<span class="fc" id="L1156">    }</span>
+<span class="fc" id="L1157">    partitions.append(this);</span>
+<span class="fc" id="L1158">    return (L1) partitions;</span>
   }
 
   /**
@@ -1163,8 +1181,8 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return a list containing the specified number of {@code CrisprList} instances
    */
   public &lt;L0 extends List&lt;E&gt;, L1 extends List&lt;L0&gt;&gt; L1 split(int numPartitions) {
-<span class="fc" id="L1166">    Check.that(numPartitions).is(gt(), 0);</span>
-<span class="fc" id="L1167">    return partition(divUp(sz, numPartitions));</span>
+<span class="fc" id="L1184">    Check.that(numPartitions).is(gt(), 0);</span>
+<span class="fc" id="L1185">    return partition(divUp(sz, numPartitions));</span>
   }
 
   /**
@@ -1181,19 +1199,19 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    *     that does not satisfy the condition
    */
   public CrisprList&lt;E&gt; lchop(Predicate&lt;? super E&gt; criterion) {
-<span class="fc" id="L1184">    Check.notNull(criterion);</span>
-<span class="fc bfc" id="L1185" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L1186">      return this;</span>
+<span class="fc" id="L1202">    Check.notNull(criterion);</span>
+<span class="fc bfc" id="L1203" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L1204">      return this;</span>
     }
-<span class="fc" id="L1188">    Node&lt;E&gt; first = head;</span>
-<span class="fc" id="L1189">    Node&lt;E&gt; last = justBeforeHead();</span>
-<span class="fc" id="L1190">    int len = 0;</span>
-<span class="fc bfc" id="L1191" title="All 4 branches covered.">    for (; criterion.test(last.next.val) &amp;&amp; ++len != sz; last = last.next)</span>
+<span class="fc" id="L1206">    Node&lt;E&gt; first = head;</span>
+<span class="fc" id="L1207">    Node&lt;E&gt; last = justBeforeHead();</span>
+<span class="fc" id="L1208">    int len = 0;</span>
+<span class="fc bfc" id="L1209" title="All 4 branches covered.">    for (; criterion.test(last.next.val) &amp;&amp; ++len != sz; last = last.next)</span>
       ;
-<span class="fc bfc" id="L1193" title="All 2 branches covered.">    if (len == sz) {</span>
-<span class="fc" id="L1194">      return this;</span>
+<span class="fc bfc" id="L1211" title="All 2 branches covered.">    if (len == sz) {</span>
+<span class="fc" id="L1212">      return this;</span>
     }
-<span class="fc" id="L1196">    return new CrisprList&lt;&gt;(unlink(new Chain(first, last, len)));</span>
+<span class="fc" id="L1214">    return new CrisprList&lt;&gt;(unlink(new Chain(first, last, len)));</span>
   }
 
   /**
@@ -1210,19 +1228,19 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    *     that does not satisfy the condition
    */
   public CrisprList&lt;E&gt; rchop(Predicate&lt;? super E&gt; criterion) {
-<span class="fc" id="L1213">    Check.notNull(criterion);</span>
-<span class="fc bfc" id="L1214" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L1215">      return this;</span>
+<span class="fc" id="L1231">    Check.notNull(criterion);</span>
+<span class="fc bfc" id="L1232" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L1233">      return this;</span>
     }
-<span class="fc" id="L1217">    Node&lt;E&gt; last = tail;</span>
-<span class="fc" id="L1218">    Node&lt;E&gt; first = justAfterTail();</span>
-<span class="fc" id="L1219">    int len = 0;</span>
-<span class="fc bfc" id="L1220" title="All 4 branches covered.">    for (; criterion.test(first.prev.val) &amp;&amp; ++len != sz; first = first.prev)</span>
+<span class="fc" id="L1235">    Node&lt;E&gt; last = tail;</span>
+<span class="fc" id="L1236">    Node&lt;E&gt; first = justAfterTail();</span>
+<span class="fc" id="L1237">    int len = 0;</span>
+<span class="fc bfc" id="L1238" title="All 4 branches covered.">    for (; criterion.test(first.prev.val) &amp;&amp; ++len != sz; first = first.prev)</span>
       ;
-<span class="fc bfc" id="L1222" title="All 2 branches covered.">    if (len == sz) {</span>
-<span class="fc" id="L1223">      return this;</span>
+<span class="fc bfc" id="L1240" title="All 2 branches covered.">    if (len == sz) {</span>
+<span class="fc" id="L1241">      return this;</span>
     }
-<span class="fc" id="L1225">    return new CrisprList&lt;&gt;(unlink(new Chain(first, last, len)));</span>
+<span class="fc" id="L1243">    return new CrisprList&lt;&gt;(unlink(new Chain(first, last, len)));</span>
   }
 
   /**
@@ -1231,8 +1249,8 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return this {@code CrisprList}
    */
   public CrisprList&lt;E&gt; reverse() {
-<span class="fc" id="L1234">    reverse0();</span>
-<span class="fc" id="L1235">    return this;</span>
+<span class="fc" id="L1252">    reverse0();</span>
+<span class="fc" id="L1253">    return this;</span>
   }
 
   /**
@@ -1246,16 +1264,16 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return this {@code CrisprList}
    */
   public CrisprList&lt;E&gt; move(int fromIndex, int toIndex, int newFromIndex) {
-<span class="fc" id="L1249">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
-<span class="fc" id="L1250">    Check.that(newFromIndex, &quot;target index&quot;).is(indexInclusiveOf(), this);</span>
-<span class="pc bpc" id="L1251" title="1 of 2 branches missed.">    if (len != 0) {</span>
-<span class="fc bfc" id="L1252" title="All 2 branches covered.">      if (newFromIndex &gt; fromIndex) {</span>
-<span class="fc" id="L1253">        moveRight(fromIndex, toIndex, newFromIndex);</span>
-<span class="pc bpc" id="L1254" title="1 of 2 branches missed.">      } else if (newFromIndex &lt; fromIndex) {</span>
-<span class="fc" id="L1255">        moveLeft(fromIndex, toIndex, newFromIndex);</span>
+<span class="fc" id="L1267">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="fc" id="L1268">    Check.that(newFromIndex, &quot;target index&quot;).is(indexInclusiveOf(), this);</span>
+<span class="pc bpc" id="L1269" title="1 of 2 branches missed.">    if (len != 0) {</span>
+<span class="fc bfc" id="L1270" title="All 2 branches covered.">      if (newFromIndex &gt; fromIndex) {</span>
+<span class="fc" id="L1271">        moveRight(fromIndex, toIndex, newFromIndex);</span>
+<span class="pc bpc" id="L1272" title="1 of 2 branches missed.">      } else if (newFromIndex &lt; fromIndex) {</span>
+<span class="fc" id="L1273">        moveLeft(fromIndex, toIndex, newFromIndex);</span>
       }
     }
-<span class="fc" id="L1258">    return this;</span>
+<span class="fc" id="L1276">    return this;</span>
   }
 
   /**
@@ -1264,9 +1282,9 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @Override
   public void clear() {
-<span class="fc" id="L1267">    head = tail = null;</span>
-<span class="fc" id="L1268">    sz = 0;</span>
-<span class="fc" id="L1269">  }</span>
+<span class="fc" id="L1285">    head = tail = null;</span>
+<span class="fc" id="L1286">    sz = 0;</span>
+<span class="fc" id="L1287">  }</span>
 
   /**
    * Returns an {@code Iterator} that traverses the list from the last element to the
@@ -1275,8 +1293,8 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * @return an {@code Iterator} that traverses the list from the last element to the
    *     first
    */
-  public Iterator&lt;E&gt; reverseIterator() {
-<span class="fc" id="L1279">    return super.reverseIterator();</span>
+  public Iterator&lt;E&gt; reverseIterator0() {
+<span class="fc" id="L1297">    return super.reverseIterator0();</span>
   }
 
   /**
@@ -1287,7 +1305,7 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    *     to the last
    */
   public WiredIterator&lt;E&gt; wiredIterator() {
-<span class="fc" id="L1290">    return new ForwardWiredIterator();</span>
+<span class="fc" id="L1308">    return new ForwardWiredIterator();</span>
   }
 
   /**
@@ -1300,7 +1318,7 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    *     to the last, or the other way round
    */
   public WiredIterator&lt;E&gt; wiredIterator(boolean reverse) {
-<span class="pc bpc" id="L1303" title="1 of 2 branches missed.">    return reverse ? new ReverseWiredIterator() : new ForwardWiredIterator();</span>
+<span class="pc bpc" id="L1321" title="1 of 2 branches missed.">    return reverse ? new ReverseWiredIterator() : new ForwardWiredIterator();</span>
   }
 
   /**
@@ -1314,7 +1332,7 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    */
   @Override
   public List&lt;E&gt; subList(int fromIndex, int toIndex) {
-<span class="nc" id="L1317">    throw new UnsupportedOperationException();</span>
+<span class="nc" id="L1335">    throw new UnsupportedOperationException();</span>
   }
 
 }
