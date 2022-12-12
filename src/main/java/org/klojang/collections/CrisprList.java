@@ -9,9 +9,7 @@ import java.util.function.UnaryOperator;
 
 import static java.util.Collections.singletonList;
 import static org.klojang.check.CommonChecks.*;
-import static org.klojang.check.CommonExceptions.indexOutOfBounds;
 import static org.klojang.check.CommonExceptions.noSuchElement;
-import static org.klojang.check.CommonProperties.length;
 import static org.klojang.util.MathMethods.divUp;
 
 /**
@@ -338,7 +336,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   @SafeVarargs
   public static <E> CrisprList<E> of(E e0, E e1, E e2, E... moreElems) {
     Check.notNull(moreElems, Tag.ARRAY);
-    var wl = new CrisprList<E>();
+    var cl = new CrisprList<E>();
     Node<E> head = new Node<>(e0);
     Node<E> tail = head;
     tail = new Node<>(tail, e1);
@@ -346,10 +344,10 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
     for (E e : moreElems) {
       tail = new Node<>(tail, e);
     }
-    wl.head = head;
-    wl.tail = tail;
-    wl.sz = moreElems.length + 3;
-    return wl;
+    cl.head = head;
+    cl.tail = tail;
+    cl.sz = moreElems.length + 3;
+    return cl;
   }
 
   /**
@@ -359,21 +357,20 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @param <E> the type of the elements in the list
    * @return a new {@code CrisprList} containing the specified elements
    */
-  @SafeVarargs
-  public static <E> CrisprList<E> ofElements(E... elements) {
+  public static <E> CrisprList<E> ofElements(E[] elements) {
     Check.notNull(elements, Tag.ARRAY);
-    var wl = new CrisprList<E>();
+    var cl = new CrisprList<E>();
     if (elements.length != 0) {
       Node<E> head = new Node<>(elements[0]);
       Node<E> tail = head;
       for (int i = 1; i < elements.length; ++i) {
         tail = new Node<>(tail, elements[i]);
       }
-      wl.head = head;
-      wl.tail = tail;
-      wl.sz = elements.length;
+      cl.head = head;
+      cl.tail = tail;
+      cl.sz = elements.length;
     }
-    return wl;
+    return cl;
   }
 
   /**
@@ -387,9 +384,9 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    *     {@code CrisprList} instances
    */
   public static <E> CrisprList<E> join(List<CrisprList<E>> lists) {
-    CrisprList<E> wl = new CrisprList<>();
-    Check.notNull(lists).ok().forEach(wl::attach);
-    return wl;
+    CrisprList<E> cl = new CrisprList<>();
+    Check.notNull(lists).ok().forEach(cl::attach);
+    return cl;
   }
 
   /**
@@ -428,19 +425,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    */
   @SuppressWarnings("unchecked")
   public CrisprList<E> set(int index, E e0, E e1, E... moreElems) {
-    Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));
-    Check.notNull(moreElems, Tag.VARARGS).has(length(), lte(), sz - index - 2);
-    Node<E> node = nodeAt(index);
-    node.val = e0;
-    node = node.next;
-    node.val = e1;
-    if (moreElems.length != 0) {
-      node = node.next;
-      for (E e : moreElems) {
-        node.val = e;
-        node = node.next;
-      }
-    }
+    set0(index, e0, e1, moreElems);
     return this;
   }
 
@@ -458,13 +443,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @return The original value
    */
   public E setIf(int index, Predicate<? super E> condition, E value) {
-    Check.notNull(condition, Tag.TEST);
-    var node = node(index);
-    E old = node.val;
-    if (condition.test(old)) {
-      node.val = value;
-    }
-    return old;
+    return setIf0(index, condition, value);
   }
 
   /**
@@ -736,9 +715,9 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @param toIndex the end index (exclusive) of
    * @param values The values to replace the segment with
    * @return this {@code CrisprList}
-   * @see #rewire(int, int, CrisprList)
+   * @see #replace(int, int, CrisprList)
    */
-  public CrisprList<E> replace(int fromIndex,
+  public CrisprList<E> replaceAll(int fromIndex,
       int toIndex,
       Collection<? extends E> values) {
     replace0(fromIndex, toIndex, values);
@@ -748,8 +727,8 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   /**
    * Replaces the segment between {@code fromIndex} and {@code toIndex} with the
    * elements in the specified list. This method is functionally equivalent to
-   * {@link #replace(int, int, Collection) replace}, but more efficient. However, it
-   * will leave the specified list empty. If you don't want this to happen, use
+   * {@link #replaceAll(int, int, Collection) replace}, but more efficient. However,
+   * it will leave the specified list empty. If you don't want this to happen, use
    * {@code replace}.
    *
    * @param fromIndex the start index (inclusive) of the segment to replace
@@ -757,7 +736,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @param other the values to replace the segment with
    * @return this {@code CrisprList}
    */
-  public CrisprList<E> rewire(int fromIndex,
+  public CrisprList<E> replace(int fromIndex,
       int toIndex,
       CrisprList<? extends E> other) {
     int len = Check.fromTo(this, fromIndex, toIndex);
@@ -835,12 +814,12 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   /**
    * Inserts this list into the specified list at the specified position. Equivalent
    * to {@link #embed(int, CrisprList) into.embed(index, this)}. This list will be
-   * empty afterwards. Note that this method does not return this list but the
+   * empty afterwards. Note that this method does not return <i>list</i> list but the
    * paste-into list.
    *
    * @param into the list into which to insert this list
    * @param index the index at which to insert this list
-   * @return the target list
+   * @return the specified list
    */
   public CrisprList<? super E> paste(CrisprList<? super E> into, int index) {
     return into.embed(index, this);
@@ -1038,9 +1017,9 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
     List<CrisprList<E>> groups = createGroups(criteria);
     Chain rest = new Chain(head, tail, sz);
     sz = 0;
-    for (CrisprList wl : groups) {
-      if (!wl.isEmpty()) {
-        attach0(wl);
+    for (CrisprList cl : groups) {
+      if (!cl.isEmpty()) {
+        attach0(cl);
       }
     }
     if (keepRemainder && rest.length != 0) {
@@ -1082,8 +1061,8 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * returned {@code List}, you can simply write:
    *
    * <blockquote><pre>{@code
-   * CrisprList<String> wl = ...;
-   * List<List<String>> groups = wl.group(...);
+   * CrisprList<String> cl = ...;
+   * List<List<String>> groups = cl.group(...);
    * }</pre></blockquote>
    * <p>
    * Otherwise use any combination of {@code List} and {@code CrisprList} that suits
@@ -1112,8 +1091,8 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
       for (int i = 0; i < criteria.size(); ++i) {
         if (criteria.get(i).test(node.val)) {
           unlink(node);
-          CrisprList wl = groups.get(i);
-          wl.insert(wl.size(), node);
+          CrisprList cl = groups.get(i);
+          cl.insert(cl.size(), node);
           break;
         }
       }
@@ -1134,8 +1113,8 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * write:
    *
    * <blockquote><pre>{@code
-   * CrisprList<String> wl = ...;
-   * List<List<String>> partitions = wl.partition(3);
+   * CrisprList<String> cl = ...;
+   * List<List<String>> partitions = cl.partition(3);
    * }</pre></blockquote>
    * <p>
    * Otherwise use any combination of {@code List} and {@code CrisprList} that suits
@@ -1167,8 +1146,8 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * type of the returned {@code List}, you can simply write:
    *
    * <blockquote><pre>{@code
-   * CrisprList<String> wl = ...;
-   * List<List<String>> partitions = wl.split(3);
+   * CrisprList<String> cl = ...;
+   * List<List<String>> partitions = cl.split(3);
    * }</pre></blockquote>
    * <p>
    * Otherwise use any combination of {@code List} and {@code CrisprList} that suits

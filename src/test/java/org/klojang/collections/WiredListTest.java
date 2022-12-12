@@ -2012,56 +2012,56 @@ public class WiredListTest {
   @Test
   public void replaceAll00() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replace(0, 4, List.of("a", "b", "c"));
+    wl0.replaceAll(0, 4, List.of("a", "b", "c"));
     assertEquals(List.of("a", "b", "c", 4, 5, 6, 7, 8, 9), wl0);
   }
 
   @Test
   public void replaceAll01() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replace(0, 10, List.of("a", "b", "c"));
+    wl0.replaceAll(0, 10, List.of("a", "b", "c"));
     assertEquals(List.of("a", "b", "c"), wl0);
   }
 
   @Test
   public void replaceAll02() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replace(4, 10, List.of("a", "b", "c"));
+    wl0.replaceAll(4, 10, List.of("a", "b", "c"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c"), wl0);
   }
 
   @Test
   public void replaceAll04() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replace(4, 8, List.of("a", "b", "c"));
+    wl0.replaceAll(4, 8, List.of("a", "b", "c"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c", 8, 9), wl0);
   }
 
   @Test
   public void replaceAll05() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replace(4, 8, List.of("a", "b", "c", "d"));
+    wl0.replaceAll(4, 8, List.of("a", "b", "c", "d"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c", "d", 8, 9), wl0);
   }
 
   @Test
   public void replaceAll06() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replace(4, 4, List.of("a", "b", "c", "d"));
+    wl0.replaceAll(4, 4, List.of("a", "b", "c", "d"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c", "d", 4, 5, 6, 7, 8, 9), wl0);
   }
 
   @Test
   public void replaceAll07() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replace(9, 10, List.of("a"));
+    wl0.replaceAll(9, 10, List.of("a"));
     assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, "a"), wl0);
   }
 
   @Test
   public void replaceAll08() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.replace(9, 9, List.of());
+    wl0.replaceAll(9, 9, List.of());
     assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), wl0);
   }
 
@@ -2082,35 +2082,35 @@ public class WiredListTest {
   @Test
   public void replaceSegment00() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.rewire(0, 4, WiredList.of("a", "b", "c"));
+    wl0.replace(0, 4, WiredList.of("a", "b", "c"));
     assertEquals(List.of("a", "b", "c", 4, 5, 6, 7, 8, 9), wl0);
   }
 
   @Test
   public void replaceSegment01() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.rewire(0, 10, WiredList.of("a", "b", "c"));
+    wl0.replace(0, 10, WiredList.of("a", "b", "c"));
     assertEquals(List.of("a", "b", "c"), wl0);
   }
 
   @Test
   public void replaceSegment02() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.rewire(4, 10, WiredList.of("a", "b", "c"));
+    wl0.replace(4, 10, WiredList.of("a", "b", "c"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c"), wl0);
   }
 
   @Test
   public void replaceSegment03() {
     var wl = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl.rewire(0, 3, WiredList.of());
+    wl.replace(0, 3, WiredList.of());
     assertEquals(List.of(3, 4, 5, 6, 7, 8, 9), wl);
   }
 
   @Test
   public void replaceSegment04() {
     var wl0 = WiredList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    wl0.rewire(4, 8, WiredList.of("a", "b", "c"));
+    wl0.replace(4, 8, WiredList.of("a", "b", "c"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c", 8, 9), wl0);
   }
 

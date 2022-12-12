@@ -7,6 +7,7 @@ import org.klojang.util.InvokeMethods;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static java.lang.Boolean.FALSE;
@@ -16,6 +17,7 @@ import static java.util.Collections.emptyListIterator;
 import static org.klojang.check.CommonChecks.*;
 import static org.klojang.check.CommonExceptions.indexOutOfBounds;
 import static org.klojang.check.CommonExceptions.noSuchElement;
+import static org.klojang.check.CommonProperties.length;
 import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
 
 abstract sealed class AbstractLinkedList<E> implements List<E>
@@ -586,6 +588,33 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
   @Override
   public String toString() {
     return '[' + CollectionMethods.implode(this) + ']';
+  }
+
+  @SafeVarargs
+  final void set0(int index, E e0, E e1, E... moreElems) {
+    Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));
+    Check.notNull(moreElems, Tag.VARARGS).has(length(), lte(), sz - index - 2);
+    var node = nodeAt(index);
+    node.val = e0;
+    node = node.next;
+    node.val = e1;
+    if (moreElems.length != 0) {
+      node = node.next;
+      for (E e : moreElems) {
+        node.val = e;
+        node = node.next;
+      }
+    }
+  }
+
+  final E setIf0(int index, Predicate<? super E> condition, E value) {
+    Check.notNull(condition, Tag.TEST);
+    var node = node(index);
+    E old = node.val;
+    if (condition.test(old)) {
+      node.val = value;
+    }
+    return old;
   }
 
   final void prepend0(E value) {

@@ -9,9 +9,7 @@ import java.util.function.UnaryOperator;
 
 import static java.util.Collections.singletonList;
 import static org.klojang.check.CommonChecks.*;
-import static org.klojang.check.CommonExceptions.indexOutOfBounds;
 import static org.klojang.check.CommonExceptions.noSuchElement;
-import static org.klojang.check.CommonProperties.length;
 import static org.klojang.util.MathMethods.divUp;
 
 /**
@@ -387,8 +385,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * @param <E> the type of the elements in the list
    * @return a new {@code WiredList} containing the specified elements
    */
-  @SafeVarargs
-  public static <E> WiredList<E> ofElements(E... elements) {
+  public static <E> WiredList<E> ofElements(E[] elements) {
     Check.notNull(elements, Tag.ARRAY);
     var wl = new WiredList<E>();
     if (elements.length != 0) {
@@ -456,19 +453,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    */
   @SuppressWarnings("unchecked")
   public WiredList<E> set(int index, E e0, E e1, E... moreElems) {
-    Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));
-    Check.notNull(moreElems, Tag.VARARGS).has(length(), lte(), sz - index - 2);
-    Node<E> node = nodeAt(index);
-    node.val = e0;
-    node = node.next;
-    node.val = e1;
-    if (moreElems.length != 0) {
-      node = node.next;
-      for (E e : moreElems) {
-        node.val = e;
-        node = node.next;
-      }
-    }
+    set0(index, e0, e1, moreElems);
     return this;
   }
 
@@ -486,13 +471,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * @return The original value
    */
   public E setIf(int index, Predicate<? super E> condition, E value) {
-    Check.notNull(condition, Tag.TEST);
-    var node = node(index);
-    E old = node.val;
-    if (condition.test(old)) {
-      node.val = value;
-    }
-    return old;
+    return setIf0(index, condition, value);
   }
 
   /**
@@ -761,9 +740,9 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * @param toIndex the end index (exclusive) of
    * @param values The values to replace the segment with
    * @return this {@code WiredList}
-   * @see #rewire(int, int, WiredList)
+   * @see #replace(int, int, WiredList)
    */
-  public WiredList<E> replace(int fromIndex,
+  public WiredList<E> replaceAll(int fromIndex,
       int toIndex,
       Collection<? extends E> values) {
     replace0(fromIndex, toIndex, values);
@@ -773,8 +752,8 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
   /**
    * Replaces the segment between {@code fromIndex} and {@code toIndex} with the
    * elements in the specified list. This method is functionally equivalent to
-   * {@link #replace(int, int, Collection) replace}, but more efficient. However, it
-   * will leave the specified list empty. If you don't want this to happen, use
+   * {@link #replaceAll(int, int, Collection) replace}, but more efficient. However,
+   * it will leave the specified list empty. If you don't want this to happen, use
    * {@code replace}.
    *
    * @param fromIndex the start index (inclusive) of the segment to replace
@@ -782,7 +761,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * @param other the values to replace the segment with
    * @return this {@code WiredList}
    */
-  public WiredList<E> rewire(int fromIndex,
+  public WiredList<E> replace(int fromIndex,
       int toIndex,
       WiredList<? extends E> other) {
     int len = Check.fromTo(this, fromIndex, toIndex);
@@ -830,28 +809,27 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * @param toIndex the index (exclusive) of the new end of the list
    * @return this {@code WiredList}
    */
-  @SuppressWarnings("SuspiciousNameCombination")
   public WiredList<E> shrink(int fromIndex, int toIndex) {
     int len = Check.fromTo(this, fromIndex, toIndex);
     if (len == 0) {
       clear();
     } else if (len != sz) {
-      Node<E> x = head;
+      Node<E> curr = head;
       for (int i = 0; i < fromIndex; ++i) { // make gc happy
-        Node<E> y = x.next;
-        x.next = x.prev = null;
-        x.val = null;
-        x = y;
+        var next = curr.next;
+        curr.next = curr.prev = null;
+        curr.val = null;
+        curr = next;
       }
-      head = x;
-      x = tail;
+      head = curr;
+      curr = tail;
       for (int i = toIndex; i < sz; ++i) {
-        Node<E> y = x.prev;
-        x.next = x.prev = null;
-        x.val = null;
-        x = y;
+        var prev = curr.prev;
+        curr.next = curr.prev = null;
+        curr.val = null;
+        curr = prev;
       }
-      tail = x;
+      tail = curr;
       sz -= len;
     }
     return this;
@@ -874,12 +852,12 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
   /**
    * Inserts this list into the specified list at the specified position. Equivalent
    * to {@link #embed(int, WiredList) into.embed(index, this)}. This list will be
-   * empty afterwards. Note that this method does not return this list but the
+   * empty afterwards. Note that this method does not return this <i>list</i> but the
    * paste-into list.
    *
    * @param into the list into which to insert this list
    * @param index the index at which to insert this list
-   * @return the target list
+   * @return the specified list
    */
   public WiredList<? super E> paste(WiredList<? super E> into, int index) {
     return into.embed(index, this);

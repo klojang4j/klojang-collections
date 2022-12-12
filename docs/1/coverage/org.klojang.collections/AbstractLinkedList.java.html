@@ -7,6 +7,7 @@ import org.klojang.util.InvokeMethods;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static java.lang.Boolean.FALSE;
@@ -16,33 +17,34 @@ import static java.util.Collections.emptyListIterator;
 import static org.klojang.check.CommonChecks.*;
 import static org.klojang.check.CommonExceptions.indexOutOfBounds;
 import static org.klojang.check.CommonExceptions.noSuchElement;
+import static org.klojang.check.CommonProperties.length;
 import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
 
-<span class="fc" id="L21">abstract sealed class AbstractLinkedList&lt;E&gt; implements List&lt;E&gt;</span>
+<span class="fc" id="L23">abstract sealed class AbstractLinkedList&lt;E&gt; implements List&lt;E&gt;</span>
     permits WiredList, CrisprList {
 
   static Supplier&lt;IllegalArgumentException&gt; autoEmbedNotAllowed() {
-<span class="pc" id="L25">    return () -&gt; new IllegalArgumentException(&quot;list cannot be embedded within itself&quot;);</span>
+<span class="pc" id="L27">    return () -&gt; new IllegalArgumentException(&quot;list cannot be embedded within itself&quot;);</span>
   }
 
   static Supplier&lt;IllegalStateException&gt; callNextFirst() {
-<span class="fc" id="L29">    return () -&gt; new IllegalStateException(&quot;Iterator.next() must be called first&quot;);</span>
+<span class="fc" id="L31">    return () -&gt; new IllegalStateException(&quot;Iterator.next() must be called first&quot;);</span>
   }
 
   static Supplier&lt;IllegalStateException&gt; emptyList() {
-<span class="pc" id="L33">    return () -&gt; new IllegalStateException(&quot;illegal operation on empty list&quot;);</span>
+<span class="pc" id="L35">    return () -&gt; new IllegalStateException(&quot;illegal operation on empty list&quot;);</span>
   }
 
   static Function&lt;String, IllegalArgumentException&gt; emptySegment() {
-<span class="pc" id="L37">    return s -&gt; new IllegalArgumentException(&quot;zero-length segment not allowed&quot;);</span>
+<span class="pc" id="L39">    return s -&gt; new IllegalArgumentException(&quot;zero-length segment not allowed&quot;);</span>
   }
 
   static Supplier&lt;ConcurrentModificationException&gt; concurrentModification() {
-<span class="fc" id="L41">    return ConcurrentModificationException::new;</span>
+<span class="fc" id="L43">    return ConcurrentModificationException::new;</span>
   }
 
   static Function&lt;String, IllegalArgumentException&gt; overlapNotAllowed() {
-<span class="pc" id="L45">    return s -&gt; new IllegalArgumentException(&quot;list segments must not overlap&quot;);</span>
+<span class="pc" id="L47">    return s -&gt; new IllegalArgumentException(&quot;list segments must not overlap&quot;);</span>
   }
 
   //
@@ -61,20 +63,20 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
     Node&lt;V&gt; prev;
     Node&lt;V&gt; next;
 
-<span class="fc" id="L64">    Node(V val) {this.val = val;}</span>
+<span class="fc" id="L66">    Node(V val) {this.val = val;}</span>
 
-<span class="fc" id="L66">    Node(Node&lt;V&gt; prev, V val) {</span>
-<span class="fc" id="L67">      this.prev = prev;</span>
-<span class="fc" id="L68">      this.val = val;</span>
-<span class="fc" id="L69">      prev.next = this;</span>
-<span class="fc" id="L70">    }</span>
+<span class="fc" id="L68">    Node(Node&lt;V&gt; prev, V val) {</span>
+<span class="fc" id="L69">      this.prev = prev;</span>
+<span class="fc" id="L70">      this.val = val;</span>
+<span class="fc" id="L71">      prev.next = this;</span>
+<span class="fc" id="L72">    }</span>
 
     V value() {
-<span class="fc" id="L73">      return val;</span>
+<span class="fc" id="L75">      return val;</span>
     }
 
     public String toString() {
-<span class="nc" id="L77">      return String.valueOf(val);</span>
+<span class="nc" id="L79">      return String.valueOf(val);</span>
     }
 
   }
@@ -94,36 +96,36 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
 
     // must (and will) only be called if values.size() &gt; 0
     static &lt;V&gt; Chain of(Collection&lt;V&gt; values) {
-<span class="fc bfc" id="L97" title="All 2 branches covered.">      if (values instanceof AbstractLinkedList l) {</span>
-<span class="fc" id="L98">        return copyOf(l.head, l.size());</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">      if (values instanceof AbstractLinkedList l) {</span>
+<span class="fc" id="L100">        return copyOf(l.head, l.size());</span>
       }
-<span class="fc" id="L100">      Iterator&lt;V&gt; itr = values.iterator();</span>
-<span class="fc" id="L101">      var head = new Node&lt;&gt;(itr.next());</span>
-<span class="fc" id="L102">      var tail = head;</span>
-<span class="fc bfc" id="L103" title="All 2 branches covered.">      while (itr.hasNext()) {</span>
-<span class="fc" id="L104">        tail = new Node&lt;&gt;(tail, itr.next());</span>
+<span class="fc" id="L102">      Iterator&lt;V&gt; itr = values.iterator();</span>
+<span class="fc" id="L103">      var head = new Node&lt;&gt;(itr.next());</span>
+<span class="fc" id="L104">      var tail = head;</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">      while (itr.hasNext()) {</span>
+<span class="fc" id="L106">        tail = new Node&lt;&gt;(tail, itr.next());</span>
       }
-<span class="fc" id="L106">      return new Chain(head, tail, values.size());</span>
+<span class="fc" id="L108">      return new Chain(head, tail, values.size());</span>
     }
 
     static Chain copyOf(Node node, int len) {
-<span class="fc" id="L110">      var head = new Node(node.val);</span>
-<span class="fc" id="L111">      var tail = head;</span>
-<span class="fc bfc" id="L112" title="All 2 branches covered.">      for (int i = 1; i &lt; len; ++i) {</span>
-<span class="fc" id="L113">        tail = new Node(tail, (node = node.next).val);</span>
+<span class="fc" id="L112">      var head = new Node(node.val);</span>
+<span class="fc" id="L113">      var tail = head;</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">      for (int i = 1; i &lt; len; ++i) {</span>
+<span class="fc" id="L115">        tail = new Node(tail, (node = node.next).val);</span>
       }
-<span class="fc" id="L115">      return new Chain(head, tail, len);</span>
+<span class="fc" id="L117">      return new Chain(head, tail, len);</span>
     }
 
     final Node head;
     final Node tail;
     final int length;
 
-<span class="fc" id="L122">    Chain(Node head, Node tail, int length) {</span>
-<span class="fc" id="L123">      this.head = head;</span>
-<span class="fc" id="L124">      this.tail = tail;</span>
-<span class="fc" id="L125">      this.length = length;</span>
-<span class="fc" id="L126">    }</span>
+<span class="fc" id="L124">    Chain(Node head, Node tail, int length) {</span>
+<span class="fc" id="L125">      this.head = head;</span>
+<span class="fc" id="L126">      this.tail = tail;</span>
+<span class="fc" id="L127">      this.length = length;</span>
+<span class="fc" id="L128">    }</span>
 
   }
 
@@ -138,88 +140,88 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
     Boolean forward;
     int idx;
 
-<span class="fc" id="L141">    ListItr() {</span>
-<span class="fc" id="L142">      curr = head;</span>
-<span class="fc" id="L143">      idx = 0;</span>
-<span class="fc" id="L144">    }</span>
+<span class="fc" id="L143">    ListItr() {</span>
+<span class="fc" id="L144">      curr = head;</span>
+<span class="fc" id="L145">      idx = 0;</span>
+<span class="fc" id="L146">    }</span>
 
-<span class="fc" id="L146">    ListItr(int index) {</span>
-<span class="fc bfc" id="L147" title="All 2 branches covered.">      if ((idx = index) == sz) {</span>
-<span class="fc" id="L148">        curr = null;</span>
+<span class="fc" id="L148">    ListItr(int index) {</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">      if ((idx = index) == sz) {</span>
+<span class="fc" id="L150">        curr = null;</span>
       } else {
-<span class="fc" id="L150">        curr = nodeAt(index);</span>
+<span class="fc" id="L152">        curr = nodeAt(index);</span>
       }
-<span class="fc" id="L152">    }</span>
+<span class="fc" id="L154">    }</span>
 
     @Override
     public boolean hasNext() {
-<span class="pc bpc" id="L156" title="1 of 6 branches missed.">      return (forward == null &amp;&amp; sz != 0) || curr != tail;</span>
+<span class="pc bpc" id="L158" title="1 of 6 branches missed.">      return (forward == null &amp;&amp; sz != 0) || curr != tail;</span>
     }
 
     @Override
     public E next() {
-<span class="fc bfc" id="L161" title="All 2 branches covered.">      if (forward == TRUE) {</span>
-<span class="fc" id="L162">        Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
-<span class="fc" id="L163">        Check.that(++idx).is(lt(), sz, concurrentModification());</span>
-<span class="fc" id="L164">        return Check.that(curr = curr.next)</span>
-<span class="fc" id="L165">            .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L166">            .ok(Node::value);</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">      if (forward == TRUE) {</span>
+<span class="fc" id="L164">        Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
+<span class="fc" id="L165">        Check.that(++idx).is(lt(), sz, concurrentModification());</span>
+<span class="fc" id="L166">        return Check.that(curr = curr.next)</span>
+<span class="fc" id="L167">            .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L168">            .ok(Node::value);</span>
       }
-<span class="fc" id="L168">      forward = TRUE;</span>
-<span class="fc" id="L169">      return curr.val;</span>
+<span class="fc" id="L170">      forward = TRUE;</span>
+<span class="fc" id="L171">      return curr.val;</span>
     }
 
     @Override
     public boolean hasPrevious() {
-<span class="fc bfc" id="L174" title="All 2 branches covered.">      return curr != head;</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">      return curr != head;</span>
     }
 
     @Override
     public E previous() {
       E val;
-<span class="fc bfc" id="L180" title="All 2 branches covered.">      if (idx == sz) {</span>
-<span class="fc" id="L181">        Check.that(--idx).is(gte(), 0, concurrentModification());</span>
-<span class="fc" id="L182">        val = Check.that(curr = tail)</span>
-<span class="fc" id="L183">            .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L184">            .ok(Node::value);</span>
-<span class="pc bpc" id="L185" title="1 of 2 branches missed.">      } else if (forward != TRUE) {</span>
-<span class="fc" id="L186">        Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
-<span class="fc" id="L187">        Check.that(--idx).is(gte(), 0, concurrentModification());</span>
-<span class="fc" id="L188">        val = Check.that(curr = curr.prev)</span>
-<span class="fc" id="L189">            .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L190">            .ok(Node::value);</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">      if (idx == sz) {</span>
+<span class="fc" id="L183">        Check.that(--idx).is(gte(), 0, concurrentModification());</span>
+<span class="fc" id="L184">        val = Check.that(curr = tail)</span>
+<span class="fc" id="L185">            .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L186">            .ok(Node::value);</span>
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">      } else if (forward != TRUE) {</span>
+<span class="fc" id="L188">        Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
+<span class="fc" id="L189">        Check.that(--idx).is(gte(), 0, concurrentModification());</span>
+<span class="fc" id="L190">        val = Check.that(curr = curr.prev)</span>
+<span class="fc" id="L191">            .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L192">            .ok(Node::value);</span>
       } else {
-<span class="nc" id="L192">        val = curr.val;</span>
+<span class="nc" id="L194">        val = curr.val;</span>
       }
-<span class="fc" id="L194">      forward = FALSE;</span>
-<span class="fc" id="L195">      return val;</span>
+<span class="fc" id="L196">      forward = FALSE;</span>
+<span class="fc" id="L197">      return val;</span>
     }
 
     @Override
     public int nextIndex() {
-<span class="fc bfc" id="L200" title="All 2 branches covered.">      return forward == TRUE ? idx + 1 : idx;</span>
+<span class="fc bfc" id="L202" title="All 2 branches covered.">      return forward == TRUE ? idx + 1 : idx;</span>
     }
 
     @Override
     public int previousIndex() {
-<span class="pc bpc" id="L205" title="1 of 2 branches missed.">      return forward == TRUE ? idx : idx - 1;</span>
+<span class="pc bpc" id="L207" title="1 of 2 branches missed.">      return forward == TRUE ? idx : idx - 1;</span>
     }
 
     @Override
     public void remove() {
-<span class="fc" id="L210">      throw new UnsupportedOperationException();</span>
+<span class="fc" id="L212">      throw new UnsupportedOperationException();</span>
     }
 
     @Override
     @SuppressWarnings({&quot;unused&quot;})
     public void set(E value) {
-<span class="fc" id="L216">      throw new UnsupportedOperationException();</span>
+<span class="fc" id="L218">      throw new UnsupportedOperationException();</span>
     }
 
     @Override
     @SuppressWarnings({&quot;unused&quot;})
     public void add(E value) {
-<span class="fc" id="L222">      throw new UnsupportedOperationException();</span>
+<span class="fc" id="L224">      throw new UnsupportedOperationException();</span>
     }
 
   }
@@ -234,7 +236,7 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
   //
   //
 
-<span class="fc" id="L237">  final String className = getClass().getSimpleName();</span>
+<span class="fc" id="L239">  final String className = getClass().getSimpleName();</span>
 
   Node&lt;E&gt; head;
   Node&lt;E&gt; tail;
@@ -252,23 +254,23 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public int indexOf(Object o) {
-<span class="fc" id="L255">    var n = head;</span>
-<span class="fc bfc" id="L256" title="All 2 branches covered.">    if (o == null) {</span>
-<span class="pc bpc" id="L257" title="1 of 2 branches missed.">      for (int i = 0; i &lt; sz; ++i) {</span>
-<span class="fc bfc" id="L258" title="All 2 branches covered.">        if (n.val == null) {</span>
-<span class="fc" id="L259">          return i;</span>
+<span class="fc" id="L257">    var n = head;</span>
+<span class="fc bfc" id="L258" title="All 2 branches covered.">    if (o == null) {</span>
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">      for (int i = 0; i &lt; sz; ++i) {</span>
+<span class="fc bfc" id="L260" title="All 2 branches covered.">        if (n.val == null) {</span>
+<span class="fc" id="L261">          return i;</span>
         }
-<span class="fc" id="L261">        n = n.next;</span>
+<span class="fc" id="L263">        n = n.next;</span>
       }
     } else {
-<span class="fc bfc" id="L264" title="All 2 branches covered.">      for (int i = 0; i &lt; sz; ++i) {</span>
-<span class="fc bfc" id="L265" title="All 2 branches covered.">        if (o.equals(n.val)) {</span>
-<span class="fc" id="L266">          return i;</span>
+<span class="fc bfc" id="L266" title="All 2 branches covered.">      for (int i = 0; i &lt; sz; ++i) {</span>
+<span class="fc bfc" id="L267" title="All 2 branches covered.">        if (o.equals(n.val)) {</span>
+<span class="fc" id="L268">          return i;</span>
         }
-<span class="fc" id="L268">        n = n.next;</span>
+<span class="fc" id="L270">        n = n.next;</span>
       }
     }
-<span class="fc" id="L271">    return -1;</span>
+<span class="fc" id="L273">    return -1;</span>
   }
 
   /**
@@ -283,23 +285,23 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public int lastIndexOf(Object o) {
-<span class="fc" id="L286">    var n = tail;</span>
-<span class="fc bfc" id="L287" title="All 2 branches covered.">    if (o == null) {</span>
-<span class="pc bpc" id="L288" title="1 of 2 branches missed.">      for (int i = sz - 1; i &gt;= 0; --i) {</span>
-<span class="fc bfc" id="L289" title="All 2 branches covered.">        if (n.val == null) {</span>
-<span class="fc" id="L290">          return i;</span>
+<span class="fc" id="L288">    var n = tail;</span>
+<span class="fc bfc" id="L289" title="All 2 branches covered.">    if (o == null) {</span>
+<span class="pc bpc" id="L290" title="1 of 2 branches missed.">      for (int i = sz - 1; i &gt;= 0; --i) {</span>
+<span class="fc bfc" id="L291" title="All 2 branches covered.">        if (n.val == null) {</span>
+<span class="fc" id="L292">          return i;</span>
         }
-<span class="fc" id="L292">        n = n.prev;</span>
+<span class="fc" id="L294">        n = n.prev;</span>
       }
     } else {
-<span class="fc bfc" id="L295" title="All 2 branches covered.">      for (int i = sz - 1; i &gt;= 0; --i) {</span>
-<span class="fc bfc" id="L296" title="All 2 branches covered.">        if (o.equals(n.val)) {</span>
-<span class="fc" id="L297">          return i;</span>
+<span class="fc bfc" id="L297" title="All 2 branches covered.">      for (int i = sz - 1; i &gt;= 0; --i) {</span>
+<span class="fc bfc" id="L298" title="All 2 branches covered.">        if (o.equals(n.val)) {</span>
+<span class="fc" id="L299">          return i;</span>
         }
-<span class="fc" id="L299">        n = n.prev;</span>
+<span class="fc" id="L301">        n = n.prev;</span>
       }
     }
-<span class="fc" id="L302">    return -1;</span>
+<span class="fc" id="L304">    return -1;</span>
   }
 
   /**
@@ -312,7 +314,7 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public E get(int index) {
-<span class="fc" id="L315">    return node(index).val;</span>
+<span class="fc" id="L317">    return node(index).val;</span>
   }
 
   /**
@@ -325,10 +327,10 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public E set(int index, E element) {
-<span class="fc" id="L328">    var node = node(index);</span>
-<span class="fc" id="L329">    E old = node.val;</span>
-<span class="fc" id="L330">    node.val = element;</span>
-<span class="fc" id="L331">    return old;</span>
+<span class="fc" id="L330">    var node = node(index);</span>
+<span class="fc" id="L331">    E old = node.val;</span>
+<span class="fc" id="L332">    node.val = element;</span>
+<span class="fc" id="L333">    return old;</span>
   }
 
   /**
@@ -339,15 +341,15 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public boolean add(E e) {
-<span class="fc" id="L342">    Node&lt;E&gt; n = new Node&lt;&gt;(e);</span>
-<span class="fc bfc" id="L343" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L344">      head = tail = n;</span>
+<span class="fc" id="L344">    Node&lt;E&gt; n = new Node&lt;&gt;(e);</span>
+<span class="fc bfc" id="L345" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L346">      head = tail = n;</span>
     } else {
-<span class="fc" id="L346">      join(tail, n);</span>
-<span class="fc" id="L347">      tail = n;</span>
+<span class="fc" id="L348">      join(tail, n);</span>
+<span class="fc" id="L349">      tail = n;</span>
     }
-<span class="fc" id="L349">    ++sz;</span>
-<span class="fc" id="L350">    return true;</span>
+<span class="fc" id="L351">    ++sz;</span>
+<span class="fc" id="L352">    return true;</span>
   }
 
   /**
@@ -360,9 +362,9 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public void add(int index, E element) {
-<span class="fc" id="L363">    checkInclusive(index);</span>
-<span class="fc" id="L364">    insert(index, new Node&lt;&gt;(element));</span>
-<span class="fc" id="L365">  }</span>
+<span class="fc" id="L365">    checkInclusive(index);</span>
+<span class="fc" id="L366">    insert(index, new Node&lt;&gt;(element));</span>
+<span class="fc" id="L367">  }</span>
 
   /**
    * Appends all elements in the specified collection to the end of this list, in the
@@ -374,7 +376,7 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public boolean addAll(Collection&lt;? extends E&gt; c) {
-<span class="fc" id="L377">    return addAll(sz, c);</span>
+<span class="fc" id="L379">    return addAll(sz, c);</span>
   }
 
   /**
@@ -389,12 +391,12 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public boolean addAll(int index, Collection&lt;? extends E&gt; c) {
-<span class="fc" id="L392">    checkInclusive(index);</span>
-<span class="fc" id="L393">    Check.notNull(c, Tag.COLLECTION);</span>
-<span class="fc bfc" id="L394" title="All 2 branches covered.">    if (!c.isEmpty()) {</span>
-<span class="fc" id="L395">      insert(index, Chain.of(c));</span>
+<span class="fc" id="L394">    checkInclusive(index);</span>
+<span class="fc" id="L395">    Check.notNull(c, Tag.COLLECTION);</span>
+<span class="fc bfc" id="L396" title="All 2 branches covered.">    if (!c.isEmpty()) {</span>
+<span class="fc" id="L397">      insert(index, Chain.of(c));</span>
     }
-<span class="fc bfc" id="L397" title="All 2 branches covered.">    return !c.isEmpty();</span>
+<span class="fc bfc" id="L399" title="All 2 branches covered.">    return !c.isEmpty();</span>
   }
 
   /**
@@ -405,7 +407,7 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public int size() {
-<span class="fc" id="L408">    return sz;</span>
+<span class="fc" id="L410">    return sz;</span>
   }
 
   /**
@@ -415,7 +417,7 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public boolean isEmpty() {
-<span class="fc bfc" id="L418" title="All 2 branches covered.">    return sz == 0;</span>
+<span class="fc bfc" id="L420" title="All 2 branches covered.">    return sz == 0;</span>
   }
 
   /**
@@ -428,7 +430,7 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public boolean contains(Object o) {
-<span class="pc bpc" id="L431" title="1 of 2 branches missed.">    return indexOf(o) != -1;</span>
+<span class="pc bpc" id="L433" title="1 of 2 branches missed.">    return indexOf(o) != -1;</span>
   }
 
   /**
@@ -442,8 +444,8 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public boolean containsAll(Collection&lt;?&gt; c) {
-<span class="fc" id="L445">    Check.notNull(c);</span>
-<span class="fc" id="L446">    return new HashSet&lt;&gt;(this).containsAll(c);</span>
+<span class="fc" id="L447">    Check.notNull(c);</span>
+<span class="fc" id="L448">    return new HashSet&lt;&gt;(this).containsAll(c);</span>
   }
 
   /**
@@ -455,41 +457,41 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public Iterator&lt;E&gt; iterator() {
-<span class="fc bfc" id="L458" title="All 2 branches covered.">    return sz == 0 ? emptyIterator() : new Iterator&lt;&gt;() {</span>
+<span class="fc bfc" id="L460" title="All 2 branches covered.">    return sz == 0 ? emptyIterator() : new Iterator&lt;&gt;() {</span>
 
-<span class="fc" id="L460">      private Node&lt;E&gt; curr = justBeforeHead();</span>
+<span class="fc" id="L462">      private Node&lt;E&gt; curr = justBeforeHead();</span>
 
       @Override
       public boolean hasNext() {
-<span class="pc bpc" id="L464" title="1 of 4 branches missed.">        return curr != tail &amp;&amp; curr.next != null;</span>
+<span class="pc bpc" id="L466" title="1 of 4 branches missed.">        return curr != tail &amp;&amp; curr.next != null;</span>
       }
 
       @Override
       public E next() {
-<span class="fc" id="L469">        Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
-<span class="fc" id="L470">        return Check.that(curr = curr.next)</span>
-<span class="fc" id="L471">            .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L472">            .ok(Node::value);</span>
+<span class="fc" id="L471">        Check.that(curr).isNot(sameAs(), tail, noSuchElement());</span>
+<span class="fc" id="L472">        return Check.that(curr = curr.next)</span>
+<span class="fc" id="L473">            .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L474">            .ok(Node::value);</span>
       }
     };
   }
 
   Iterator&lt;E&gt; reverseIterator0() {
-<span class="fc bfc" id="L478" title="All 2 branches covered.">    return sz == 0 ? emptyIterator() : new Iterator&lt;&gt;() {</span>
+<span class="fc bfc" id="L480" title="All 2 branches covered.">    return sz == 0 ? emptyIterator() : new Iterator&lt;&gt;() {</span>
 
-<span class="fc" id="L480">      private Node&lt;E&gt; curr = justAfterTail();</span>
+<span class="fc" id="L482">      private Node&lt;E&gt; curr = justAfterTail();</span>
 
       @Override
       public boolean hasNext() {
-<span class="fc bfc" id="L484" title="All 2 branches covered.">        return curr != head;</span>
+<span class="fc bfc" id="L486" title="All 2 branches covered.">        return curr != head;</span>
       }
 
       @Override
       public E next() {
-<span class="fc" id="L489">        Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
-<span class="fc" id="L490">        return Check.that(curr = curr.prev)</span>
-<span class="fc" id="L491">            .is(notNull(), concurrentModification())</span>
-<span class="fc" id="L492">            .ok(Node::value);</span>
+<span class="fc" id="L491">        Check.that(curr).isNot(sameAs(), head, noSuchElement());</span>
+<span class="fc" id="L492">        return Check.that(curr = curr.prev)</span>
+<span class="fc" id="L493">            .is(notNull(), concurrentModification())</span>
+<span class="fc" id="L494">            .ok(Node::value);</span>
       }
     };
   }
@@ -501,7 +503,7 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public ListIterator&lt;E&gt; listIterator() {
-<span class="fc bfc" id="L504" title="All 2 branches covered.">    return isEmpty() ? emptyListIterator() : new ListItr();</span>
+<span class="fc bfc" id="L506" title="All 2 branches covered.">    return isEmpty() ? emptyListIterator() : new ListItr();</span>
   }
 
   /**
@@ -521,11 +523,11 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public ListIterator&lt;E&gt; listIterator(int index) {
-<span class="fc" id="L524">    checkInclusive(index);</span>
-<span class="pc bpc" id="L525" title="1 of 2 branches missed.">    if (isEmpty()) {</span>
-<span class="nc" id="L526">      return emptyListIterator();</span>
+<span class="fc" id="L526">    checkInclusive(index);</span>
+<span class="pc bpc" id="L527" title="1 of 2 branches missed.">    if (isEmpty()) {</span>
+<span class="nc" id="L528">      return emptyListIterator();</span>
     }
-<span class="fc" id="L528">    return new ListItr(index);</span>
+<span class="fc" id="L530">    return new ListItr(index);</span>
   }
 
   /**
@@ -543,23 +545,23 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public boolean equals(Object o) {
-<span class="fc bfc" id="L546" title="All 2 branches covered.">    if (this == o) {</span>
-<span class="fc" id="L547">      return true;</span>
-<span class="fc bfc" id="L548" title="All 2 branches covered.">    } else if (o instanceof List&lt;?&gt; l) {</span>
-<span class="fc bfc" id="L549" title="All 2 branches covered.">      if (sz == 0) {</span>
-<span class="pc bpc" id="L550" title="1 of 2 branches missed.">        return l.size() == 0;</span>
-<span class="fc bfc" id="L551" title="All 2 branches covered.">      } else if (sz == l.size()) {</span>
-<span class="fc" id="L552">        var x = head;</span>
-<span class="fc bfc" id="L553" title="All 2 branches covered.">        for (Object obj : l) {</span>
-<span class="fc bfc" id="L554" title="All 2 branches covered.">          if (!Objects.equals(obj, x.val)) {</span>
-<span class="fc" id="L555">            return false;</span>
+<span class="fc bfc" id="L548" title="All 2 branches covered.">    if (this == o) {</span>
+<span class="fc" id="L549">      return true;</span>
+<span class="fc bfc" id="L550" title="All 2 branches covered.">    } else if (o instanceof List&lt;?&gt; l) {</span>
+<span class="fc bfc" id="L551" title="All 2 branches covered.">      if (sz == 0) {</span>
+<span class="pc bpc" id="L552" title="1 of 2 branches missed.">        return l.size() == 0;</span>
+<span class="fc bfc" id="L553" title="All 2 branches covered.">      } else if (sz == l.size()) {</span>
+<span class="fc" id="L554">        var x = head;</span>
+<span class="fc bfc" id="L555" title="All 2 branches covered.">        for (Object obj : l) {</span>
+<span class="fc bfc" id="L556" title="All 2 branches covered.">          if (!Objects.equals(obj, x.val)) {</span>
+<span class="fc" id="L557">            return false;</span>
           }
-<span class="fc" id="L557">          x = x.next;</span>
-<span class="fc" id="L558">        }</span>
-<span class="fc" id="L559">        return true;</span>
+<span class="fc" id="L559">          x = x.next;</span>
+<span class="fc" id="L560">        }</span>
+<span class="fc" id="L561">        return true;</span>
       }
     }
-<span class="fc" id="L562">    return false;</span>
+<span class="fc" id="L564">    return false;</span>
   }
 
   /**
@@ -571,11 +573,11 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public int hashCode() {
-<span class="nc" id="L574">    int hash = 1;</span>
-<span class="nc bnc" id="L575" title="All 2 branches missed.">    for (E val : this) {</span>
-<span class="nc" id="L576">      hash = 31 * hash + Objects.hashCode(val);</span>
-<span class="nc" id="L577">    }</span>
-<span class="nc" id="L578">    return hash;</span>
+<span class="nc" id="L576">    int hash = 1;</span>
+<span class="nc bnc" id="L577" title="All 2 branches missed.">    for (E val : this) {</span>
+<span class="nc" id="L578">      hash = 31 * hash + Objects.hashCode(val);</span>
+<span class="nc" id="L579">    }</span>
+<span class="nc" id="L580">    return hash;</span>
   }
 
   /**
@@ -585,151 +587,178 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public String toString() {
-<span class="fc" id="L588">    return '[' + CollectionMethods.implode(this) + ']';</span>
+<span class="fc" id="L590">    return '[' + CollectionMethods.implode(this) + ']';</span>
+  }
+
+  @SafeVarargs
+  final void set0(int index, E e0, E e1, E... moreElems) {
+<span class="fc" id="L595">    Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));</span>
+<span class="fc" id="L596">    Check.notNull(moreElems, Tag.VARARGS).has(length(), lte(), sz - index - 2);</span>
+<span class="fc" id="L597">    var node = nodeAt(index);</span>
+<span class="fc" id="L598">    node.val = e0;</span>
+<span class="fc" id="L599">    node = node.next;</span>
+<span class="fc" id="L600">    node.val = e1;</span>
+<span class="fc bfc" id="L601" title="All 2 branches covered.">    if (moreElems.length != 0) {</span>
+<span class="fc" id="L602">      node = node.next;</span>
+<span class="fc bfc" id="L603" title="All 2 branches covered.">      for (E e : moreElems) {</span>
+<span class="fc" id="L604">        node.val = e;</span>
+<span class="fc" id="L605">        node = node.next;</span>
+      }
+    }
+<span class="fc" id="L608">  }</span>
+
+  final E setIf0(int index, Predicate&lt;? super E&gt; condition, E value) {
+<span class="fc" id="L611">    Check.notNull(condition, Tag.TEST);</span>
+<span class="fc" id="L612">    var node = node(index);</span>
+<span class="fc" id="L613">    E old = node.val;</span>
+<span class="fc bfc" id="L614" title="All 2 branches covered.">    if (condition.test(old)) {</span>
+<span class="fc" id="L615">      node.val = value;</span>
+    }
+<span class="fc" id="L617">    return old;</span>
   }
 
   final void prepend0(E value) {
-<span class="fc" id="L592">    Node&lt;E&gt; n = new Node&lt;&gt;(value);</span>
-<span class="fc bfc" id="L593" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L594">      head = tail = n;</span>
+<span class="fc" id="L621">    Node&lt;E&gt; n = new Node&lt;&gt;(value);</span>
+<span class="fc bfc" id="L622" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L623">      head = tail = n;</span>
     } else {
-<span class="fc" id="L596">      join(n, head);</span>
-<span class="fc" id="L597">      head = n;</span>
+<span class="fc" id="L625">      join(n, head);</span>
+<span class="fc" id="L626">      head = n;</span>
     }
-<span class="fc" id="L599">    ++sz;</span>
-<span class="fc" id="L600">  }</span>
+<span class="fc" id="L628">    ++sz;</span>
+<span class="fc" id="L629">  }</span>
 
   final void replace0(int fromIndex, int toIndex, Collection&lt;? extends E&gt; values) {
-<span class="fc" id="L603">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
-<span class="fc" id="L604">    Check.notNull(values, Tag.COLLECTION);</span>
-<span class="fc bfc" id="L605" title="All 2 branches covered.">    if (len == 0) {</span>
-<span class="fc bfc" id="L606" title="All 2 branches covered.">      if (!values.isEmpty()) {</span>
-<span class="fc" id="L607">        insert(fromIndex, Chain.of(values));</span>
+<span class="fc" id="L632">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
+<span class="fc" id="L633">    Check.notNull(values, Tag.COLLECTION);</span>
+<span class="fc bfc" id="L634" title="All 2 branches covered.">    if (len == 0) {</span>
+<span class="fc bfc" id="L635" title="All 2 branches covered.">      if (!values.isEmpty()) {</span>
+<span class="fc" id="L636">        insert(fromIndex, Chain.of(values));</span>
       }
-<span class="fc bfc" id="L609" title="All 2 branches covered.">    } else if (len == values.size()) {</span>
-<span class="fc" id="L610">      var node = nodeAt(fromIndex);</span>
-<span class="fc bfc" id="L611" title="All 2 branches covered.">      for (E e : values) {</span>
-<span class="fc" id="L612">        node.val = e;</span>
-<span class="fc" id="L613">        node = node.next;</span>
-<span class="fc" id="L614">      }</span>
-<span class="fc" id="L615">    } else {</span>
-<span class="fc" id="L616">      unlink(fromIndex, toIndex);</span>
-<span class="pc bpc" id="L617" title="1 of 2 branches missed.">      if (!values.isEmpty()) {</span>
-<span class="fc" id="L618">        insert(fromIndex, Chain.of(values));</span>
+<span class="fc bfc" id="L638" title="All 2 branches covered.">    } else if (len == values.size()) {</span>
+<span class="fc" id="L639">      var node = nodeAt(fromIndex);</span>
+<span class="fc bfc" id="L640" title="All 2 branches covered.">      for (E e : values) {</span>
+<span class="fc" id="L641">        node.val = e;</span>
+<span class="fc" id="L642">        node = node.next;</span>
+<span class="fc" id="L643">      }</span>
+<span class="fc" id="L644">    } else {</span>
+<span class="fc" id="L645">      unlink(fromIndex, toIndex);</span>
+<span class="pc bpc" id="L646" title="1 of 2 branches missed.">      if (!values.isEmpty()) {</span>
+<span class="fc" id="L647">        insert(fromIndex, Chain.of(values));</span>
       }
     }
-<span class="fc" id="L621">  }</span>
+<span class="fc" id="L650">  }</span>
 
   final void reverse0() {
-<span class="fc bfc" id="L624" title="All 2 branches covered.">    if (sz &gt; 1) {</span>
-<span class="fc" id="L625">      var x = head;</span>
-<span class="fc" id="L626">      var y = tail;</span>
-<span class="fc bfc" id="L627" title="All 2 branches covered.">      for (int i = 0; i &lt; sz / 2; ++i) {</span>
-<span class="fc" id="L628">        E tmp = x.val;</span>
-<span class="fc" id="L629">        x.val = y.val;</span>
-<span class="fc" id="L630">        y.val = tmp;</span>
-<span class="fc" id="L631">        x = x.next;</span>
-<span class="fc" id="L632">        y = y.prev;</span>
+<span class="fc bfc" id="L653" title="All 2 branches covered.">    if (sz &gt; 1) {</span>
+<span class="fc" id="L654">      var x = head;</span>
+<span class="fc" id="L655">      var y = tail;</span>
+<span class="fc bfc" id="L656" title="All 2 branches covered.">      for (int i = 0; i &lt; sz / 2; ++i) {</span>
+<span class="fc" id="L657">        E tmp = x.val;</span>
+<span class="fc" id="L658">        x.val = y.val;</span>
+<span class="fc" id="L659">        y.val = tmp;</span>
+<span class="fc" id="L660">        x = x.next;</span>
+<span class="fc" id="L661">        y = y.prev;</span>
       }
     }
-<span class="fc" id="L635">  }</span>
+<span class="fc" id="L664">  }</span>
 
   final void swap0(int from1, int to1, int from2, int to2) {
-<span class="fc" id="L638">    int len1 = Check.fromTo(this, from1, to1);</span>
-<span class="fc" id="L639">    int len2 = Check.fromTo(this, from2, to2);</span>
-<span class="fc" id="L640">    Check.on(emptySegment(), len1).is(ne(), 0).and(len2).is(ne(), 0);</span>
+<span class="fc" id="L667">    int len1 = Check.fromTo(this, from1, to1);</span>
+<span class="fc" id="L668">    int len2 = Check.fromTo(this, from2, to2);</span>
+<span class="fc" id="L669">    Check.on(emptySegment(), len1).is(ne(), 0).and(len2).is(ne(), 0);</span>
 
     int x0, x1, y0, y1;
-<span class="pc bpc" id="L643" title="1 of 2 branches missed.">    if (from1 &lt; from2) {</span>
-<span class="fc" id="L644">      x0 = from1;</span>
-<span class="fc" id="L645">      x1 = to1;</span>
-<span class="fc" id="L646">      y0 = from2;</span>
-<span class="fc" id="L647">      y1 = to2;</span>
+<span class="pc bpc" id="L672" title="1 of 2 branches missed.">    if (from1 &lt; from2) {</span>
+<span class="fc" id="L673">      x0 = from1;</span>
+<span class="fc" id="L674">      x1 = to1;</span>
+<span class="fc" id="L675">      y0 = from2;</span>
+<span class="fc" id="L676">      y1 = to2;</span>
     } else {
-<span class="nc" id="L649">      x0 = from2;</span>
-<span class="nc" id="L650">      x1 = to2;</span>
-<span class="nc" id="L651">      y0 = from1;</span>
-<span class="nc" id="L652">      y1 = to1;</span>
+<span class="nc" id="L678">      x0 = from2;</span>
+<span class="nc" id="L679">      x1 = to2;</span>
+<span class="nc" id="L680">      y0 = from1;</span>
+<span class="nc" id="L681">      y1 = to1;</span>
     }
 
-<span class="fc" id="L655">    Check.on(overlapNotAllowed(), x1).is(lte(), y0);</span>
+<span class="fc" id="L684">    Check.on(overlapNotAllowed(), x1).is(lte(), y0);</span>
 
-<span class="fc" id="L657">    var seg1L = nodeAt(x0);</span>
-<span class="fc" id="L658">    var seg1R = nodeAfter(seg1L, x0, x1 - 1);</span>
-<span class="fc" id="L659">    var seg2L = nodeAfter(seg1R, x1 - 1, y0);</span>
-<span class="fc" id="L660">    var seg2R = nodeAfter(seg2L, y0, y1 - 1);</span>
+<span class="fc" id="L686">    var seg1L = nodeAt(x0);</span>
+<span class="fc" id="L687">    var seg1R = nodeAfter(seg1L, x0, x1 - 1);</span>
+<span class="fc" id="L688">    var seg2L = nodeAfter(seg1R, x1 - 1, y0);</span>
+<span class="fc" id="L689">    var seg2R = nodeAfter(seg2L, y0, y1 - 1);</span>
 
-<span class="fc bfc" id="L662" title="All 2 branches covered.">    if (x1 == y0) {</span>
-<span class="fc bfc" id="L663" title="All 2 branches covered.">      if (seg2R == tail) {</span>
-<span class="fc" id="L664">        makeTail(seg1R);</span>
+<span class="fc bfc" id="L691" title="All 2 branches covered.">    if (x1 == y0) {</span>
+<span class="fc bfc" id="L692" title="All 2 branches covered.">      if (seg2R == tail) {</span>
+<span class="fc" id="L693">        makeTail(seg1R);</span>
       } else {
-<span class="fc" id="L666">        join(seg1R, seg2R.next);</span>
+<span class="fc" id="L695">        join(seg1R, seg2R.next);</span>
       }
-<span class="fc bfc" id="L668" title="All 2 branches covered.">      if (seg1L == head) {</span>
-<span class="fc" id="L669">        makeHead(seg2L);</span>
+<span class="fc bfc" id="L697" title="All 2 branches covered.">      if (seg1L == head) {</span>
+<span class="fc" id="L698">        makeHead(seg2L);</span>
       } else {
-<span class="fc" id="L671">        join(seg1L.prev, seg2L);</span>
+<span class="fc" id="L700">        join(seg1L.prev, seg2L);</span>
       }
-<span class="fc" id="L673">      join(seg2R, seg1L);</span>
+<span class="fc" id="L702">      join(seg2R, seg1L);</span>
     } else {
-<span class="fc bfc" id="L675" title="All 2 branches covered.">      if (seg1L == head) {</span>
-<span class="fc" id="L676">        head = seg2L;</span>
+<span class="fc bfc" id="L704" title="All 2 branches covered.">      if (seg1L == head) {</span>
+<span class="fc" id="L705">        head = seg2L;</span>
       } else {
-<span class="fc" id="L678">        seg1L.prev.next = seg2L;</span>
+<span class="fc" id="L707">        seg1L.prev.next = seg2L;</span>
       }
-<span class="fc bfc" id="L680" title="All 2 branches covered.">      if (seg2R == tail) {</span>
-<span class="fc" id="L681">        tail = seg1R;</span>
+<span class="fc bfc" id="L709" title="All 2 branches covered.">      if (seg2R == tail) {</span>
+<span class="fc" id="L710">        tail = seg1R;</span>
       } else {
-<span class="fc" id="L683">        seg2R.next.prev = seg1R;</span>
+<span class="fc" id="L712">        seg2R.next.prev = seg1R;</span>
       }
-<span class="fc" id="L685">      seg1R.next.prev = seg2R;</span>
-<span class="fc" id="L686">      seg2L.prev.next = seg1L;</span>
-<span class="fc" id="L687">      var tmp = seg1L.prev;</span>
-<span class="fc" id="L688">      seg1L.prev = seg2L.prev;</span>
-<span class="fc" id="L689">      seg2L.prev = tmp;</span>
-<span class="fc" id="L690">      tmp = seg1R.next;</span>
-<span class="fc" id="L691">      seg1R.next = seg2R.next;</span>
-<span class="fc" id="L692">      seg2R.next = tmp;</span>
+<span class="fc" id="L714">      seg1R.next.prev = seg2R;</span>
+<span class="fc" id="L715">      seg2L.prev.next = seg1L;</span>
+<span class="fc" id="L716">      var tmp = seg1L.prev;</span>
+<span class="fc" id="L717">      seg1L.prev = seg2L.prev;</span>
+<span class="fc" id="L718">      seg2L.prev = tmp;</span>
+<span class="fc" id="L719">      tmp = seg1R.next;</span>
+<span class="fc" id="L720">      seg1R.next = seg2R.next;</span>
+<span class="fc" id="L721">      seg2R.next = tmp;</span>
     }
-<span class="fc" id="L694">  }</span>
+<span class="fc" id="L723">  }</span>
 
   void moveRight(int from, int to, int newFrom) {
-<span class="fc" id="L697">    int indexOfLast = to - 1;</span>
-<span class="fc" id="L698">    int steps = newFrom - from;</span>
-<span class="fc" id="L699">    Node&lt;E&gt; first = nodeAt(from);</span>
-<span class="fc" id="L700">    Node&lt;E&gt; last = nodeAfter(first, from, indexOfLast);</span>
-<span class="fc" id="L701">    Node&lt;E&gt; insertAfter = nodeAfter(last, indexOfLast, indexOfLast + steps);</span>
-<span class="fc bfc" id="L702" title="All 2 branches covered.">    if (first == head) {</span>
-<span class="fc" id="L703">      makeHead(last.next);</span>
+<span class="fc" id="L726">    int indexOfLast = to - 1;</span>
+<span class="fc" id="L727">    int steps = newFrom - from;</span>
+<span class="fc" id="L728">    Node&lt;E&gt; first = nodeAt(from);</span>
+<span class="fc" id="L729">    Node&lt;E&gt; last = nodeAfter(first, from, indexOfLast);</span>
+<span class="fc" id="L730">    Node&lt;E&gt; insertAfter = nodeAfter(last, indexOfLast, indexOfLast + steps);</span>
+<span class="fc bfc" id="L731" title="All 2 branches covered.">    if (first == head) {</span>
+<span class="fc" id="L732">      makeHead(last.next);</span>
     } else {
-<span class="fc" id="L705">      join(first.prev, last.next);</span>
+<span class="fc" id="L734">      join(first.prev, last.next);</span>
     }
-<span class="fc bfc" id="L707" title="All 2 branches covered.">    if (insertAfter == tail) {</span>
-<span class="fc" id="L708">      join(insertAfter, first);</span>
-<span class="fc" id="L709">      makeTail(last);</span>
+<span class="fc bfc" id="L736" title="All 2 branches covered.">    if (insertAfter == tail) {</span>
+<span class="fc" id="L737">      join(insertAfter, first);</span>
+<span class="fc" id="L738">      makeTail(last);</span>
     } else {
-<span class="fc" id="L711">      join(last, insertAfter.next);</span>
-<span class="fc" id="L712">      join(insertAfter, first);</span>
+<span class="fc" id="L740">      join(last, insertAfter.next);</span>
+<span class="fc" id="L741">      join(insertAfter, first);</span>
     }
-<span class="fc" id="L714">  }</span>
+<span class="fc" id="L743">  }</span>
 
   void moveLeft(int from, int to, int newFrom) {
-<span class="fc" id="L717">    Node&lt;E&gt; first = nodeAt(from);</span>
-<span class="fc" id="L718">    Node&lt;E&gt; last = nodeAfter(first, from, to - 1);</span>
-<span class="fc" id="L719">    Node&lt;E&gt; insertBefore = nodeBefore(first, from, newFrom);</span>
-<span class="fc bfc" id="L720" title="All 2 branches covered.">    if (last == tail) {</span>
-<span class="fc" id="L721">      makeTail(first.prev);</span>
+<span class="fc" id="L746">    Node&lt;E&gt; first = nodeAt(from);</span>
+<span class="fc" id="L747">    Node&lt;E&gt; last = nodeAfter(first, from, to - 1);</span>
+<span class="fc" id="L748">    Node&lt;E&gt; insertBefore = nodeBefore(first, from, newFrom);</span>
+<span class="fc bfc" id="L749" title="All 2 branches covered.">    if (last == tail) {</span>
+<span class="fc" id="L750">      makeTail(first.prev);</span>
     } else {
-<span class="fc" id="L723">      join(first.prev, last.next);</span>
+<span class="fc" id="L752">      join(first.prev, last.next);</span>
     }
-<span class="fc bfc" id="L725" title="All 2 branches covered.">    if (insertBefore == head) {</span>
-<span class="fc" id="L726">      join(last, insertBefore);</span>
-<span class="fc" id="L727">      makeHead(first);</span>
+<span class="fc bfc" id="L754" title="All 2 branches covered.">    if (insertBefore == head) {</span>
+<span class="fc" id="L755">      join(last, insertBefore);</span>
+<span class="fc" id="L756">      makeHead(first);</span>
     } else {
-<span class="fc" id="L729">      join(insertBefore.prev, first);</span>
-<span class="fc" id="L730">      join(last, insertBefore);</span>
+<span class="fc" id="L758">      join(insertBefore.prev, first);</span>
+<span class="fc" id="L759">      join(last, insertBefore);</span>
     }
-<span class="fc" id="L732">  }</span>
+<span class="fc" id="L761">  }</span>
 
   /**
    * Returns an array containing all elements in this list in proper sequence (from
@@ -740,15 +769,15 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   @Override
   public Object[] toArray() {
-<span class="fc bfc" id="L743" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L744">      return EMPTY_OBJECT_ARRAY;</span>
+<span class="fc bfc" id="L772" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L773">      return EMPTY_OBJECT_ARRAY;</span>
     }
-<span class="fc" id="L746">    Object[] result = new Object[sz];</span>
-<span class="fc" id="L747">    int i = 0;</span>
-<span class="fc bfc" id="L748" title="All 2 branches covered.">    for (E val : this) {</span>
-<span class="fc" id="L749">      result[i++] = val;</span>
-<span class="fc" id="L750">    }</span>
-<span class="fc" id="L751">    return result;</span>
+<span class="fc" id="L775">    Object[] result = new Object[sz];</span>
+<span class="fc" id="L776">    int i = 0;</span>
+<span class="fc bfc" id="L777" title="All 2 branches covered.">    for (E val : this) {</span>
+<span class="fc" id="L778">      result[i++] = val;</span>
+<span class="fc" id="L779">    }</span>
+<span class="fc" id="L780">    return result;</span>
   }
 
   /**
@@ -767,19 +796,19 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
   @Override
   @SuppressWarnings({&quot;unchecked&quot;})
   public &lt;T&gt; T[] toArray(T[] a) {
-<span class="fc" id="L770">    Check.notNull(a);</span>
-<span class="fc bfc" id="L771" title="All 2 branches covered.">    if (a.length &lt; sz) {</span>
-<span class="fc" id="L772">      a = (T[]) InvokeMethods.newArray(a.getClass(), sz);</span>
+<span class="fc" id="L799">    Check.notNull(a);</span>
+<span class="fc bfc" id="L800" title="All 2 branches covered.">    if (a.length &lt; sz) {</span>
+<span class="fc" id="L801">      a = (T[]) InvokeMethods.newArray(a.getClass(), sz);</span>
     }
-<span class="fc" id="L774">    int i = 0;</span>
-<span class="fc" id="L775">    Object[] result = a;</span>
-<span class="fc bfc" id="L776" title="All 2 branches covered.">    for (E val : this) {</span>
-<span class="fc" id="L777">      result[i++] = val;</span>
-<span class="fc" id="L778">    }</span>
-<span class="fc bfc" id="L779" title="All 2 branches covered.">    if (a.length &gt; sz) {</span>
-<span class="fc" id="L780">      a[sz] = null;</span>
+<span class="fc" id="L803">    int i = 0;</span>
+<span class="fc" id="L804">    Object[] result = a;</span>
+<span class="fc bfc" id="L805" title="All 2 branches covered.">    for (E val : this) {</span>
+<span class="fc" id="L806">      result[i++] = val;</span>
+<span class="fc" id="L807">    }</span>
+<span class="fc bfc" id="L808" title="All 2 branches covered.">    if (a.length &gt; sz) {</span>
+<span class="fc" id="L809">      a[sz] = null;</span>
     }
-<span class="fc" id="L782">    return a;</span>
+<span class="fc" id="L811">    return a;</span>
   }
 
   ////////////////////////////////////////////////////////////////
@@ -790,88 +819,88 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
 
   @SuppressWarnings({&quot;unchecked&quot;, &quot;rawtypes&quot;})
   void insert(int index, Node node) {
-<span class="fc bfc" id="L793" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L794">      makeHead(node);</span>
-<span class="fc" id="L795">      makeTail(node);</span>
-<span class="fc bfc" id="L796" title="All 2 branches covered.">    } else if (index == 0) {</span>
-<span class="fc" id="L797">      join(node, head);</span>
-<span class="fc" id="L798">      makeHead(node);</span>
-<span class="fc bfc" id="L799" title="All 2 branches covered.">    } else if (index == sz) {</span>
-<span class="fc" id="L800">      join(tail, node);</span>
-<span class="fc" id="L801">      makeTail(node);</span>
+<span class="fc bfc" id="L822" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L823">      makeHead(node);</span>
+<span class="fc" id="L824">      makeTail(node);</span>
+<span class="fc bfc" id="L825" title="All 2 branches covered.">    } else if (index == 0) {</span>
+<span class="fc" id="L826">      join(node, head);</span>
+<span class="fc" id="L827">      makeHead(node);</span>
+<span class="fc bfc" id="L828" title="All 2 branches covered.">    } else if (index == sz) {</span>
+<span class="fc" id="L829">      join(tail, node);</span>
+<span class="fc" id="L830">      makeTail(node);</span>
     } else {
-<span class="fc" id="L803">      var x = nodeAt(index);</span>
-<span class="fc" id="L804">      join(x.prev, node);</span>
-<span class="fc" id="L805">      join(node, x);</span>
+<span class="fc" id="L832">      var x = nodeAt(index);</span>
+<span class="fc" id="L833">      join(x.prev, node);</span>
+<span class="fc" id="L834">      join(node, x);</span>
     }
-<span class="fc" id="L807">    ++sz;</span>
-<span class="fc" id="L808">  }</span>
+<span class="fc" id="L836">    ++sz;</span>
+<span class="fc" id="L837">  }</span>
 
   @SuppressWarnings(&quot;unchecked&quot;)
   void insert(int index, Chain chain) {
-<span class="fc bfc" id="L812" title="All 2 branches covered.">    if (sz == 0) {</span>
-<span class="fc" id="L813">      makeHead(chain.head);</span>
-<span class="fc" id="L814">      makeTail(chain.tail);</span>
-<span class="fc bfc" id="L815" title="All 2 branches covered.">    } else if (index == 0) {</span>
-<span class="fc" id="L816">      join(chain.tail, head);</span>
-<span class="fc" id="L817">      makeHead(chain.head);</span>
-<span class="fc bfc" id="L818" title="All 2 branches covered.">    } else if (index == sz) {</span>
-<span class="fc" id="L819">      join(tail, chain.head);</span>
-<span class="fc" id="L820">      makeTail(chain.tail);</span>
+<span class="fc bfc" id="L841" title="All 2 branches covered.">    if (sz == 0) {</span>
+<span class="fc" id="L842">      makeHead(chain.head);</span>
+<span class="fc" id="L843">      makeTail(chain.tail);</span>
+<span class="fc bfc" id="L844" title="All 2 branches covered.">    } else if (index == 0) {</span>
+<span class="fc" id="L845">      join(chain.tail, head);</span>
+<span class="fc" id="L846">      makeHead(chain.head);</span>
+<span class="fc bfc" id="L847" title="All 2 branches covered.">    } else if (index == sz) {</span>
+<span class="fc" id="L848">      join(tail, chain.head);</span>
+<span class="fc" id="L849">      makeTail(chain.tail);</span>
     } else {
-<span class="fc" id="L822">      var node = nodeAt(index);</span>
-<span class="fc" id="L823">      join(node.prev, chain.head);</span>
-<span class="fc bfc" id="L824" title="All 2 branches covered.">      if (chain.length == 1) {</span>
-<span class="fc" id="L825">        join(chain.head, node);</span>
+<span class="fc" id="L851">      var node = nodeAt(index);</span>
+<span class="fc" id="L852">      join(node.prev, chain.head);</span>
+<span class="fc bfc" id="L853" title="All 2 branches covered.">      if (chain.length == 1) {</span>
+<span class="fc" id="L854">        join(chain.head, node);</span>
       } else {
-<span class="fc" id="L827">        join(chain.tail, node);</span>
+<span class="fc" id="L856">        join(chain.tail, node);</span>
       }
     }
-<span class="fc" id="L830">    sz += chain.length;</span>
-<span class="fc" id="L831">  }</span>
+<span class="fc" id="L859">    sz += chain.length;</span>
+<span class="fc" id="L860">  }</span>
 
   void unlink(Node&lt;E&gt; node) {
-<span class="fc bfc" id="L834" title="All 2 branches covered.">    if (sz == 1) {</span>
-<span class="fc" id="L835">      head = tail = null;</span>
-<span class="fc bfc" id="L836" title="All 2 branches covered.">    } else if (node == head) {</span>
-<span class="fc" id="L837">      makeHead(node.next);</span>
-<span class="fc bfc" id="L838" title="All 2 branches covered.">    } else if (node == tail) {</span>
-<span class="fc" id="L839">      makeTail(node.prev);</span>
+<span class="fc bfc" id="L863" title="All 2 branches covered.">    if (sz == 1) {</span>
+<span class="fc" id="L864">      head = tail = null;</span>
+<span class="fc bfc" id="L865" title="All 2 branches covered.">    } else if (node == head) {</span>
+<span class="fc" id="L866">      makeHead(node.next);</span>
+<span class="fc bfc" id="L867" title="All 2 branches covered.">    } else if (node == tail) {</span>
+<span class="fc" id="L868">      makeTail(node.prev);</span>
     } else {
-<span class="fc" id="L841">      join(node.prev, node.next);</span>
+<span class="fc" id="L870">      join(node.prev, node.next);</span>
     }
-<span class="fc" id="L843">    --sz;</span>
-<span class="fc" id="L844">  }</span>
+<span class="fc" id="L872">    --sz;</span>
+<span class="fc" id="L873">  }</span>
 
   Chain unlink(int from, int to) {
-<span class="fc" id="L847">    var first = nodeAt(from);</span>
-<span class="fc" id="L848">    var last = nodeAfter(first, from, to - 1);</span>
-<span class="fc" id="L849">    int len = to - from;</span>
-<span class="fc" id="L850">    return unlink(new Chain(first, last, len));</span>
+<span class="fc" id="L876">    var first = nodeAt(from);</span>
+<span class="fc" id="L877">    var last = nodeAfter(first, from, to - 1);</span>
+<span class="fc" id="L878">    int len = to - from;</span>
+<span class="fc" id="L879">    return unlink(new Chain(first, last, len));</span>
   }
 
   @SuppressWarnings(&quot;unchecked&quot;)
   Chain unlink(Chain chain) {
-<span class="fc bfc" id="L855" title="All 2 branches covered.">    if (chain.length == sz) {</span>
-<span class="fc" id="L856">      head = tail = null;</span>
-<span class="fc bfc" id="L857" title="All 2 branches covered.">    } else if (chain.head == head) {</span>
-<span class="fc" id="L858">      makeHead(chain.tail.next);</span>
-<span class="fc bfc" id="L859" title="All 2 branches covered.">    } else if (chain.tail == tail) {</span>
-<span class="fc" id="L860">      makeTail(chain.head.prev);</span>
+<span class="fc bfc" id="L884" title="All 2 branches covered.">    if (chain.length == sz) {</span>
+<span class="fc" id="L885">      head = tail = null;</span>
+<span class="fc bfc" id="L886" title="All 2 branches covered.">    } else if (chain.head == head) {</span>
+<span class="fc" id="L887">      makeHead(chain.tail.next);</span>
+<span class="fc bfc" id="L888" title="All 2 branches covered.">    } else if (chain.tail == tail) {</span>
+<span class="fc" id="L889">      makeTail(chain.head.prev);</span>
     } else {
-<span class="fc" id="L862">      join(chain.head.prev, chain.tail.next);</span>
+<span class="fc" id="L891">      join(chain.head.prev, chain.tail.next);</span>
     }
-<span class="fc" id="L864">    sz -= chain.length;</span>
-<span class="fc" id="L865">    return chain;</span>
+<span class="fc" id="L893">    sz -= chain.length;</span>
+<span class="fc" id="L894">    return chain;</span>
   }
 
   /**
    * Validates the index and then returns {@link #nodeAt(int)}.
    */
   Node&lt;E&gt; node(int index) {
-<span class="fc" id="L872">    return Check.that(index)</span>
-<span class="fc" id="L873">        .is(indexInclusiveOf(), this, indexOutOfBounds(index))</span>
-<span class="fc" id="L874">        .mapToObj(this::nodeAt);</span>
+<span class="fc" id="L901">    return Check.that(index)</span>
+<span class="fc" id="L902">        .is(indexInclusiveOf(), this, indexOutOfBounds(index))</span>
+<span class="fc" id="L903">        .mapToObj(this::nodeAt);</span>
   }
 
   /**
@@ -879,18 +908,18 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
    */
   // @VisibleForTesting
   Node&lt;E&gt; nodeAt(int index) {
-<span class="fc bfc" id="L882" title="All 2 branches covered.">    if (index &lt; (sz &gt;&gt; 1)) {</span>
-<span class="fc" id="L883">      Node&lt;E&gt; n = head;</span>
-<span class="fc bfc" id="L884" title="All 2 branches covered.">      for (int i = 0; i &lt; index; ++i) {</span>
-<span class="fc" id="L885">        n = n.next;</span>
+<span class="fc bfc" id="L911" title="All 2 branches covered.">    if (index &lt; (sz &gt;&gt; 1)) {</span>
+<span class="fc" id="L912">      Node&lt;E&gt; n = head;</span>
+<span class="fc bfc" id="L913" title="All 2 branches covered.">      for (int i = 0; i &lt; index; ++i) {</span>
+<span class="fc" id="L914">        n = n.next;</span>
       }
-<span class="fc" id="L887">      return n;</span>
+<span class="fc" id="L916">      return n;</span>
     } else {
-<span class="fc" id="L889">      Node&lt;E&gt; n = tail;</span>
-<span class="fc bfc" id="L890" title="All 2 branches covered.">      for (int i = sz - 1; i &gt; index; --i) {</span>
-<span class="fc" id="L891">        n = n.prev;</span>
+<span class="fc" id="L918">      Node&lt;E&gt; n = tail;</span>
+<span class="fc bfc" id="L919" title="All 2 branches covered.">      for (int i = sz - 1; i &gt; index; --i) {</span>
+<span class="fc" id="L920">        n = n.prev;</span>
       }
-<span class="fc" id="L893">      return n;</span>
+<span class="fc" id="L922">      return n;</span>
     }
   }
 
@@ -904,59 +933,59 @@ import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
   // @VisibleForTesting
   Node&lt;E&gt; nodeAfter(Node&lt;E&gt; startNode, int startIndex, int index) {
     Node&lt;E&gt; n;
-<span class="fc bfc" id="L907" title="All 2 branches covered.">    if (index &lt; ((sz + startIndex) &gt;&gt; 1)) {</span>
-<span class="fc bfc" id="L908" title="All 2 branches covered.">      for (n = startNode; startIndex++ &lt; index; n = n.next)</span>
+<span class="fc bfc" id="L936" title="All 2 branches covered.">    if (index &lt; ((sz + startIndex) &gt;&gt; 1)) {</span>
+<span class="fc bfc" id="L937" title="All 2 branches covered.">      for (n = startNode; startIndex++ &lt; index; n = n.next)</span>
         ;
     } else {
-<span class="fc bfc" id="L911" title="All 2 branches covered.">      for (n = tail; ++index &lt; sz; n = n.prev)</span>
+<span class="fc bfc" id="L940" title="All 2 branches covered.">      for (n = tail; ++index &lt; sz; n = n.prev)</span>
         ;
     }
-<span class="fc" id="L914">    return n;</span>
+<span class="fc" id="L943">    return n;</span>
   }
 
   // @VisibleForTesting
   Node&lt;E&gt; nodeBefore(Node&lt;E&gt; startNode, int startIndex, int index) {
     Node&lt;E&gt; n;
-<span class="fc bfc" id="L920" title="All 2 branches covered.">    if (index &lt; (startIndex &gt;&gt; 1)) {</span>
-<span class="pc bpc" id="L921" title="1 of 2 branches missed.">      for (n = head; index-- &gt; 0; n = n.next)</span>
+<span class="fc bfc" id="L949" title="All 2 branches covered.">    if (index &lt; (startIndex &gt;&gt; 1)) {</span>
+<span class="pc bpc" id="L950" title="1 of 2 branches missed.">      for (n = head; index-- &gt; 0; n = n.next)</span>
         ;
     } else {
-<span class="fc bfc" id="L924" title="All 2 branches covered.">      for (n = startNode; index++ &lt; startIndex; n = n.prev)</span>
+<span class="fc bfc" id="L953" title="All 2 branches covered.">      for (n = startNode; index++ &lt; startIndex; n = n.prev)</span>
         ;
     }
-<span class="fc" id="L927">    return n;</span>
+<span class="fc" id="L956">    return n;</span>
   }
 
   void makeHead(Node&lt;E&gt; node) {
-<span class="fc" id="L931">    node.prev = null;</span>
-<span class="fc" id="L932">    head = node;</span>
-<span class="fc" id="L933">  }</span>
+<span class="fc" id="L960">    node.prev = null;</span>
+<span class="fc" id="L961">    head = node;</span>
+<span class="fc" id="L962">  }</span>
 
   void makeTail(Node&lt;E&gt; node) {
-<span class="fc" id="L936">    node.next = null;</span>
-<span class="fc" id="L937">    tail = node;</span>
-<span class="fc" id="L938">  }</span>
+<span class="fc" id="L965">    node.next = null;</span>
+<span class="fc" id="L966">    tail = node;</span>
+<span class="fc" id="L967">  }</span>
 
   static &lt;T&gt; void join(Node&lt;T&gt; prev, Node&lt;T&gt; next) {
-<span class="fc" id="L941">    prev.next = next;</span>
-<span class="fc" id="L942">    next.prev = prev;</span>
-<span class="fc" id="L943">  }</span>
+<span class="fc" id="L970">    prev.next = next;</span>
+<span class="fc" id="L971">    next.prev = prev;</span>
+<span class="fc" id="L972">  }</span>
 
   Node&lt;E&gt; justBeforeHead() {
-<span class="fc" id="L946">    Node&lt;E&gt; x = new Node&lt;&gt;(null);</span>
-<span class="fc" id="L947">    x.next = head;</span>
-<span class="fc" id="L948">    return x;</span>
+<span class="fc" id="L975">    Node&lt;E&gt; x = new Node&lt;&gt;(null);</span>
+<span class="fc" id="L976">    x.next = head;</span>
+<span class="fc" id="L977">    return x;</span>
   }
 
   Node&lt;E&gt; justAfterTail() {
-<span class="fc" id="L952">    Node&lt;E&gt; x = new Node&lt;&gt;(null);</span>
-<span class="fc" id="L953">    x.prev = tail;</span>
-<span class="fc" id="L954">    return x;</span>
+<span class="fc" id="L981">    Node&lt;E&gt; x = new Node&lt;&gt;(null);</span>
+<span class="fc" id="L982">    x.prev = tail;</span>
+<span class="fc" id="L983">    return x;</span>
   }
 
   void checkInclusive(int index) {
-<span class="fc" id="L958">    Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));</span>
-<span class="fc" id="L959">  }</span>
+<span class="fc" id="L987">    Check.that(index).is(indexInclusiveOf(), this, indexOutOfBounds(index));</span>
+<span class="fc" id="L988">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

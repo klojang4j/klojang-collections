@@ -2012,56 +2012,56 @@ public class CrisprListTest {
   @Test
   public void replaceAll00() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.replace(0, 4, List.of("a", "b", "c"));
+    cl0.replaceAll(0, 4, List.of("a", "b", "c"));
     assertEquals(List.of("a", "b", "c", 4, 5, 6, 7, 8, 9), cl0);
   }
 
   @Test
   public void replaceAll01() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.replace(0, 10, List.of("a", "b", "c"));
+    cl0.replaceAll(0, 10, List.of("a", "b", "c"));
     assertEquals(List.of("a", "b", "c"), cl0);
   }
 
   @Test
   public void replaceAll02() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.replace(4, 10, List.of("a", "b", "c"));
+    cl0.replaceAll(4, 10, List.of("a", "b", "c"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c"), cl0);
   }
 
   @Test
   public void replaceAll04() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.replace(4, 8, List.of("a", "b", "c"));
+    cl0.replaceAll(4, 8, List.of("a", "b", "c"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c", 8, 9), cl0);
   }
 
   @Test
   public void replaceAll05() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.replace(4, 8, List.of("a", "b", "c", "d"));
+    cl0.replaceAll(4, 8, List.of("a", "b", "c", "d"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c", "d", 8, 9), cl0);
   }
 
   @Test
   public void replaceAll06() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.replace(4, 4, List.of("a", "b", "c", "d"));
+    cl0.replaceAll(4, 4, List.of("a", "b", "c", "d"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c", "d", 4, 5, 6, 7, 8, 9), cl0);
   }
 
   @Test
   public void replaceAll07() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.replace(9, 10, List.of("a"));
+    cl0.replaceAll(9, 10, List.of("a"));
     assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, "a"), cl0);
   }
 
   @Test
   public void replaceAll08() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.replace(9, 9, List.of());
+    cl0.replaceAll(9, 9, List.of());
     assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), cl0);
   }
 
@@ -2082,35 +2082,35 @@ public class CrisprListTest {
   @Test
   public void replaceSegment00() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.rewire(0, 4, CrisprList.of("a", "b", "c"));
+    cl0.replace(0, 4, CrisprList.of("a", "b", "c"));
     assertEquals(List.of("a", "b", "c", 4, 5, 6, 7, 8, 9), cl0);
   }
 
   @Test
   public void replaceSegment01() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.rewire(0, 10, CrisprList.of("a", "b", "c"));
+    cl0.replace(0, 10, CrisprList.of("a", "b", "c"));
     assertEquals(List.of("a", "b", "c"), cl0);
   }
 
   @Test
   public void replaceSegment02() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.rewire(4, 10, CrisprList.of("a", "b", "c"));
+    cl0.replace(4, 10, CrisprList.of("a", "b", "c"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c"), cl0);
   }
 
   @Test
   public void replaceSegment03() {
     var cl = CrisprList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl.rewire(0, 3, CrisprList.of());
+    cl.replace(0, 3, CrisprList.of());
     assertEquals(List.of(3, 4, 5, 6, 7, 8, 9), cl);
   }
 
   @Test
   public void replaceSegment04() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.rewire(4, 8, CrisprList.of("a", "b", "c"));
+    cl0.replace(4, 8, CrisprList.of("a", "b", "c"));
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c", 8, 9), cl0);
   }
 
