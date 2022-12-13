@@ -1272,7 +1272,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @return an {@code Iterator} that traverses the list from the last element to the
    *     first
    */
-  public Iterator<E> reverseIterator0() {
+  public Iterator<E> reverseIterator() {
     return super.reverseIterator0();
   }
 

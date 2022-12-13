@@ -826,7 +826,7 @@ public class CrisprListTest {
   @Test
   public void reverseIterator00() {
     var cl0 = CrisprList.of(0, 1, 2);
-    var itr = cl0.reverseIterator0();
+    var itr = cl0.reverseIterator();
     assertTrue(itr.hasNext());
     assertEquals(2, (int) itr.next());
     assertTrue(itr.hasNext());
@@ -839,7 +839,7 @@ public class CrisprListTest {
   @Test
   public void reverseIterator01() {
     var cl0 = CrisprList.of();
-    var itr = cl0.reverseIterator0();
+    var itr = cl0.reverseIterator();
     assertFalse(itr.hasNext());
   }
 
