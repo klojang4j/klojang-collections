@@ -811,6 +811,33 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     return a;
   }
 
+  final Object[] toArray0(int fromIndex, int toIndex) {
+    int len = Check.fromTo(this, fromIndex, toIndex);
+    if (len == 0) {
+      return EMPTY_OBJECT_ARRAY;
+    }
+    Object[] result = new Object[len];
+    var node = nodeAt(fromIndex);
+    for (int i = 0; i < len; ++i) {
+      result[i] = node.val;
+      node = node.next;
+    }
+    return result;
+  }
+
+  final void toArray0(int fromIndex, int toIndex, Object[] target, int offset) {
+    int len = Check.fromTo(this, fromIndex, toIndex);
+    Check.notNull(target, "target").has(length(), gte(), len + offset);
+    Check.that(offset, Tag.OFFSET).is(gte(), 0);
+    if (len != 0) {
+      var node = nodeAt(fromIndex);
+      for (int i = 0; i < len; ++i) {
+        target[offset++] = node.val;
+        node = node.next;
+      }
+    }
+  }
+
   ////////////////////////////////////////////////////////////////
   // IMPORTANT: If you want to reuse nodes or chains, the order of
   // the operations matter. Always first unlink the node or chain,

@@ -861,6 +861,39 @@ public class CrisprListTest {
   }
 
   @Test
+  public void regionToArray00() {
+    var cl = CrisprList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    assertArrayEquals(pack(0, 1, 2, 3), cl.regionToArray(0, 4));
+    assertArrayEquals(pack(5), cl.regionToArray(5, 6));
+    assertArrayEquals(pack(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), cl.regionToArray(0, 10));
+    assertArrayEquals(pack(1, 2, 3, 4, 5, 6, 7, 8), cl.regionToArray(1, 9));
+    assertSame(EMPTY_OBJECT_ARRAY, cl.regionToArray(0, 0));
+    assertSame(EMPTY_OBJECT_ARRAY, cl.regionToArray(5, 5));
+    assertSame(EMPTY_OBJECT_ARRAY, cl.regionToArray(10, 10));
+  }
+
+  @Test
+  public void regionToArray01() {
+    var cl = CrisprList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    Number[] numbers = new Number[12];
+    Arrays.fill(numbers, 42);
+    cl.regionToArray(0, 10, numbers, 0);
+    assertArrayEquals(pack(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 42, 42), numbers);
+    Arrays.fill(numbers, 42);
+    cl.regionToArray(0, 10, numbers, 1);
+    assertArrayEquals(pack(42, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 42), numbers);
+    Arrays.fill(numbers, 42);
+    cl.regionToArray(0, 10, numbers, 2);
+    assertArrayEquals(pack(42, 42, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9), numbers);
+    Arrays.fill(numbers, 42);
+    cl.regionToArray(5, 6, numbers, 5);
+    assertArrayEquals(pack(42, 42, 42, 42, 42, 5, 42, 42, 42, 42, 42, 42), numbers);
+    Arrays.fill(numbers, 42);
+    cl.regionToArray(5, 5, numbers, 5);
+    assertArrayEquals(pack(42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42), numbers);
+  }
+
+  @Test
   public void set00() {
     var cl = CrisprList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     assertEquals(2, (int) cl.set(2, 222));

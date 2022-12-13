@@ -10,6 +10,7 @@ import java.util.function.UnaryOperator;
 import static java.util.Collections.singletonList;
 import static org.klojang.check.CommonChecks.*;
 import static org.klojang.check.CommonExceptions.noSuchElement;
+import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
 import static org.klojang.util.MathMethods.divUp;
 
 /**
@@ -1351,6 +1352,33 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    */
   public WiredIterator<E> wiredIterator(boolean reverse) {
     return reverse ? new ReverseWiredIterator() : new ForwardWiredIterator();
+  }
+
+  /**
+   * Returns an array containing the elements within the specified region of this
+   * list.
+   *
+   * @param fromIndex the start index (inclusive) of the region
+   * @param toIndex the end index (exclusive) of the region
+   * @return an array containing the elements within the specified region of this
+   *     list
+   */
+  public Object[] regionToArray(int fromIndex, int toIndex) {
+    return toArray0(fromIndex, toIndex);
+  }
+
+  /**
+   * Copies the specified region within this list to the specified position within
+   * the specified array. The array must be large enough to copy the entire region to
+   * the specified position.
+   *
+   * @param fromIndex the start index (inclusive) of the region
+   * @param toIndex the end index (exclusive) of the region
+   * @param target the array to which to copy the elements
+   * @param offset the offset within the array
+   */
+  public void regionToArray(int fromIndex, int toIndex, Object[] target, int offset) {
+    toArray0(fromIndex, toIndex, target, offset);
   }
 
   /**

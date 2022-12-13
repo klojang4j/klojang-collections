@@ -1301,6 +1301,36 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   }
 
   /**
+   * Returns an array containing the elements within the specified region of this
+   * list.
+   *
+   * @param fromIndex the start index (inclusive) of the region
+   * @param toIndex the end index (exclusive) of the region
+   * @return an array containing the elements within the specified region of this
+   *     list
+   */
+  public Object[] regionToArray(int fromIndex, int toIndex) {
+    return toArray0(fromIndex, toIndex);
+  }
+
+  /**
+   * Copies the specified region within this list to the specified position within
+   * the specified array. The array must be large enough to copy the entire region to
+   * the specified position.
+   *
+   * @param fromIndex the start index (inclusive) of the region
+   * @param toIndex the end index (exclusive) of the region
+   * @param target the array to which to copy the elements
+   * @param offset the offset within the array
+   */
+  public void regionToArray(int fromIndex,
+      int toIndex,
+      Object[] target,
+      int offset) {
+    toArray0(fromIndex, toIndex, target, offset);
+  }
+
+  /**
    * Throws an {@code UnsupportedOperationException}. The specification for this
    * method requires that non-structural changes in the returned list are reflected
    * in the original list (and vice versa). However, except for the
