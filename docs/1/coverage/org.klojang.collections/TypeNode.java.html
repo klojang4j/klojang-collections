@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TypeNode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Klojang Collections</a> &gt; <a href="index.source.html" class="el_package">org.klojang.collections</a> &gt; <span class="el_source">TypeNode.java</span></div><h1>TypeNode.java</h1><pre class="source lang-java linenums">package org.klojang.collections;
+
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.klojang.util.ClassMethods.isSupertype;
+
+final class TypeNode {
+
+<span class="fc" id="L11">  static final TypeNode[] NO_SUBTYPES = new TypeNode[0];</span>
+
+  final Class&lt;?&gt; type;
+  final Object value;
+  final TypeNode[] subclasses;
+  final TypeNode[] extensions;
+
+  TypeNode(Class&lt;?&gt; type,
+      Object value,
+      TypeNode[] subclasses,
+<span class="fc" id="L21">      TypeNode[] extensions) {</span>
+<span class="fc" id="L22">    this.type = type;</span>
+<span class="fc" id="L23">    this.value = value;</span>
+<span class="fc" id="L24">    this.subclasses = subclasses;</span>
+<span class="fc" id="L25">    this.extensions = extensions;</span>
+<span class="fc" id="L26">  }</span>
+
+  @SuppressWarnings({&quot;unchecked&quot;})
+  &lt;T&gt; T value() {
+<span class="fc" id="L30">    return (T) value;</span>
+  }
+
+  &lt;T&gt; T get(Class&lt;?&gt; type) {
+<span class="fc bfc" id="L34" title="All 2 branches covered.">    return type.isInterface() ? findInterface(type) : findClass(type);</span>
+  }
+
+  @SuppressWarnings({&quot;unchecked&quot;})
+  &lt;T&gt; T getPrimitive(Class&lt;?&gt; type) {
+<span class="fc" id="L39">    return (T) findClass(type, subclasses);</span>
+  }
+
+  void collectTypes(List&lt;Class&lt;?&gt;&gt; bucket) {
+<span class="fc bfc" id="L43" title="All 2 branches covered.">    for (var node : extensions) {</span>
+<span class="fc" id="L44">      bucket.add((node.type));</span>
+    }
+<span class="fc bfc" id="L46" title="All 2 branches covered.">    for (var node : subclasses) {</span>
+<span class="fc" id="L47">      bucket.add(node.type);</span>
+    }
+<span class="fc bfc" id="L49" title="All 2 branches covered.">    for (var node : extensions) {</span>
+<span class="fc" id="L50">      node.collectTypes(bucket);</span>
+    }
+<span class="fc bfc" id="L52" title="All 2 branches covered.">    for (var node : subclasses) {</span>
+<span class="fc" id="L53">      node.collectTypes(bucket);</span>
+    }
+<span class="fc" id="L55">  }</span>
+
+  &lt;E&gt; void collectValues(List&lt;E&gt; bucket) {
+<span class="fc bfc" id="L58" title="All 2 branches covered.">    for (var node : extensions) {</span>
+<span class="fc" id="L59">      bucket.add(node.value());</span>
+<span class="fc" id="L60">      node.collectValues(bucket);</span>
+    }
+<span class="fc bfc" id="L62" title="All 2 branches covered.">    for (var node : subclasses) {</span>
+<span class="fc" id="L63">      bucket.add(node.value());</span>
+<span class="fc" id="L64">      node.collectValues(bucket);</span>
+    }
+<span class="fc" id="L66">  }</span>
+
+  &lt;E&gt; void collectEntries(List&lt;Map.Entry&lt;Class&lt;?&gt;, E&gt;&gt; bucket) {
+<span class="fc bfc" id="L69" title="All 2 branches covered.">    for (var node : extensions) {</span>
+<span class="fc" id="L70">      bucket.add(new AbstractMap.SimpleImmutableEntry&lt;&gt;(node.type, node.value()));</span>
+<span class="fc" id="L71">      node.collectEntries(bucket);</span>
+    }
+<span class="fc bfc" id="L73" title="All 2 branches covered.">    for (var node : subclasses) {</span>
+<span class="fc" id="L74">      bucket.add(new AbstractMap.SimpleImmutableEntry&lt;&gt;(node.type, node.value()));</span>
+<span class="fc" id="L75">      node.collectEntries(bucket);</span>
+    }
+<span class="fc" id="L77">  }</span>
+
+  @SuppressWarnings({&quot;unchecked&quot;})
+  private &lt;T&gt; T findClass(Class&lt;?&gt; type) {
+<span class="fc bfc" id="L81" title="All 2 branches covered.">    if (!isSupertype(this.type, type)) {</span>
+<span class="fc" id="L82">      return null;</span>
+    }
+    Object val;
+<span class="fc bfc" id="L85" title="All 2 branches covered.">    if ((val = findAsSubclass(type)) == null) {</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">      if ((val = findAsImpl(type)) == null) {</span>
+<span class="fc" id="L87">        val = this.value;</span>
+      }
+    }
+<span class="fc" id="L90">    return (T) val;</span>
+  }
+
+  @SuppressWarnings({&quot;unchecked&quot;})
+  private &lt;T&gt; T findInterface(Class&lt;?&gt; type) {
+<span class="fc bfc" id="L95" title="All 2 branches covered.">    if (!isSupertype(this.type, type)) {</span>
+<span class="fc" id="L96">      return null;</span>
+    }
+    Object val;
+<span class="fc bfc" id="L99" title="All 2 branches covered.">    if ((val = findAsExtension(type)) == null) {</span>
+<span class="fc" id="L100">      val = this.value;</span>
+    }
+<span class="fc" id="L102">    return (T) val;</span>
+  }
+
+  private Object findAsSubclass(Class&lt;?&gt; type) {
+<span class="fc" id="L106">    return findClass(type, subclasses);</span>
+  }
+
+  private Object findAsImpl(Class&lt;?&gt; type) {
+<span class="fc" id="L110">    return findClass(type, extensions);</span>
+  }
+
+  private Object findAsExtension(Class&lt;?&gt; type) {
+<span class="fc bfc" id="L114" title="All 2 branches covered.">    for (TypeNode node : extensions) {</span>
+<span class="fc" id="L115">      Object val = node.findInterface(type);</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">      if (val != null) {</span>
+<span class="fc" id="L117">        return val;</span>
+      }
+    }
+<span class="fc" id="L120">    return null;</span>
+  }
+
+  private static Object findClass(Class&lt;?&gt; type, TypeNode[] nodes) {
+<span class="fc bfc" id="L124" title="All 2 branches covered.">    for (TypeNode node : nodes) {</span>
+<span class="fc" id="L125">      Object val = node.findClass(type);</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">      if (val != null) {</span>
+<span class="fc" id="L127">        return val;</span>
+      }
+    }
+<span class="fc" id="L130">    return null;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

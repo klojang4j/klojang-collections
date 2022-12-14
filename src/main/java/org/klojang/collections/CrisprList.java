@@ -40,84 +40,15 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   //
   //
 
-  final class ForwardWiredIterator implements WiredIterator<E> {
+  final class CFwdWiredIterator<E> extends
+      AbstractLinkedList.ForwardWiredIterator {
 
-    private Node<E> beforeHead;
-    private Node<E> curr;
-
-    private ForwardWiredIterator() {
-      curr = beforeHead = justBeforeHead();
+    private CFwdWiredIterator() {
+      super();
     }
 
-    private ForwardWiredIterator(Node<E> curr) {
-      this.curr = curr;
-    }
-
-    @Override
-    public boolean hasNext() {
-      return sz != 0 && curr != tail;
-    }
-
-    @Override
-    public E value() {
-      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());
-      Check.that(sz).isNot(zero(), emptyList());
-      return curr.val;
-    }
-
-    @Override
-    public E peek() {
-      Check.that(curr).isNot(sameAs(), tail, noSuchElement());
-      Check.that(sz).isNot(zero(), noSuchElement());
-      return Check.that(curr.next)
-          .is(notNull(), concurrentModification())
-          .ok(Node::value);
-    }
-
-    @Override
-    public E next() {
-      Check.that(curr).isNot(sameAs(), tail, noSuchElement());
-      Check.that(sz).isNot(zero(), noSuchElement());
-      return Check.that(curr = curr.next)
-          .is(notNull(), concurrentModification())
-          .ok(Node::value);
-    }
-
-    @Override
-    public void set(E newVal) {
-      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());
-      Check.that(sz).isNot(zero(), emptyList());
-      curr.val = newVal;
-    }
-
-    @Override
-    public void insertBefore(E value) {
-      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());
-      Check.that(sz).isNot(zero(), emptyList());
-      Node<E> node = new Node<>(value);
-      if (curr == head) {
-        join(head = node, curr);
-      } else {
-        Check.that(curr.prev).is(notNull(), concurrentModification());
-        join(curr.prev, node);
-        join(node, curr);
-      }
-      ++sz;
-    }
-
-    @Override
-    public void insertAfter(E value) {
-      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());
-      Check.that(sz).isNot(zero(), emptyList());
-      Node<E> node = new Node<>(value);
-      if (curr == tail) {
-        join(curr, tail = node);
-      } else {
-        Check.that(curr.next).is(notNull(), concurrentModification());
-        join(node, curr.next);
-        join(curr, node);
-      }
-      ++sz;
+    private CFwdWiredIterator(Node<E> curr) {
+      super(curr);
     }
 
     @Override
@@ -135,108 +66,20 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
     }
 
     @Override
-    public int index() {
-      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());
-      Check.that(sz).isNot(zero(), emptyList());
-      int idx = 0;
-      for (var node = head; ; ++idx) {
-        if (node == curr) {
-          return idx;
-        }
-        node = Check.that(node)
-            .is(notNull(), concurrentModification())
-            .isNot(sameAs(), tail, concurrentModification())
-            .ok(x -> x.next);
-      }
-    }
-
-    @Override
-    public WiredIterator<E> turn() {
-      Check.that(curr).isNot(sameAs(), beforeHead, callNextFirst());
-      Check.that(sz).isNot(zero(), emptyList());
-      return new ReverseWiredIterator(curr);
+    WiredIterator getReverseWiredIterator(Node curr) {
+      return new CRevWiredIterator(curr);
     }
 
   }
 
-  final class ReverseWiredIterator implements WiredIterator<E> {
+  final class CRevWiredIterator extends AbstractLinkedList.ReverseWiredIterator {
 
-    private Node<E> afterTail;
-    private Node<E> curr;
-
-    private ReverseWiredIterator() {
-      curr = afterTail = justAfterTail();
+    private CRevWiredIterator() {
+      super();
     }
 
-    private ReverseWiredIterator(Node<E> curr) {
-      this.curr = curr;
-    }
-
-    @Override
-    public boolean hasNext() {
-      return sz != 0 && curr != head;
-    }
-
-    @Override
-    public E value() {
-      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());
-      Check.that(sz).isNot(zero(), emptyList());
-      return curr.val;
-    }
-
-    @Override
-    public E peek() {
-      Check.that(curr).isNot(sameAs(), head, noSuchElement());
-      Check.that(sz).isNot(zero(), noSuchElement());
-      return Check.that(curr.prev)
-          .is(notNull(), concurrentModification())
-          .ok(Node::value);
-    }
-
-    @Override
-    public E next() {
-      Check.that(curr).isNot(sameAs(), head, noSuchElement());
-      Check.that(sz).isNot(zero(), noSuchElement());
-      return Check.that(curr = curr.prev)
-          .is(notNull(), concurrentModification())
-          .ok(Node::value);
-    }
-
-    @Override
-    public void set(E newVal) {
-      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());
-      Check.that(sz).isNot(zero(), emptyList());
-      curr.val = newVal;
-    }
-
-    @Override
-    public void insertBefore(E value) {
-      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());
-      Check.that(sz).isNot(zero(), emptyList());
-      Node<E> node = new Node<>(value);
-      if (curr == tail) {
-        join(curr, tail = node);
-      } else {
-        Check.that(curr.next).is(notNull(), concurrentModification());
-        join(node, curr.next);
-        join(curr, node);
-      }
-      ++sz;
-    }
-
-    @Override
-    public void insertAfter(E value) {
-      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());
-      Check.that(sz).isNot(zero(), emptyList());
-      Node<E> node = new Node<>(value);
-      if (curr == head) {
-        join(head = node, curr);
-      } else {
-        Check.that(curr.prev).is(notNull(), concurrentModification());
-        join(curr.prev, node);
-        join(node, curr);
-      }
-      ++sz;
+    private CRevWiredIterator(Node<E> curr) {
+      super(curr);
     }
 
     @Override
@@ -254,26 +97,8 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
     }
 
     @Override
-    public int index() {
-      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());
-      Check.that(sz).isNot(zero(), emptyList());
-      int idx = sz - 1;
-      for (var node = tail; ; --idx) {
-        if (node == curr) {
-          return idx;
-        }
-        node = Check.that(node)
-            .is(notNull(), concurrentModification())
-            .isNot(sameAs(), head, concurrentModification())
-            .ok(x -> x.prev);
-      }
-    }
-
-    @Override
-    public WiredIterator<E> turn() {
-      Check.that(curr).isNot(sameAs(), afterTail, callNextFirst());
-      Check.that(sz).isNot(zero(), emptyList());
-      return new ForwardWiredIterator(curr);
+    WiredIterator getForwardWiredIterator(Node curr) {
+      return new CFwdWiredIterator(curr);
     }
 
   }
@@ -1284,7 +1109,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    *     to the last
    */
   public WiredIterator<E> wiredIterator() {
-    return new ForwardWiredIterator();
+    return new CFwdWiredIterator();
   }
 
   /**
@@ -1297,7 +1122,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    *     to the last, or the other way round
    */
   public WiredIterator<E> wiredIterator(boolean reverse) {
-    return reverse ? new ReverseWiredIterator() : new ForwardWiredIterator();
+    return reverse ? new CRevWiredIterator() : new CFwdWiredIterator();
   }
 
   /**
