@@ -29,7 +29,7 @@ To use Klojang Collections, add the following dependency to your Maven POM file:
 <dependency>
     <groupId>org.klojang</groupId>
     <artifactId>klojang-collections</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.2</version>
 </dependency>
 ```
 

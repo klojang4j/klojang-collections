@@ -203,12 +203,12 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * operation for the {@code CrisprList} instances in the provided {@code List}.
    * They will be empty when the method returns.
    *
-   * @see #attach(CrisprList) 
-   * @see #group(List)
    * @param lists the {@code CrisprList} instances to concatenate
    * @param <E> the type of the elements in the list
    * @return a new {@code CrisprList} containing the elements in the individual
    *     {@code CrisprList} instances
+   * @see #attach(CrisprList)
+   * @see #group(List)
    */
   public static <E> CrisprList<E> join(List<CrisprList<E>> lists) {
     CrisprList<E> cl = new CrisprList<>();
@@ -480,8 +480,8 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
 
   /**
    * Replaces each element of this list with the result of applying the operator to
-   * that element. Errors or runtime exceptions thrown by the operator are relayed
-   * to the caller.
+   * that element. Errors or runtime exceptions thrown by the operator are relayed to
+   * the caller.
    *
    * @param operator the operator to apply to each element
    * @throws UnsupportedOperationException if this list is unmodifiable.
@@ -519,16 +519,21 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
       if (!values.isEmpty()) {
         insert(fromIndex, Chain.of(values));
       }
-    } else if (len == values.size()) {
+    } else if (len < values.size()) {
+      unlink(fromIndex, toIndex);
+      if (!values.isEmpty()) {
+        insert(fromIndex, Chain.of(values));
+      }
+    } else {
       var node = nodeAt(fromIndex);
       for (E e : values) {
         node.val = e;
         node = node.next;
       }
-    } else {
-      unlink(fromIndex, toIndex);
-      if (!values.isEmpty()) {
-        insert(fromIndex, Chain.of(values));
+      if (len > values.size()) {
+        var end = nodeAfter(node, fromIndex + values.size(), toIndex - 1);
+        var chain = new Chain(node, end, len - values.size());
+        unlink(chain);
       }
     }
     return this;
@@ -975,17 +980,18 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   }
 
   /**
-   * Removes and returns a segment from the start of the list. The segment includes
-   * all elements up to (and not including) the first element that does not satisfy
-   * the specified condition. In other words, all elements in the returned list
-   * <i>will</i> satisfy the condition. If the condition is never satisfied, this
-   * list remains unchanged and an empty list is returned. If <i>all</i> elements
-   * satisfy the condition, the list remains unchanged and is itself returned.
+   * Removes and returns a segment from the start of the list. The segment will
+   * include all elements up to (but not including) the first element that does not
+   * satisfy the specified condition. In other words, all elements in the returned
+   * list <i>will</i> satisfy the condition. If the condition is never satisfied,
+   * this list remains unchanged and an empty list is returned. If <i>all</i>
+   * elements satisfy the condition, the list remains unchanged and is itself
+   * returned.
    *
    * @param criterion the criterion that the elements in the returned segment
    *     will satisfy
    * @return a {@code CrisprList} containing all elements preceding the first element
-   *     that does not satisfy the condition
+   *     that does not satisfy the condition; possibly this instance
    */
   public CrisprList<E> lchop(Predicate<? super E> criterion) {
     Check.notNull(criterion);
@@ -1004,7 +1010,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   }
 
   /**
-   * Removes and returns a segment from the end of the list. The segment includes all
+   * Removes and returns a segment from the end of the list. The segment will include all
    * elements following the <i>last</i> element that does <i>not</i> satisfy the
    * specified condition. In other words, all elements in the returned list
    * <i>will</i> satisfy the condition. If the condition is never satisfied, the
@@ -1014,7 +1020,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @param criterion the criterion that the elements in the returned segment
    *     will satisfy
    * @return a {@code CrisprList} containing all elements following the last element
-   *     that does not satisfy the condition
+   *     that does not satisfy the condition; possibly this instance
    */
   public CrisprList<E> rchop(Predicate<? super E> criterion) {
     Check.notNull(criterion);
@@ -1120,7 +1126,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    *     list
    */
   public Object[] regionToArray(int fromIndex, int toIndex) {
-    return toArray0(fromIndex, toIndex);
+    return regionToArray0(fromIndex, toIndex);
   }
 
   /**
@@ -1137,7 +1143,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
       int toIndex,
       Object[] target,
       int offset) {
-    toArray0(fromIndex, toIndex, target, offset);
+    regionToArray0(fromIndex, toIndex, target, offset);
   }
 
   /**
@@ -1146,7 +1152,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * in the original list (and vice versa). However, except for the
    * {@link #set(int, Object)} method, all changes to a {@code CrisprList} <i>are</i>
    * structural changes. {@code CrisprList} does provide a method that returns a
-   * sublist ({@link #copy(int, int) copySegment}). It just has no relation to the
+   * sublist ({@link #copy(int, int) copy}). It just has no relation to the
    * original list any longer.
    */
   @Override

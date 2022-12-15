@@ -956,6 +956,20 @@ public class WiredListTest {
   }
 
   @Test
+  public void clear01() {
+    var wl = WiredList.of();
+    wl.clear();
+    assertTrue(wl.isEmpty());
+  }
+
+  @Test
+  public void clear02() {
+    var wl = WiredList.of(0);
+    wl.clear();
+    assertTrue(wl.isEmpty());
+  }
+
+  @Test
   public void setIf00() {
     var wl = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     wl.setIf(1, i -> i > 5, 10);

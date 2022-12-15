@@ -74,7 +74,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
       super();
     }
 
-     private WFwdWiredIterator(Node<E> curr) {
+    private WFwdWiredIterator(Node<E> curr) {
       super(curr);
     }
 
@@ -230,12 +230,12 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * operation for the {@code WiredList} instances in the provided {@code List}. They
    * will be empty when the method returns.
    *
-   * @see #attach(WiredList)
-   * @see #group(List)
    * @param lists the {@code WiredList} instances to concatenate
    * @param <E> the type of the elements in the list
    * @return a new {@code WiredList} containing the elements in the individual
    *     {@code WiredList} instances
+   * @see #attach(WiredList)
+   * @see #group(List)
    */
   public static <E> WiredList<E> join(List<WiredList<E>> lists) {
     WiredList<E> wl = new WiredList<>();
@@ -364,7 +364,6 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
     }
     return size != this.sz;
   }
-
 
   /**
    * Returns the first element of the list. A {@link NoSuchElementException} is
@@ -544,16 +543,21 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
       if (!values.isEmpty()) {
         insert(fromIndex, Chain.of(values));
       }
-    } else if (len == values.size()) {
+    } else if (len < values.size()) {
+      cut(fromIndex, toIndex).clear();
+      if (!values.isEmpty()) {
+        insert(fromIndex, Chain.of(values));
+      }
+    } else {
       var node = nodeAt(fromIndex);
       for (E e : values) {
         node.val = e;
         node = node.next;
       }
-    } else {
-      cut(fromIndex, toIndex).clear();
-      if (!values.isEmpty()) {
-        insert(fromIndex, Chain.of(values));
+      if (len > values.size()) {
+        var end = nodeAfter(node, fromIndex + values.size(), toIndex - 1);
+        var chain = new Chain(node, end, len - values.size());
+        new WiredList<>(unlink(chain)).clear();
       }
     }
     return this;
@@ -1019,17 +1023,18 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
   }
 
   /**
-   * Removes and returns a segment from the start of the list. The segment includes
-   * all elements up to (and not including) the first element that does not satisfy
-   * the specified condition. In other words, all elements in the returned list
-   * <i>will</i> satisfy the condition. If the condition is never satisfied, this
-   * list remains unchanged and an empty list is returned. If <i>all</i> elements
-   * satisfy the condition, the list remains unchanged and is itself returned.
+   * Removes and returns a segment from the start of the list. The segment will
+   * include all elements up to (but not including) the first element that does not
+   * satisfy the specified condition. In other words, all elements in the returned
+   * list <i>will</i> satisfy the condition. If the condition is never satisfied,
+   * this list remains unchanged and an empty list is returned. If <i>all</i>
+   * elements satisfy the condition, the list remains unchanged and is itself
+   * returned.
    *
    * @param criterion the criterion that the elements in the returned segment
    *     will satisfy
    * @return a {@code WiredList} containing all elements preceding the first element
-   *     that does not satisfy the condition
+   *     that does not satisfy the condition; possibly this instance
    */
   public WiredList<E> lchop(Predicate<? super E> criterion) {
     Check.notNull(criterion);
@@ -1048,8 +1053,8 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
   }
 
   /**
-   * Removes and returns a segment from the end of the list. The segment includes all
-   * elements following the <i>last</i> element that does <i>not</i> satisfy the
+   * Removes and returns a segment from the end of the list. The segment will include
+   * all elements following the <i>last</i> element that does <i>not</i> satisfy the
    * specified condition. In other words, all elements in the returned list
    * <i>will</i> satisfy the condition. If the condition is never satisfied, the
    * list remains unchanged and an empty list is returned. If <i>all</i> elements
@@ -1058,7 +1063,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * @param criterion the criterion that the elements in the returned segment
    *     will satisfy
    * @return a {@code WiredList} containing all elements following the last element
-   *     that does not satisfy the condition
+   *     that does not satisfy the condition; possibly this instance
    */
   public WiredList<E> rchop(Predicate<? super E> criterion) {
     Check.notNull(criterion);
@@ -1116,13 +1121,16 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
   @Override
   public void clear() {
     if (sz != 0) {
-      var curr = head;
-      do {
-        var next = curr.next;
+      for (var curr = head; ; ) {
         curr.val = null;
+        if (curr == tail) {
+          curr.prev = null;
+          break;
+        }
+        var next = curr.next;
         curr.prev = curr.next = null;
         curr = next;
-      } while (curr != tail);
+      }
       head = tail = null;
       sz = 0;
     }
@@ -1173,7 +1181,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    *     list
    */
   public Object[] regionToArray(int fromIndex, int toIndex) {
-    return toArray0(fromIndex, toIndex);
+    return regionToArray0(fromIndex, toIndex);
   }
 
   /**
@@ -1190,7 +1198,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
       int toIndex,
       Object[] target,
       int offset) {
-    toArray0(fromIndex, toIndex, target, offset);
+    regionToArray0(fromIndex, toIndex, target, offset);
   }
 
   /**

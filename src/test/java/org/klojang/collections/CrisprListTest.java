@@ -956,6 +956,21 @@ public class CrisprListTest {
   }
 
   @Test
+  public void clear01() {
+    var cl = CrisprList.of();
+    cl.clear();
+    assertTrue(cl.isEmpty());
+  }
+
+  @Test
+  public void clear02() {
+    var cl = CrisprList.of(0);
+    cl.clear();
+    assertTrue(cl.isEmpty());
+  }
+
+
+  @Test
   public void setIf00() {
     var cl = CrisprList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     cl.setIf(1, i -> i > 5, 10);
