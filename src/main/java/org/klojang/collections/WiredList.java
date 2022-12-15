@@ -228,8 +228,10 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
   /**
    * Concatenates the provided {@code WiredList} instances. This is a destructive
    * operation for the {@code WiredList} instances in the provided {@code List}. They
-   * will be empty when the method returns. See {@link #attach(WiredList)}.
+   * will be empty when the method returns.
    *
+   * @see #attach(WiredList)
+   * @see #group(List)
    * @param lists the {@code WiredList} instances to concatenate
    * @param <E> the type of the elements in the list
    * @return a new {@code WiredList} containing the elements in the individual
@@ -273,7 +275,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * @param e0 the first value to write
    * @param e1 the second value to write
    * @param moreElems more values to write
-   * @return this {@code WiredList}
+   * @return this instance
    */
   @SuppressWarnings("unchecked")
   public WiredList<E> set(int index, E e0, E e1, E... moreElems) {
@@ -349,7 +351,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    */
   @Override
   public boolean removeIf(Predicate<? super E> filter) {
-    Check.notNull(filter, Tag.TEST);
+    Check.notNull(filter, "filter");
     int size = sz;
     for (var x = head; x != null; ) {
       if (filter.test(x.val)) {
@@ -363,39 +365,6 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
     return size != this.sz;
   }
 
-  /**
-   * Removes all elements from this list that are also present in the specified
-   * collection.
-   *
-   * @param c collection containing elements to be removed from this list
-   * @return {@code true} if this list changed as a result of the call
-   * @see #remove(Object)
-   * @see #contains(Object)
-   */
-  @Override
-  public boolean removeAll(Collection<?> c) {
-    Check.notNull(c, Tag.COLLECTION);
-    int size = this.sz;
-    removeIf(c::contains);
-    return size != this.sz;
-  }
-
-  /**
-   * Removes all elements from this list that are not present in the specified
-   * collection.
-   *
-   * @param c collection containing elements to be retained in this list
-   * @return {@code true} if this list changed as a result of the call
-   * @see #remove(Object)
-   * @see #contains(Object)
-   */
-  @Override
-  public boolean retainAll(Collection<?> c) {
-    Check.notNull(c, Tag.COLLECTION);
-    int sz = this.sz;
-    removeIf(e -> !c.contains(e));
-    return sz != this.sz;
-  }
 
   /**
    * Returns the first element of the list. A {@link NoSuchElementException} is
@@ -424,7 +393,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * original elements.
    *
    * @param value The value to insert
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> prepend(E value) {
     prepend0(value);
@@ -436,7 +405,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * original elements.
    *
    * @param values The values to prepend to the list
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> prependAll(Collection<? extends E> values) {
     Check.notNull(values, Tag.COLLECTION);
@@ -451,7 +420,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * {@link #add(Object) add(value)}.
    *
    * @param value The value to append to the list
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> append(E value) {
     add(value);
@@ -462,7 +431,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * Appends the specified collection to this {@code WiredList}.
    *
    * @param values The values to append to the list
-   * @return this {@code WiredList}
+   * @return this instance
    * @see #addAll(Collection)
    * @see #attach(WiredList)
    */
@@ -484,7 +453,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    *
    * @param index the index at which to insert the value
    * @param value the value
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> insert(int index, E value) {
     checkInclusive(index);
@@ -498,7 +467,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    *
    * @param index the index at which to insert the collection
    * @param values The collection to insert into the list
-   * @return this {@code WiredList}
+   * @return this instance
    * @see #addAll(int, Collection)
    */
   public WiredList<E> insertAll(int index, Collection<? extends E> values) {
@@ -514,7 +483,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * Removes the first element from the list, left-shifting the remaining elements. A
    * {@link NoSuchElementException} is thrown if the list is empty.
    *
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> deleteFirst() {
     Check.that(sz).isNot(zero(), noSuchElement());
@@ -526,7 +495,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * Removes the last element from the list. A {@link NoSuchElementException} is
    * thrown if the list is empty.
    *
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> deleteLast() {
     Check.that(sz).isNot(zero(), noSuchElement());
@@ -563,13 +532,30 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * @param fromIndex the start index (inclusive) of the segment to replace
    * @param toIndex the end index (exclusive) of
    * @param values The values to replace the segment with
-   * @return this {@code WiredList}
+   * @return this instance
    * @see #replace(int, int, WiredList)
    */
   public WiredList<E> replaceAll(int fromIndex,
       int toIndex,
       Collection<? extends E> values) {
-    replace0(fromIndex, toIndex, values);
+    int len = Check.fromTo(this, fromIndex, toIndex);
+    Check.notNull(values, Tag.COLLECTION);
+    if (len == 0) {
+      if (!values.isEmpty()) {
+        insert(fromIndex, Chain.of(values));
+      }
+    } else if (len == values.size()) {
+      var node = nodeAt(fromIndex);
+      for (E e : values) {
+        node.val = e;
+        node = node.next;
+      }
+    } else {
+      cut(fromIndex, toIndex).clear();
+      if (!values.isEmpty()) {
+        insert(fromIndex, Chain.of(values));
+      }
+    }
     return this;
   }
 
@@ -583,7 +569,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * @param fromIndex the start index (inclusive) of the segment to replace
    * @param toIndex the end index (exclusive) of
    * @param other the values to replace the segment with
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> replace(int fromIndex,
       int toIndex,
@@ -631,7 +617,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    *
    * @param fromIndex the index (inclusive) of the new start of the list
    * @param toIndex the index (exclusive) of the new end of the list
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> shrink(int fromIndex, int toIndex) {
     int len = Check.fromTo(this, fromIndex, toIndex);
@@ -696,7 +682,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    *
    * @param index the index at which to embed the list
    * @param other the list to embed
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> embed(int index, WiredList<? extends E> other) {
     checkInclusive(index);
@@ -723,7 +709,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * @param to1 the to-index (exclusive) of the first segment
    * @param from2 the from-index (inclusive) of the second segment
    * @param to2 the to-index (exclusive) of the second segment
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> swap(int from1, int to1, int from2, int to2) {
     swap0(from1, to1, from2, to2);
@@ -741,7 +727,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    *     other list
    * @param itsToIndex the end index (exclusive) of the segment within the other
    *     list
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> exchange(int myFromIndex,
       int myToIndex,
@@ -808,7 +794,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * @param other the list to remove the segment from
    * @param itsFromIndex the start index of the segment (inclusive)
    * @param itsToIndex the end index of the segment (exclusive)
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> embed(int myIndex,
       WiredList<? extends E> other,
@@ -830,7 +816,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * don't want this to happen, use {@code appendAll} or {@code addAll}.
    *
    * @param other the list to embed
-   * @return this {@code WiredList}
+   * @return this instance
    * @see #join(List)
    */
   public WiredList<E> attach(WiredList<? extends E> other) {
@@ -862,7 +848,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * elements that did not satisfy any criterion will come last in the list.
    *
    * @param criteria the criteria used to group the elements
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> defragment(List<Predicate<? super E>> criteria) {
     return defragment(true, criteria);
@@ -876,7 +862,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * @param keepRemainder whether to keep the elements that did not satisfy any
    *     criterion, and move them to the end of the list
    * @param criteria the criteria used to group the elements
-   * @return this {@code WiredList}
+   * @return this instance
    */
   @SuppressWarnings({"rawtypes"})
   public WiredList<E> defragment(boolean keepRemainder,
@@ -1093,7 +1079,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
   /**
    * Reverses the order of the elements in this {@code WiredList}.
    *
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> reverse() {
     reverse0();
@@ -1108,7 +1094,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    * @param newFromIndex the index to which to move the segment. To move the
    *     segment to the very start of the list, specify 0 (zero). To move the segment
    *     to the very end of the list specify the {@link #size() size} of the list
-   * @return this {@code WiredList}
+   * @return this instance
    */
   public WiredList<E> move(int fromIndex, int toIndex, int newFromIndex) {
     int len = Check.fromTo(this, fromIndex, toIndex);

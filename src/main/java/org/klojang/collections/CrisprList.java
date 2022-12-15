@@ -201,8 +201,10 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   /**
    * Concatenates the provided {@code CrisprList} instances. This is a destructive
    * operation for the {@code CrisprList} instances in the provided {@code List}.
-   * They will be empty when the method returns. See {@link #attach(CrisprList)}.
+   * They will be empty when the method returns.
    *
+   * @see #attach(CrisprList) 
+   * @see #group(List)
    * @param lists the {@code CrisprList} instances to concatenate
    * @param <E> the type of the elements in the list
    * @return a new {@code CrisprList} containing the elements in the individual
@@ -246,7 +248,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @param e0 the first value to write
    * @param e1 the second value to write
    * @param moreElems more values to write
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   @SuppressWarnings("unchecked")
   public CrisprList<E> set(int index, E e0, E e1, E... moreElems) {
@@ -325,7 +327,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    */
   @Override
   public boolean removeIf(Predicate<? super E> filter) {
-    Check.notNull(filter, Tag.TEST);
+    Check.notNull(filter, "filter");
     int size = sz;
     for (var x = head; x != null; ) {
       if (filter.test(x.val)) {
@@ -337,40 +339,6 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
       }
     }
     return size != this.sz;
-  }
-
-  /**
-   * Removes all elements from this list that are also present in the specified
-   * collection.
-   *
-   * @param c collection containing elements to be removed from this list
-   * @return {@code true} if this list changed as a result of the call
-   * @see #remove(Object)
-   * @see #contains(Object)
-   */
-  @Override
-  public boolean removeAll(Collection<?> c) {
-    Check.notNull(c, Tag.COLLECTION);
-    int size = this.sz;
-    removeIf(c::contains);
-    return size != this.sz;
-  }
-
-  /**
-   * Removes all elements from this list that are not present in the specified
-   * collection.
-   *
-   * @param c collection containing elements to be retained in this list
-   * @return {@code true} if this list changed as a result of the call
-   * @see #remove(Object)
-   * @see #contains(Object)
-   */
-  @Override
-  public boolean retainAll(Collection<?> c) {
-    Check.notNull(c, Tag.COLLECTION);
-    int sz = this.sz;
-    removeIf(e -> !c.contains(e));
-    return sz != this.sz;
   }
 
   /**
@@ -400,7 +368,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * original elements.
    *
    * @param value The value to insert
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   public CrisprList<E> prepend(E value) {
     prepend0(value);
@@ -412,7 +380,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * original elements.
    *
    * @param values The values to prepend to the list
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   public CrisprList<E> prependAll(Collection<? extends E> values) {
     Check.notNull(values, Tag.COLLECTION);
@@ -427,7 +395,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * {@link #add(Object) add(value)}.
    *
    * @param value The value to append to the list
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   public CrisprList<E> append(E value) {
     add(value);
@@ -438,7 +406,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * Appends the specified collection to this {@code CrisprList}.
    *
    * @param values The values to append to the list
-   * @return this {@code CrisprList}
+   * @return this instance
    * @see #addAll(Collection)
    * @see #attach(CrisprList)
    */
@@ -460,7 +428,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    *
    * @param index the index at which to insert the value
    * @param value the value
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   public CrisprList<E> insert(int index, E value) {
     checkInclusive(index);
@@ -474,7 +442,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    *
    * @param index the index at which to insert the collection
    * @param values The collection to insert into the list
-   * @return this {@code CrisprList}
+   * @return this instance
    * @see #addAll(int, Collection)
    */
   public CrisprList<E> insertAll(int index, Collection<? extends E> values) {
@@ -490,7 +458,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * Removes the first element from the list, left-shifting the remaining elements. A
    * {@link NoSuchElementException} is thrown if the list is empty.
    *
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   public CrisprList<E> deleteFirst() {
     Check.that(sz).isNot(zero(), noSuchElement());
@@ -502,7 +470,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * Removes the last element from the list. A {@link NoSuchElementException} is
    * thrown if the list is empty.
    *
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   public CrisprList<E> deleteLast() {
     Check.that(sz).isNot(zero(), noSuchElement());
@@ -512,7 +480,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
 
   /**
    * Replaces each element of this list with the result of applying the operator to
-   * that element.  Errors or runtime exceptions thrown by the operator are relayed
+   * that element. Errors or runtime exceptions thrown by the operator are relayed
    * to the caller.
    *
    * @param operator the operator to apply to each element
@@ -539,13 +507,30 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @param fromIndex the start index (inclusive) of the segment to replace
    * @param toIndex the end index (exclusive) of
    * @param values The values to replace the segment with
-   * @return this {@code CrisprList}
+   * @return this instance
    * @see #replace(int, int, CrisprList)
    */
   public CrisprList<E> replaceAll(int fromIndex,
       int toIndex,
       Collection<? extends E> values) {
-    replace0(fromIndex, toIndex, values);
+    int len = Check.fromTo(this, fromIndex, toIndex);
+    Check.notNull(values, Tag.COLLECTION);
+    if (len == 0) {
+      if (!values.isEmpty()) {
+        insert(fromIndex, Chain.of(values));
+      }
+    } else if (len == values.size()) {
+      var node = nodeAt(fromIndex);
+      for (E e : values) {
+        node.val = e;
+        node = node.next;
+      }
+    } else {
+      unlink(fromIndex, toIndex);
+      if (!values.isEmpty()) {
+        insert(fromIndex, Chain.of(values));
+      }
+    }
     return this;
   }
 
@@ -559,7 +544,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @param fromIndex the start index (inclusive) of the segment to replace
    * @param toIndex the end index (exclusive) of
    * @param other the values to replace the segment with
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   public CrisprList<E> replace(int fromIndex,
       int toIndex,
@@ -607,7 +592,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    *
    * @param fromIndex the index (inclusive) of the new start of the list
    * @param toIndex the index (exclusive) of the new end of the list
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   public CrisprList<E> shrink(int fromIndex, int toIndex) {
     int len = Check.fromTo(this, fromIndex, toIndex);
@@ -659,7 +644,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    *
    * @param index the index at which to embed the list
    * @param other the list to embed
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   public CrisprList<E> embed(int index, CrisprList<? extends E> other) {
     checkInclusive(index);
@@ -682,7 +667,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    *     other list
    * @param itsToIndex the end index (exclusive) of the segment within the other
    *     list
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   public CrisprList<E> exchange(int myFromIndex,
       int myToIndex,
@@ -749,7 +734,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @param other the list to remove the segment from
    * @param itsFromIndex the start index of the segment (inclusive)
    * @param itsToIndex the end index of the segment (exclusive)
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   public CrisprList<E> embed(int myIndex,
       CrisprList<? extends E> other,
@@ -789,7 +774,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * don't want this to happen, use {@code appendAll} or {@code addAll}.
    *
    * @param other the list to embed
-   * @return this {@code CrisprList}
+   * @return this instance
    * @see #join(List)
    */
   public CrisprList<E> attach(CrisprList<? extends E> other) {
@@ -819,7 +804,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * elements that did not satisfy any criterion will come last in the list.
    *
    * @param criteria the criteria used to group the elements
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   public CrisprList<E> defragment(List<Predicate<? super E>> criteria) {
     return defragment(true, criteria);
@@ -833,7 +818,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @param keepRemainder whether to keep the elements that did not satisfy any
    *     criterion, and move them to the end of the list
    * @param criteria the criteria used to group the elements
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   @SuppressWarnings({"rawtypes"})
   public CrisprList<E> defragment(boolean keepRemainder,
@@ -1050,7 +1035,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   /**
    * Reverses the order of the elements in this {@code CrisprList}.
    *
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   public CrisprList<E> reverse() {
     reverse0();
@@ -1065,7 +1050,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * @param newFromIndex the index to which to move the segment. To move the
    *     segment to the very start of the list, specify 0 (zero). To move the segment
    *     to the very end of the list specify the {@link #size() size} of the list
-   * @return this {@code CrisprList}
+   * @return this instance
    */
   public CrisprList<E> move(int fromIndex, int toIndex, int newFromIndex) {
     int len = Check.fromTo(this, fromIndex, toIndex);

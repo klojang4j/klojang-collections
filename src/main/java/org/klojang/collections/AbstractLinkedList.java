@@ -674,6 +674,22 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     return new HashSet<>(this).containsAll(c);
   }
 
+  @Override
+  public boolean removeAll(Collection<?> c) {
+    Check.notNull(c, Tag.COLLECTION);
+    int size = this.sz;
+    removeIf(c::contains);
+    return size != this.sz;
+  }
+
+  @Override
+  public boolean retainAll(Collection<?> c) {
+    Check.notNull(c, Tag.COLLECTION);
+    int size = this.sz;
+    removeIf(e -> !c.contains(e));
+    return size != this.sz;
+  }
+
   /**
    * Returns an {@code Iterator} that traverses the list from the first element to
    * the last.
@@ -854,7 +870,7 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     ++sz;
   }
 
-  final void replace0(int fromIndex, int toIndex, Collection<? extends E> values) {
+  final void replaceAll0(int fromIndex, int toIndex, Collection<? extends E> values) {
     int len = Check.fromTo(this, fromIndex, toIndex);
     Check.notNull(values, Tag.COLLECTION);
     if (len == 0) {
