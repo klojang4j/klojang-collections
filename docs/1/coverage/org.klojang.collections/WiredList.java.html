@@ -93,7 +93,7 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
 <span class="fc" id="L93">    }</span>
 
     @Override
-    WiredIterator getReverseWiredIterator(Node curr) {
+    WiredIterator&lt;E&gt; getReverseWiredIterator(Node&lt;E&gt; curr) {
 <span class="fc" id="L97">      return new WRevWiredIterator(curr);</span>
     }
 
@@ -124,7 +124,7 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
 <span class="fc" id="L124">    }</span>
 
     @Override
-    WiredIterator getForwardWiredIterator(Node curr) {
+    WiredIterator&lt;E&gt; getForwardWiredIterator(Node&lt;E&gt; curr) {
 <span class="fc" id="L128">      return new WFwdWiredIterator(curr);</span>
     }
 

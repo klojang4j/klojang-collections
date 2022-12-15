@@ -93,7 +93,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
     }
 
     @Override
-    WiredIterator getReverseWiredIterator(Node curr) {
+    WiredIterator<E> getReverseWiredIterator(Node<E> curr) {
       return new WRevWiredIterator(curr);
     }
 
@@ -124,7 +124,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
     }
 
     @Override
-    WiredIterator getForwardWiredIterator(Node curr) {
+    WiredIterator<E> getForwardWiredIterator(Node<E> curr) {
       return new WFwdWiredIterator(curr);
     }
 

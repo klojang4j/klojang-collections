@@ -40,8 +40,8 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
   //
   //
 
-  final class CFwdWiredIterator&lt;E&gt; extends
-      AbstractLinkedList.ForwardWiredIterator {
+  final class CFwdWiredIterator extends
+      ForwardWiredIterator {
 
 <span class="fc" id="L46">    private CFwdWiredIterator() {</span>
 <span class="fc" id="L47">      super();</span>
@@ -66,13 +66,13 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
 <span class="fc" id="L66">    }</span>
 
     @Override
-    WiredIterator getReverseWiredIterator(Node curr) {
+    WiredIterator&lt;E&gt; getReverseWiredIterator(Node&lt;E&gt; curr) {
 <span class="fc" id="L70">      return new CRevWiredIterator(curr);</span>
     }
 
   }
 
-  final class CRevWiredIterator extends AbstractLinkedList.ReverseWiredIterator {
+  final class CRevWiredIterator extends ReverseWiredIterator {
 
 <span class="fc" id="L77">    private CRevWiredIterator() {</span>
 <span class="fc" id="L78">      super();</span>
@@ -97,7 +97,7 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
 <span class="fc" id="L97">    }</span>
 
     @Override
-    WiredIterator getForwardWiredIterator(Node curr) {
+    WiredIterator&lt;E&gt; getForwardWiredIterator(Node&lt;E&gt; curr) {
 <span class="fc" id="L101">      return new CFwdWiredIterator(curr);</span>
     }
 
@@ -554,7 +554,7 @@ public final class CrisprList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
    * elements in the specified list. This method is functionally equivalent to
    * {@link #replaceAll(int, int, Collection) replace}, but more efficient. However,
    * it will leave the specified list empty. If you don't want this to happen, use
-   * {@code replace}.
+   * {@code replaceAll}.
    *
    * @param fromIndex the start index (inclusive) of the segment to replace
    * @param toIndex the end index (exclusive) of

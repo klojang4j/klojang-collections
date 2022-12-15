@@ -40,8 +40,8 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   //
   //
 
-  final class CFwdWiredIterator<E> extends
-      AbstractLinkedList.ForwardWiredIterator {
+  final class CFwdWiredIterator extends
+      ForwardWiredIterator {
 
     private CFwdWiredIterator() {
       super();
@@ -66,13 +66,13 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
     }
 
     @Override
-    WiredIterator getReverseWiredIterator(Node curr) {
+    WiredIterator<E> getReverseWiredIterator(Node<E> curr) {
       return new CRevWiredIterator(curr);
     }
 
   }
 
-  final class CRevWiredIterator extends AbstractLinkedList.ReverseWiredIterator {
+  final class CRevWiredIterator extends ReverseWiredIterator {
 
     private CRevWiredIterator() {
       super();
@@ -97,7 +97,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
     }
 
     @Override
-    WiredIterator getForwardWiredIterator(Node curr) {
+    WiredIterator<E> getForwardWiredIterator(Node<E> curr) {
       return new CFwdWiredIterator(curr);
     }
 
@@ -554,7 +554,7 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * elements in the specified list. This method is functionally equivalent to
    * {@link #replaceAll(int, int, Collection) replace}, but more efficient. However,
    * it will leave the specified list empty. If you don't want this to happen, use
-   * {@code replace}.
+   * {@code replaceAll}.
    *
    * @param fromIndex the start index (inclusive) of the segment to replace
    * @param toIndex the end index (exclusive) of
