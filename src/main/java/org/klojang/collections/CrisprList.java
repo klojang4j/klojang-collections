@@ -556,11 +556,39 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
       CrisprList<? extends E> other) {
     int len = Check.fromTo(this, fromIndex, toIndex);
     Check.notNull(other, className).isNot(sameAs(), this, autoEmbedNotAllowed());
-    if (len != 0) {
-      unlink(fromIndex, toIndex);
-    }
-    if (!other.isEmpty()) {
-      insert(fromIndex, other.unlink(0, other.sz));
+    if (len == sz) {
+      if (other.isEmpty()) {
+        clear();
+      } else {
+        head = (Node<E>) other.head;
+        tail = (Node<E>) other.tail;
+        sz = other.sz;
+        other.clear();
+      }
+    } else if (len != 0) {
+      if (other.isEmpty()) {
+        unlink(fromIndex, toIndex);
+      } else {
+        if (toIndex == sz) {
+          var node = nodeAt(fromIndex - 1);
+          join(node, (Node<E>) other.head);
+          tail = (Node<E>) other.tail;
+        } else if (fromIndex == 0) {
+          var node = nodeAt(toIndex);
+          join((Node<E>) other.tail, node);
+          head = (Node<E>) other.head;
+        } else {
+          var x = nodeAt(fromIndex - 1);
+          var y = nodeAfter(x, fromIndex - 1, toIndex);
+          join(x, (Node<E>) other.head);
+          join((Node<E>) other.tail, y);
+        }
+        sz += other.sz - len;
+        other.clear();
+      }
+    } else if (!other.isEmpty()) {
+      insert(fromIndex, new Chain(other.head, other.tail, other.sz));
+      other.clear();
     }
     return this;
   }
@@ -1010,8 +1038,8 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   }
 
   /**
-   * Removes and returns a segment from the end of the list. The segment will include all
-   * elements following the <i>last</i> element that does <i>not</i> satisfy the
+   * Removes and returns a segment from the end of the list. The segment will include
+   * all elements following the <i>last</i> element that does <i>not</i> satisfy the
    * specified condition. In other words, all elements in the returned list
    * <i>will</i> satisfy the condition. If the condition is never satisfied, the
    * list remains unchanged and an empty list is returned. If <i>all</i> elements
@@ -1152,8 +1180,8 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    * in the original list (and vice versa). However, except for the
    * {@link #set(int, Object)} method, all changes to a {@code CrisprList} <i>are</i>
    * structural changes. {@code CrisprList} does provide a method that returns a
-   * sublist ({@link #copy(int, int) copy}). It just has no relation to the
-   * original list any longer.
+   * sublist ({@link #copy(int, int) copy}). It just has no relation to the original
+   * list any longer.
    */
   @Override
   public List<E> subList(int fromIndex, int toIndex) {

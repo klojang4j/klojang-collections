@@ -580,7 +580,7 @@ public final class WiredList&lt;E&gt; extends AbstractLinkedList&lt;E&gt; {
       WiredList&lt;? extends E&gt; other) {
 <span class="fc" id="L581">    int len = Check.fromTo(this, fromIndex, toIndex);</span>
 <span class="fc" id="L582">    Check.notNull(other, className).isNot(sameAs(), this, autoEmbedNotAllowed());</span>
-<span class="pc bpc" id="L583" title="1 of 2 branches missed.">    if (len != 0) {</span>
+<span class="fc bfc" id="L583" title="All 2 branches covered.">    if (len != 0) {</span>
 <span class="fc" id="L584">      cut(fromIndex, toIndex).clear();</span>
     }
 <span class="fc bfc" id="L586" title="All 2 branches covered.">    if (!other.isEmpty()) {</span>

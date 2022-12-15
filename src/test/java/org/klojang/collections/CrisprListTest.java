@@ -969,7 +969,6 @@ public class CrisprListTest {
     assertTrue(cl.isEmpty());
   }
 
-
   @Test
   public void setIf00() {
     var cl = CrisprList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
@@ -2130,22 +2129,28 @@ public class CrisprListTest {
   @Test
   public void replaceSegment00() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.replace(0, 4, CrisprList.of("a", "b", "c"));
+    var cl1 = CrisprList.of("a", "b", "c");
+    cl0.replace(0, 4, cl1);
     assertEquals(List.of("a", "b", "c", 4, 5, 6, 7, 8, 9), cl0);
+    assertTrue(cl1.isEmpty());
   }
 
   @Test
   public void replaceSegment01() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.replace(0, 10, CrisprList.of("a", "b", "c"));
+    var cl1 = CrisprList.of("a", "b", "c");
+    cl0.replace(0, 10, cl1);
     assertEquals(List.of("a", "b", "c"), cl0);
+    assertTrue(cl1.isEmpty());
   }
 
   @Test
   public void replaceSegment02() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.replace(4, 10, CrisprList.of("a", "b", "c"));
+    var cl1 = CrisprList.of("a", "b", "c");
+    cl0.replace(4, 10, cl1);
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c"), cl0);
+    assertTrue(cl1.isEmpty());
   }
 
   @Test
@@ -2158,8 +2163,24 @@ public class CrisprListTest {
   @Test
   public void replaceSegment04() {
     var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cl0.replace(4, 8, CrisprList.of("a", "b", "c"));
+    var cl1 = CrisprList.of("a", "b", "c");
+    cl0.replace(4, 8, cl1);
     assertEquals(List.of(0, 1, 2, 3, "a", "b", "c", 8, 9), cl0);
+    assertTrue(cl1.isEmpty());
+  }
+
+  @Test
+  public void replaceSegment05() {
+    var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    cl0.replace(4, 8, CrisprList.of());
+    assertEquals(List.of(0, 1, 2, 3, 8, 9), cl0);
+  }
+
+  @Test
+  public void replaceSegment06() {
+    var cl0 = CrisprList.<Object>of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    cl0.replace(8, 8, CrisprList.of());
+    assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), cl0);
   }
 
   @Test
