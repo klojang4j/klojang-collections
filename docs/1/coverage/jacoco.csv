@@ -8,7 +8,7 @@ Klojang Collections,org.klojang.collections,TypeSet,135,0,2,0,26,0,23,0,22,0
 Klojang Collections,org.klojang.collections,AbstractLinkedList.new Iterator() {...},0,44,0,2,0,7,0,4,0,3
 Klojang Collections,org.klojang.collections,AbstractLinkedList.new Iterator() {...},0,44,0,2,0,7,0,4,0,3
 Klojang Collections,org.klojang.collections,ImmutableSet,28,3,0,0,7,1,7,1,7,1
-Klojang Collections,org.klojang.collections,AbstractLinkedList,119,1331,19,145,26,308,19,124,6,55
+Klojang Collections,org.klojang.collections,AbstractLinkedList,119,1329,19,145,26,307,19,124,6,55
 Klojang Collections,org.klojang.collections,AbstractLinkedList.ListItr,7,223,3,17,1,37,3,18,0,11
 Klojang Collections,org.klojang.collections,AbstractTypeSet,88,0,2,0,15,0,12,0,11,0
 Klojang Collections,org.klojang.collections,TypeMap,4,112,0,0,1,24,1,12,1,12
@@ -33,7 +33,7 @@ Klojang Collections,org.klojang.collections,NonExpandingTypeMap,13,285,0,50,3,75
 Klojang Collections,org.klojang.collections,AbstractLinkedList.ForwardWiredIterator,0,333,0,10,0,57,0,17,0,12
 Klojang Collections,org.klojang.collections,PrettyTypeComparator,149,0,42,0,45,0,23,0,2,0
 Klojang Collections,org.klojang.collections,CrisprList.CFwdWiredIterator,0,79,0,2,0,16,0,6,0,5
-Klojang Collections,org.klojang.collections,CrisprList,45,1295,10,120,8,302,11,111,2,55
+Klojang Collections,org.klojang.collections,CrisprList,45,1301,10,120,8,304,11,112,2,56
 Klojang Collections,org.klojang.collections,ArraySet,132,110,29,9,27,25,22,12,6,9
 Klojang Collections,org.klojang.collections,TreeTypeMapBuilder,18,49,0,0,2,10,2,4,2,4
 Klojang Collections,org.klojang.collections,NativeTypeMap,49,356,14,52,12,77,13,35,3,12

@@ -1,6 +1,7 @@
 package org.klojang.collections;
 
 import org.klojang.check.Check;
+import org.klojang.check.CommonChecks;
 import org.klojang.check.Tag;
 import org.klojang.util.CollectionMethods;
 import org.klojang.util.InvokeMethods;
@@ -870,7 +871,9 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     ++sz;
   }
 
-  final void replaceAll0(int fromIndex, int toIndex, Collection<? extends E> values) {
+  final void replaceAll0(int fromIndex,
+      int toIndex,
+      Collection<? extends E> values) {
     int len = Check.fromTo(this, fromIndex, toIndex);
     Check.notNull(values, Tag.COLLECTION);
     if (len == 0) {
@@ -1069,7 +1072,10 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     return result;
   }
 
-  final void regionToArray0(int fromIndex, int toIndex, Object[] target, int offset) {
+  final void regionToArray0(int fromIndex,
+      int toIndex,
+      Object[] target,
+      int offset) {
     int len = Check.fromTo(this, fromIndex, toIndex);
     Check.notNull(target, "target").has(length(), gte(), len + offset);
     Check.that(offset, Tag.OFFSET).is(gte(), 0);
@@ -1146,8 +1152,7 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
   Chain unlink(int from, int to) {
     var first = nodeAt(from);
     var last = nodeAfter(first, from, to - 1);
-    int len = to - from;
-    return unlink(new Chain(first, last, len));
+    return unlink(new Chain(first, last, to - from));
   }
 
   @SuppressWarnings("unchecked")
@@ -1170,7 +1175,7 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
    */
   Node<E> node(int index) {
     return Check.that(index)
-        .is(indexInclusiveOf(), this, indexOutOfBounds(index))
+        .is(indexExclusiveOf(), this, indexOutOfBounds(index))
         .mapToObj(this::nodeAt);
   }
 

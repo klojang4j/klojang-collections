@@ -554,43 +554,51 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   public CrisprList<E> replace(int fromIndex,
       int toIndex,
       CrisprList<? extends E> other) {
-    int len = Check.fromTo(this, fromIndex, toIndex);
-    Check.notNull(other, className).isNot(sameAs(), this, autoEmbedNotAllowed());
-    if (len == sz) {
-      if (other.isEmpty()) {
-        clear();
+    replace(fromIndex, toIndex, this, other);
+    return this;
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private static void replace(int fromIndex,
+      int toIndex,
+      CrisprList me,
+      CrisprList she) {
+    int len = Check.fromTo(me, fromIndex, toIndex);
+    Check.notNull(she, me.className).isNot(sameAs(), me, autoEmbedNotAllowed());
+    if (len == me.sz) {
+      if (she.isEmpty()) {
+        me.clear();
       } else {
-        head = (Node<E>) other.head;
-        tail = (Node<E>) other.tail;
-        sz = other.sz;
-        other.clear();
+        me.head = she.head;
+        me.tail = she.tail;
+        me.sz = she.sz;
+        she.clear();
       }
     } else if (len != 0) {
-      if (other.isEmpty()) {
-        unlink(fromIndex, toIndex);
+      if (she.isEmpty()) {
+        me.unlink(fromIndex, toIndex);
       } else {
-        if (toIndex == sz) {
-          var node = nodeAt(fromIndex - 1);
-          join(node, (Node<E>) other.head);
-          tail = (Node<E>) other.tail;
+        if (toIndex == me.sz) {
+          var node = me.nodeAt(fromIndex - 1);
+          join(node, she.head);
+          me.tail = she.tail;
         } else if (fromIndex == 0) {
-          var node = nodeAt(toIndex);
-          join((Node<E>) other.tail, node);
-          head = (Node<E>) other.head;
+          var node = me.nodeAt(toIndex);
+          join(she.tail, node);
+          me.head = she.head;
         } else {
-          var x = nodeAt(fromIndex - 1);
-          var y = nodeAfter(x, fromIndex - 1, toIndex);
-          join(x, (Node<E>) other.head);
-          join((Node<E>) other.tail, y);
+          var x = me.nodeAt(fromIndex - 1);
+          var y = me.nodeAfter(x, fromIndex - 1, toIndex);
+          join(x, she.head);
+          join(she.tail, y);
         }
-        sz += other.sz - len;
-        other.clear();
+        me.sz += she.sz - len;
+        she.clear();
       }
-    } else if (!other.isEmpty()) {
-      insert(fromIndex, new Chain(other.head, other.tail, other.sz));
-      other.clear();
+    } else if (!she.isEmpty()) {
+      me.insert(fromIndex, new Chain(she.head, she.tail, she.sz));
+      she.clear();
     }
-    return this;
   }
 
   /**

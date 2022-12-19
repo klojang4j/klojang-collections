@@ -666,7 +666,7 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
   /**
    * Inserts this list into the specified list at the specified position. Equivalent
    * to {@link #embed(int, WiredList) into.embed(index, this)}. This list will be
-   * empty afterwards. Note that this method does not return this <i>list</i> but the
+   * empty afterwards. Note that this method does not return <i>this</i> list but the
    * paste-into list.
    *
    * @param into the list into which to insert this list
