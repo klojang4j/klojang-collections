@@ -185,10 +185,10 @@ public class WiredListTest {
   public void deleteFirst() {
     var wl = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     assertEquals(0, (int) wl.first());
-    wl.deleteFirst();
+    wl.removeFirst();
     assertEquals(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9), wl);
     assertEquals(1, (int) wl.first());
-    wl.deleteFirst();
+    wl.removeFirst();
     assertEquals(List.of(2, 3, 4, 5, 6, 7, 8, 9), wl);
     wl.prepend(1);
     assertEquals(1, (int) wl.first());
@@ -202,10 +202,10 @@ public class WiredListTest {
   public void deleteLast00() {
     var wl = WiredList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     assertEquals(9, (int) wl.last());
-    wl.deleteLast();
+    wl.removeLast();
     assertEquals(8, (int) wl.last());
     assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8), wl);
-    wl.deleteLast();
+    wl.removeLast();
     assertEquals(7, (int) wl.last());
     assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 7), wl);
     wl.append(8);

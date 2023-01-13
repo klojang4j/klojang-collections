@@ -185,10 +185,10 @@ public class CrisprListTest {
   public void deleteFirst() {
     var cl = CrisprList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     assertEquals(0, (int) cl.first());
-    cl.deleteFirst();
+    cl.removeFirst();
     assertEquals(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9), cl);
     assertEquals(1, (int) cl.first());
-    cl.deleteFirst();
+    cl.removeFirst();
     assertEquals(List.of(2, 3, 4, 5, 6, 7, 8, 9), cl);
     cl.prepend(1);
     assertEquals(1, (int) cl.first());
@@ -202,10 +202,10 @@ public class CrisprListTest {
   public void deleteLast00() {
     var cl = CrisprList.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     assertEquals(9, (int) cl.last());
-    cl.deleteLast();
+    cl.removeLast();
     assertEquals(8, (int) cl.last());
     assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8), cl);
-    cl.deleteLast();
+    cl.removeLast();
     assertEquals(7, (int) cl.last());
     assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 7), cl);
     cl.append(8);

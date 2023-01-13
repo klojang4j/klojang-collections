@@ -484,10 +484,9 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    *
    * @return this instance
    */
-  public WiredList<E> deleteFirst() {
+  public E removeFirst() {
     Check.that(sz).isNot(zero(), noSuchElement());
-    destroy(head);
-    return this;
+    return destroy(head);
   }
 
   /**
@@ -496,10 +495,9 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
    *
    * @return this instance
    */
-  public WiredList<E> deleteLast() {
+  public E removeLast() {
     Check.that(sz).isNot(zero(), noSuchElement());
-    destroy(tail);
-    return this;
+    return destroy(tail);
   }
 
   /**
@@ -580,11 +578,24 @@ public final class WiredList<E> extends AbstractLinkedList<E> {
       WiredList<? extends E> other) {
     int len = Check.fromTo(this, fromIndex, toIndex);
     Check.notNull(other, className).isNot(sameAs(), this, autoEmbedNotAllowed());
-    if (len != 0) {
-      cut(fromIndex, toIndex).clear();
-    }
-    if (!other.isEmpty()) {
-      insert(fromIndex, other.unlink(0, other.sz));
+    if (len == other.sz) {
+      var x = nodeAt(fromIndex);
+      var y = other.head;
+      for (int i = 0; i < len; ++i) {
+        x.val = y.val;
+        x = x.next;
+        y = y.next;
+      }
+      other.head = null;
+      other.tail = null;
+      other.sz = 0;
+    } else {
+      if (len != 0) {
+        cut(fromIndex, toIndex).clear();
+      }
+      if (!other.isEmpty()) {
+        insert(fromIndex, other.unlink(0, other.sz));
+      }
     }
     return this;
   }

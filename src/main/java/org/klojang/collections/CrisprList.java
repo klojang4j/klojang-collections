@@ -460,10 +460,11 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    *
    * @return this instance
    */
-  public CrisprList<E> deleteFirst() {
+  public E removeFirst() {
     Check.that(sz).isNot(zero(), noSuchElement());
+    E val = head.val;
     unlink(head);
-    return this;
+    return val;
   }
 
   /**
@@ -472,10 +473,11 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
    *
    * @return this instance
    */
-  public CrisprList<E> deleteLast() {
+  public E removeLast() {
     Check.that(sz).isNot(zero(), noSuchElement());
+    E val = tail.val;
     unlink(tail);
-    return this;
+    return val;
   }
 
   /**
@@ -554,51 +556,15 @@ public final class CrisprList<E> extends AbstractLinkedList<E> {
   public CrisprList<E> replace(int fromIndex,
       int toIndex,
       CrisprList<? extends E> other) {
-    replace(fromIndex, toIndex, this, other);
-    return this;
-  }
-
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  private static void replace(int fromIndex,
-      int toIndex,
-      CrisprList me,
-      CrisprList she) {
-    int len = Check.fromTo(me, fromIndex, toIndex);
-    Check.notNull(she, me.className).isNot(sameAs(), me, autoEmbedNotAllowed());
-    if (len == me.sz) {
-      if (she.isEmpty()) {
-        me.clear();
-      } else {
-        me.head = she.head;
-        me.tail = she.tail;
-        me.sz = she.sz;
-        she.clear();
-      }
-    } else if (len != 0) {
-      if (she.isEmpty()) {
-        me.unlink(fromIndex, toIndex);
-      } else {
-        if (toIndex == me.sz) {
-          var node = me.nodeAt(fromIndex - 1);
-          join(node, she.head);
-          me.tail = she.tail;
-        } else if (fromIndex == 0) {
-          var node = me.nodeAt(toIndex);
-          join(she.tail, node);
-          me.head = she.head;
-        } else {
-          var x = me.nodeAt(fromIndex - 1);
-          var y = me.nodeAfter(x, fromIndex - 1, toIndex);
-          join(x, she.head);
-          join(she.tail, y);
-        }
-        me.sz += she.sz - len;
-        she.clear();
-      }
-    } else if (!she.isEmpty()) {
-      me.insert(fromIndex, new Chain(she.head, she.tail, she.sz));
-      she.clear();
+    int len = Check.fromTo(this, fromIndex, toIndex);
+    Check.notNull(other, className).isNot(sameAs(), this, autoEmbedNotAllowed());
+    if (len != 0) {
+      unlink(fromIndex, toIndex);
     }
+    if (!other.isEmpty()) {
+      insert(fromIndex, other.unlink(0, other.sz));
+    }
+    return this;
   }
 
   /**
