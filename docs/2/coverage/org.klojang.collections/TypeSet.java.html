@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TypeSet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Klojang Collections</a> &gt; <a href="index.source.html" class="el_package">org.klojang.collections</a> &gt; <span class="el_source">TypeSet.java</span></div><h1>TypeSet.java</h1><pre class="source lang-java linenums">package org.klojang.collections;
 
 import org.klojang.check.Check;
-import org.klojang.util.CollectionMethods;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import static org.klojang.check.CommonChecks.deepNotNull;
-
 /**
  * &lt;p&gt;An extension of the {@link Set} interface with behaviour analogous to the
  * {@link TypeMap} interface. That is, if the type passed to the
- * {@link #contains(Object) contains()} method is not present in the {@code Set}, but
- * one of its supertypes is, then {@code contains()} will return {@code true}. a
+ * {@link #contains(Object) contains()} method is not present in the {@code Set}, but one
+ * of its supertypes is, then {@code contains()} will return {@code true}. a
  * {@code TypeSet} is unmodifiable and null-repellent. You obtain an instance of a
  * {@code TypeSet} via the various static factory methods on the {@code TypeSet}
  * interface. For more information about features like &lt;a
@@ -23,7 +20,7 @@ import static org.klojang.check.CommonChecks.deepNotNull;
  * documentation for the {@link TypeMap} interface.
  */
 public sealed interface TypeSet extends Set&lt;Class&lt;?&gt;&gt; permits
-    AbstractTypeSet {
+                                                      AbstractTypeSet {
 
   /**
    * Returns a {@code TypeSet} that is internally backed by a
@@ -31,24 +28,23 @@ public sealed interface TypeSet extends Set&lt;Class&lt;?&gt;&gt; permits
    *
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#fixedTypeMap(Map) fixedTypeMap()}
+   * {@link TypeMap#fixedTypeMap(Map) fixedTypeMap()}
    */
   static TypeSet fixedTypeSet(Collection&lt;Class&lt;?&gt;&gt; types) {
-<span class="nc" id="L37">    return fixedTypeSet(true, types);</span>
+<span class="nc" id="L34">    return fixedTypeSet(true, types);</span>
   }
 
   /**
    * Returns a {@code TypeSet} that is internally backed by a
    * {@link TypeMap#fixedTypeMap(Map) fixedTypeMap()},
    *
-   * @param autobox whether to enable &quot;&lt;a
-   *     href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
+   * @param autobox whether to enable &quot;&lt;a href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#fixedTypeMap(Map) fixedTypeMap()}
+   * {@link TypeMap#fixedTypeMap(Map) fixedTypeMap()}
    */
   static TypeSet fixedTypeSet(boolean autobox, Collection&lt;Class&lt;?&gt;&gt; types) {
-<span class="nc" id="L51">    return fixedTypeSet(autobox, types.toArray(Class[]::new));</span>
+<span class="nc" id="L47">    return fixedTypeSet(autobox, types.toArray(Class[]::new));</span>
   }
 
   /**
@@ -57,33 +53,31 @@ public sealed interface TypeSet extends Set&lt;Class&lt;?&gt;&gt; permits
    *
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#fixedTypeMap(Map) fixedTypeMap()}
+   * {@link TypeMap#fixedTypeMap(Map) fixedTypeMap()}
    */
   static TypeSet fixedTypeSet(Class&lt;?&gt;... types) {
-<span class="nc" id="L63">    return fixedTypeSet(true, types);</span>
+<span class="nc" id="L59">    return fixedTypeSet(true, types);</span>
   }
 
   /**
    * Returns a {@code TypeSet} that is internally backed by a
    * {@link TypeMap#fixedTypeMap(Map) fixedTypeMap()},
    *
-   * @param autobox whether to enable &quot;&lt;a
-   *     href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
+   * @param autobox whether to enable &quot;&lt;a href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#fixedTypeMap(Map) fixedTypeMap()}
+   * {@link TypeMap#fixedTypeMap(Map) fixedTypeMap()}
    */
   static TypeSet fixedTypeSet(boolean autobox, Class&lt;?&gt;... types) {
-<span class="nc" id="L77">    Check.notNull(types);</span>
-<span class="nc" id="L78">    return new AbstractTypeSet() {</span>
-      @Override
+<span class="nc" id="L72">    Check.notNull(types);</span>
+<span class="nc" id="L73">    return new AbstractTypeSet() {</span>
       TypeMap&lt;Object&gt; createBackend() {
         // NB we associate each type with Boolean.TRUE, but that's completely
         // arbitrary. It could have been anything.
-<span class="nc" id="L83">        return new FixedTypeMapBuilder&lt;&gt;()</span>
-<span class="nc" id="L84">            .autobox(autobox)</span>
-<span class="nc" id="L85">            .addMultiple(Boolean.TRUE, types)</span>
-<span class="nc" id="L86">            .freeze();</span>
+<span class="nc" id="L77">        return new FixedTypeMapBuilder&lt;&gt;()</span>
+<span class="nc" id="L78">              .autobox(autobox)</span>
+<span class="nc" id="L79">              .addMultiple(Boolean.TRUE, types)</span>
+<span class="nc" id="L80">              .freeze();</span>
       }
     };
   }
@@ -94,24 +88,23 @@ public sealed interface TypeSet extends Set&lt;Class&lt;?&gt;&gt; permits
    *
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#nativeTypeMap(Map) nativeTypeMap()}
+   * {@link TypeMap#nativeTypeMap(Map) nativeTypeMap()}
    */
   static TypeSet nativeTypeSet(Collection&lt;Class&lt;?&gt;&gt; types) {
-<span class="nc" id="L100">    return nativeTypeSet(true, types);</span>
+<span class="nc" id="L94">    return nativeTypeSet(true, types);</span>
   }
 
   /**
    * Returns a {@code TypeSet} that is internally backed by a
    * {@link TypeMap#nativeTypeMap(Map) nativeTypeMap()}.
    *
-   * @param autobox whether to enable &quot;&lt;a
-   *     href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
+   * @param autobox whether to enable &quot;&lt;a href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#nativeTypeMap(Map) nativeTypeMap()}
+   * {@link TypeMap#nativeTypeMap(Map) nativeTypeMap()}
    */
   static TypeSet nativeTypeSet(boolean autobox, Collection&lt;Class&lt;?&gt;&gt; types) {
-<span class="nc" id="L114">    return nativeTypeSet(autobox, types.toArray(Class[]::new));</span>
+<span class="nc" id="L107">    return nativeTypeSet(autobox, types.toArray(Class[]::new));</span>
   }
 
   /**
@@ -120,31 +113,29 @@ public sealed interface TypeSet extends Set&lt;Class&lt;?&gt;&gt; permits
    *
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#nativeTypeMap(Map) nativeTypeMap()}
+   * {@link TypeMap#nativeTypeMap(Map) nativeTypeMap()}
    */
   static TypeSet nativeTypeSet(Class&lt;?&gt;... types) {
-<span class="nc" id="L126">    return nativeTypeSet(true, types);</span>
+<span class="nc" id="L119">    return nativeTypeSet(true, types);</span>
   }
 
   /**
    * Returns a {@code TypeSet} that is internally backed by a
    * {@link TypeMap#nativeTypeMap(Map) nativeTypeMap()}.
    *
-   * @param autobox whether to enable &quot;&lt;a
-   *     href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
+   * @param autobox whether to enable &quot;&lt;a href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#nativeTypeMap(Map) nativeTypeMap()}
+   * {@link TypeMap#nativeTypeMap(Map) nativeTypeMap()}
    */
   static TypeSet nativeTypeSet(boolean autobox, Class&lt;?&gt;... types) {
-<span class="nc" id="L140">    Check.notNull(types);</span>
-<span class="nc" id="L141">    return new AbstractTypeSet() {</span>
-      @Override
+<span class="nc" id="L132">    Check.notNull(types);</span>
+<span class="nc" id="L133">    return new AbstractTypeSet() {</span>
       TypeMap&lt;Object&gt; createBackend() {
-<span class="nc" id="L144">        return new NativeTypeMapBuilder&lt;&gt;()</span>
-<span class="nc" id="L145">            .autobox(autobox)</span>
-<span class="nc" id="L146">            .addMultiple(Boolean.TRUE, types)</span>
-<span class="nc" id="L147">            .freeze();</span>
+<span class="nc" id="L135">        return new NativeTypeMapBuilder&lt;&gt;()</span>
+<span class="nc" id="L136">              .autobox(autobox)</span>
+<span class="nc" id="L137">              .addMultiple(Boolean.TRUE, types)</span>
+<span class="nc" id="L138">              .freeze();</span>
       }
     };
   }
@@ -155,25 +146,25 @@ public sealed interface TypeSet extends Set&lt;Class&lt;?&gt;&gt; permits
    *
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#greedyTypeMap(Map) greedyTypeMap()}
+   * {@link TypeMap#greedyTypeMap(Map) greedyTypeMap()}
    */
   static TypeSet greedyTypeSet(Collection&lt;Class&lt;?&gt;&gt; types) {
-<span class="nc" id="L161">    return greedyTypeSet(true, types);</span>
+<span class="nc" id="L152">    return greedyTypeSet(true, types);</span>
   }
 
   /**
    * Returns a {@code TypeSet} that is internally backed by a
    * {@link TypeMap#greedyTypeMap(Map) greedyTypeMap()}.
    *
-   * @param autobox whether to enable &quot;&lt;a
-   *     href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
+   * @param autobox whether to enable &quot;&lt;a href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#greedyTypeMap(Map) greedyTypeMap()}
+   * {@link TypeMap#greedyTypeMap(Map) greedyTypeMap()}
    */
-  static TypeSet greedyTypeSet(boolean autobox,
-      Collection&lt;Class&lt;?&gt;&gt; types) {
-<span class="nc" id="L176">    return greedyTypeSet(autobox, types.toArray(Class[]::new));</span>
+  static TypeSet greedyTypeSet(
+        boolean autobox,
+        Collection&lt;Class&lt;?&gt;&gt; types) {
+<span class="nc" id="L167">    return greedyTypeSet(autobox, types.toArray(Class[]::new));</span>
   }
 
   /**
@@ -182,31 +173,29 @@ public sealed interface TypeSet extends Set&lt;Class&lt;?&gt;&gt; permits
    *
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#greedyTypeMap(Map) greedyTypeMap()}
+   * {@link TypeMap#greedyTypeMap(Map) greedyTypeMap()}
    */
   static TypeSet greedyTypeSet(Class&lt;?&gt;... types) {
-<span class="nc" id="L188">    return greedyTypeSet(true, types);</span>
+<span class="nc" id="L179">    return greedyTypeSet(true, types);</span>
   }
 
   /**
    * Returns a {@code TypeSet} that is internally backed by a
    * {@link TypeMap#greedyTypeMap(Map) greedyTypeMap()}.
    *
-   * @param autobox whether to enable &quot;&lt;a
-   *     href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
+   * @param autobox whether to enable &quot;&lt;a href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#greedyTypeMap(Map) greedyTypeMap()}
+   * {@link TypeMap#greedyTypeMap(Map) greedyTypeMap()}
    */
   static TypeSet greedyTypeSet(boolean autobox, Class&lt;?&gt;... types) {
-<span class="nc" id="L202">    Check.notNull(types);</span>
-<span class="nc" id="L203">    return new AbstractTypeSet() {</span>
-      @Override
+<span class="nc" id="L192">    Check.notNull(types);</span>
+<span class="nc" id="L193">    return new AbstractTypeSet() {</span>
       TypeMap&lt;Object&gt; createBackend() {
-<span class="nc" id="L206">        return new GreedyTypeMapBuilder&lt;&gt;()</span>
-<span class="nc" id="L207">            .autobox(autobox)</span>
-<span class="nc" id="L208">            .addMultiple(Boolean.TRUE, types)</span>
-<span class="nc" id="L209">            .freeze();</span>
+<span class="nc" id="L195">        return new GreedyTypeMapBuilder&lt;&gt;()</span>
+<span class="nc" id="L196">              .autobox(autobox)</span>
+<span class="nc" id="L197">              .addMultiple(Boolean.TRUE, types)</span>
+<span class="nc" id="L198">              .freeze();</span>
       }
     };
   }
@@ -217,25 +206,25 @@ public sealed interface TypeSet extends Set&lt;Class&lt;?&gt;&gt; permits
    *
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#treeTypeMap(Map) treeTypeMap()}.
+   * {@link TypeMap#treeTypeMap(Map) treeTypeMap()}.
    */
   static TypeSet treeTypeSet(Collection&lt;Class&lt;?&gt;&gt; types) {
-<span class="nc" id="L223">    return treeTypeSet(true, types);</span>
+<span class="nc" id="L212">    return treeTypeSet(true, types);</span>
   }
 
   /**
    * Returns a {@code TypeSet} that is internally backed by a
    * {@link TypeMap#treeTypeMap(Map) treeTypeMap()}.
    *
-   * @param autobox whether to enable &quot;&lt;a
-   *     href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
+   * @param autobox whether to enable &quot;&lt;a href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#treeTypeMap(Map) treeTypeMap()}.
+   * {@link TypeMap#treeTypeMap(Map) treeTypeMap()}.
    */
-  static TypeSet treeTypeSet(boolean autobox,
-      Collection&lt;Class&lt;?&gt;&gt; types) {
-<span class="nc" id="L238">    return treeTypeSet(autobox, types.toArray(Class[]::new));</span>
+  static TypeSet treeTypeSet(
+        boolean autobox,
+        Collection&lt;Class&lt;?&gt;&gt; types) {
+<span class="nc" id="L227">    return treeTypeSet(autobox, types.toArray(Class[]::new));</span>
   }
 
   /**
@@ -244,44 +233,42 @@ public sealed interface TypeSet extends Set&lt;Class&lt;?&gt;&gt; permits
    *
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#treeTypeMap(Map) treeTypeMap()}.
+   * {@link TypeMap#treeTypeMap(Map) treeTypeMap()}.
    */
   static TypeSet treeTypeSet(Class&lt;?&gt;... types) {
-<span class="nc" id="L250">    return treeTypeSet(true, types);</span>
+<span class="nc" id="L239">    return treeTypeSet(true, types);</span>
   }
 
   /**
    * Returns a {@code TypeSet} that is internally backed by a
    * {@link TypeMap#treeTypeMap(Map) treeTypeMap()}.
    *
-   * @param autobox whether to enable &quot;&lt;a
-   *     href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
+   * @param autobox whether to enable &quot;&lt;a href=&quot;TypeMap.html#autoboxing&quot;&gt;autoboxing&lt;/a&gt;&quot;
    * @param types the types to initialize the {@code TypeSet} with
    * @return a {@code TypeSet} that is internally backed by a
-   *     {@link TypeMap#treeTypeMap(Map) treeTypeMap()}.
+   * {@link TypeMap#treeTypeMap(Map) treeTypeMap()}.
    */
   static TypeSet treeTypeSet(boolean autobox, Class&lt;?&gt;... types) {
-<span class="nc" id="L264">    Check.notNull(types);</span>
-<span class="nc" id="L265">    return new AbstractTypeSet() {</span>
-      @Override
+<span class="nc" id="L252">    Check.notNull(types);</span>
+<span class="nc" id="L253">    return new AbstractTypeSet() {</span>
       TypeMap&lt;Object&gt; createBackend() {
-<span class="nc" id="L268">        return new TreeTypeMapBuilder&lt;&gt;()</span>
-<span class="nc" id="L269">            .autobox(autobox)</span>
-<span class="nc" id="L270">            .addMultiple(Boolean.TRUE, types)</span>
-<span class="nc" id="L271">            .freeze();</span>
+<span class="nc" id="L255">        return new TreeTypeMapBuilder&lt;&gt;()</span>
+<span class="nc" id="L256">              .autobox(autobox)</span>
+<span class="nc" id="L257">              .addMultiple(Boolean.TRUE, types)</span>
+<span class="nc" id="L258">              .freeze();</span>
       }
     };
   }
 
   /**
    * &lt;p&gt;Returns an unmodifiable {@code Set} in which the types in the provided
-   * collection are sorted according to their distance from {@code Object.class}.
-   * Note that this is a utility method, mainly meant for printing purposes. &lt;b&gt;The
-   * returned set is not an instance of {@code TypeSet}&lt;/b&gt;. Its {@code contains}
-   * method performs poorly, but it can be iterated over quickly. The
-   * {@link java.util.Comparator Comparator} used to sort the types is similar to the
-   * one used for {@link #treeTypeSet(Class[]) treeTypeSet}, but much more
-   * heavy-handed, applying a fully-deterministic ordering of the types in the
+   * collection are sorted according to their distance from {@code Object.class}. Note
+   * that this is a utility method, mainly meant for printing purposes. &lt;b&gt;The returned
+   * set is not an instance of {@code TypeSet}&lt;/b&gt;. Its {@code contains} method performs
+   * poorly, but it can be iterated over quickly. The
+   * {@link java.util.Comparator Comparator} used to sort the types is similar to the one
+   * used for {@link #treeTypeSet(Class[]) treeTypeSet}, but much more heavy-handed (hence
+   * slow and impractical), applying a fully-deterministic ordering of the types in the
    * provided collection.
    * &lt;p&gt;
    * This is how the types in the returned set will be sorted:
@@ -297,17 +284,15 @@ public sealed interface TypeSet extends Set&lt;Class&lt;?&gt;&gt; permits
    * &lt;/ul&gt;
    *
    * @param src the collection to sort
-   * @return an unmodifiable {@code Set} in which the types are sorted according to
-   *     their distance from {@code Object.class}.
+   * @return an unmodifiable {@code Set} in which the types are sorted according to their
+   * heir distance from {@code Object.class}.
    */
   static Set&lt;Class&lt;?&gt;&gt; prettySort(Collection&lt;Class&lt;?&gt;&gt; src) {
-<span class="nc" id="L304">    Check.notNull(src);</span>
-<span class="nc bnc" id="L305" title="All 2 branches missed.">    if (!CollectionMethods.isNullRepellent(src)) {</span>
-<span class="nc" id="L306">      Check.that(src).is(deepNotNull());</span>
-    }
-<span class="nc" id="L308">    Class&lt;?&gt;[] types = src.toArray(Class[]::new);</span>
-<span class="nc" id="L309">    Arrays.sort(types, new PrettyTypeComparator());</span>
-<span class="nc" id="L310">    return ArraySet.of(types);</span>
+<span class="nc" id="L291">    Check.notNull(src).ok().forEach(</span>
+<span class="nc" id="L292">          c -&gt; Check.notNull(c, &quot;collection must not contain null values&quot;));</span>
+<span class="nc" id="L293">    Class&lt;?&gt;[] types = src.toArray(Class[]::new);</span>
+<span class="nc" id="L294">    Arrays.sort(types, new PrettyTypeComparator());</span>
+<span class="nc" id="L295">    return ArraySet.of(types);</span>
   }
 
 }

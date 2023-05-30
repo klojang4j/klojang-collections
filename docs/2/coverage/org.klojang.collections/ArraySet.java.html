@@ -23,7 +23,7 @@ final class ArraySet&lt;E&gt; extends ImmutableSet&lt;E&gt; {
   /*
    * If trusted, the provided array is supposed to be internally generated, going out
    * of scope immediately, and known to contain unique values only. All bets are off
-   * if this is not the case!!!! In that case the array will be swallowed rather than
+   * if this is not the case!! In that case the array will be swallowed rather than
    * copied into the ArraySet.
    */
   static &lt;E&gt; ArraySet&lt;E&gt; of(E[] values) {

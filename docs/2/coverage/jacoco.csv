@@ -4,7 +4,7 @@ Klojang Collections,org.klojang.collections,FixedTypeMap,4,20,0,0,1,6,1,4,1,4
 Klojang Collections,org.klojang.collections,BasicTypeComparator,0,84,1,21,0,22,1,13,0,3
 Klojang Collections,org.klojang.collections,WiredList.WFwdWiredIterator,0,81,0,2,0,16,0,6,0,5
 Klojang Collections,org.klojang.collections,ImmutableMap,52,3,0,0,13,1,13,1,13,1
-Klojang Collections,org.klojang.collections,TypeSet,135,0,2,0,26,0,23,0,22,0
+Klojang Collections,org.klojang.collections,TypeSet,135,0,0,0,25,0,23,0,23,0
 Klojang Collections,org.klojang.collections,AbstractLinkedList.new Iterator() {...},0,44,0,2,0,7,0,4,0,3
 Klojang Collections,org.klojang.collections,AbstractLinkedList.new Iterator() {...},0,44,0,2,0,7,0,4,0,3
 Klojang Collections,org.klojang.collections,ImmutableSet,28,3,0,0,7,1,7,1,7,1
