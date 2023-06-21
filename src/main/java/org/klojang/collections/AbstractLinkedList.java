@@ -1,7 +1,6 @@
 package org.klojang.collections;
 
 import org.klojang.check.Check;
-import org.klojang.check.CommonChecks;
 import org.klojang.check.Tag;
 import org.klojang.util.CollectionMethods;
 import org.klojang.util.InvokeMethods;
@@ -22,7 +21,7 @@ import static org.klojang.check.CommonProperties.length;
 import static org.klojang.util.ArrayMethods.EMPTY_OBJECT_ARRAY;
 
 abstract sealed class AbstractLinkedList<E> implements List<E>
-    permits WiredList, CrisprList {
+      permits WiredList, CrisprList {
 
   static Supplier<IllegalArgumentException> autoEmbedNotAllowed() {
     return () -> new IllegalArgumentException("list cannot be embedded within itself");
@@ -141,7 +140,8 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
   //
 
   abstract sealed class ForwardWiredIterator implements WiredIterator<E> permits
-      CrisprList.CFwdWiredIterator, WiredList.WFwdWiredIterator {
+        CrisprList.CrisprForwardWiredIterator,
+        WiredList.WiredForwardWiredIterator {
 
     Node<E> beforeHead;
     Node<E> curr;
@@ -171,8 +171,8 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
       Check.that(curr).isNot(sameAs(), tail, noSuchElement());
       Check.that(sz).isNot(zero(), noSuchElement());
       return Check.that(curr.next)
-          .is(notNull(), concurrentModification())
-          .ok(Node::value);
+            .is(notNull(), concurrentModification())
+            .ok(Node::value);
     }
 
     @Override
@@ -180,8 +180,8 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
       Check.that(curr).isNot(sameAs(), tail, noSuchElement());
       Check.that(sz).isNot(zero(), noSuchElement());
       return Check.that(curr = curr.next)
-          .is(notNull(), concurrentModification())
-          .ok(Node::value);
+            .is(notNull(), concurrentModification())
+            .ok(Node::value);
     }
 
     @Override
@@ -231,9 +231,9 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
           return idx;
         }
         node = Check.that(node)
-            .is(notNull(), concurrentModification())
-            .isNot(sameAs(), tail, concurrentModification())
-            .ok(x -> x.next);
+              .is(notNull(), concurrentModification())
+              .isNot(sameAs(), tail, concurrentModification())
+              .ok(x -> x.next);
       }
     }
 
@@ -249,7 +249,8 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
   }
 
   abstract sealed class ReverseWiredIterator implements WiredIterator<E> permits
-      CrisprList.CRevWiredIterator, WiredList.WRevWiredIterator {
+        CrisprList.CrisprReverseWiredIterator,
+        WiredList.WiredReverseWiredIterator {
 
     Node<E> afterTail;
     Node<E> curr;
@@ -279,8 +280,8 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
       Check.that(curr).isNot(sameAs(), head, noSuchElement());
       Check.that(sz).isNot(zero(), noSuchElement());
       return Check.that(curr.prev)
-          .is(notNull(), concurrentModification())
-          .ok(Node::value);
+            .is(notNull(), concurrentModification())
+            .ok(Node::value);
     }
 
     @Override
@@ -288,8 +289,8 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
       Check.that(curr).isNot(sameAs(), head, noSuchElement());
       Check.that(sz).isNot(zero(), noSuchElement());
       return Check.that(curr = curr.prev)
-          .is(notNull(), concurrentModification())
-          .ok(Node::value);
+            .is(notNull(), concurrentModification())
+            .ok(Node::value);
     }
 
     @Override
@@ -339,9 +340,9 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
           return idx;
         }
         node = Check.that(node)
-            .is(notNull(), concurrentModification())
-            .isNot(sameAs(), head, concurrentModification())
-            .ok(x -> x.prev);
+              .is(notNull(), concurrentModification())
+              .isNot(sameAs(), head, concurrentModification())
+              .ok(x -> x.prev);
       }
     }
 
@@ -391,8 +392,8 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
         Check.that(curr).isNot(sameAs(), tail, noSuchElement());
         Check.that(++idx).is(lt(), sz, concurrentModification());
         return Check.that(curr = curr.next)
-            .is(notNull(), concurrentModification())
-            .ok(Node::value);
+              .is(notNull(), concurrentModification())
+              .ok(Node::value);
       }
       forward = TRUE;
       return curr.val;
@@ -409,14 +410,14 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
       if (idx == sz) {
         Check.that(--idx).is(gte(), 0, concurrentModification());
         val = Check.that(curr = tail)
-            .is(notNull(), concurrentModification())
-            .ok(Node::value);
+              .is(notNull(), concurrentModification())
+              .ok(Node::value);
       } else if (forward != TRUE) {
         Check.that(curr).isNot(sameAs(), head, noSuchElement());
         Check.that(--idx).is(gte(), 0, concurrentModification());
         val = Check.that(curr = curr.prev)
-            .is(notNull(), concurrentModification())
-            .ok(Node::value);
+              .is(notNull(), concurrentModification())
+              .ok(Node::value);
       } else {
         val = curr.val;
       }
@@ -470,14 +471,14 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
   int sz;
 
   /**
-   * Returns the index of the first occurrence of the specified element in this list,
-   * or -1 if this list does not contain the element. More formally, returns the
-   * lowest index {@code i} such that {@code Objects.equals(o, get(i))}, or -1 if
-   * there is no such index.
+   * Returns the index of the first occurrence of the specified element in this list, or
+   * -1 if this list does not contain the element. More formally, returns the lowest index
+   * {@code i} such that {@code Objects.equals(o, get(i))}, or -1 if there is no such
+   * index.
    *
    * @param o element to search for
-   * @return the index of the first occurrence of the specified element in this list,
-   *     or -1 if this list does not contain the element
+   * @return the index of the first occurrence of the specified element in this list, or
+   * -1 if this list does not contain the element
    */
   @Override
   public int indexOf(Object o) {
@@ -501,14 +502,14 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
   }
 
   /**
-   * Returns the index of the last occurrence of the specified element in this list,
-   * or -1 if this list does not contain the element. More formally, returns the
-   * highest index {@code i} such that {@code Objects.equals(o, get(i))}, or -1 if
-   * there is no such index.
+   * Returns the index of the last occurrence of the specified element in this list, or -1
+   * if this list does not contain the element. More formally, returns the highest index
+   * {@code i} such that {@code Objects.equals(o, get(i))}, or -1 if there is no such
+   * index.
    *
    * @param o element to search for
-   * @return the index of the last occurrence of the specified element in this list,
-   *     or -1 if this list does not contain the element
+   * @return the index of the last occurrence of the specified element in this list, or -1
+   * if this list does not contain the element
    */
   @Override
   public int lastIndexOf(Object o) {
@@ -537,7 +538,7 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
    * @param index index of the element to return
    * @return the element at the specified position in this list
    * @throws IndexOutOfBoundsException if the index is out of range
-   *     ({@code index < 0 || index >= size()})
+   * ({@code index < 0 || index >= size()})
    */
   @Override
   public E get(int index) {
@@ -581,8 +582,8 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
 
   /**
    * Inserts the specified element at the specified position in this list. Shifts the
-   * element currently at that position (if any) and any subsequent elements to the
-   * right (adds one to their indices).
+   * element currently at that position (if any) and any subsequent elements to the right
+   * (adds one to their indices).
    *
    * @param index index at which the specified element is to be inserted
    * @param element element to be inserted
@@ -608,11 +609,11 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
 
   /**
    * Inserts all elements in the specified collection into this list at the specified
-   * position (optional operation). Shifts the element currently at that position (if
-   * any) and any subsequent elements to the right (increases their indices).
+   * position (optional operation). Shifts the element currently at that position (if any)
+   * and any subsequent elements to the right (increases their indices).
    *
    * @param index index at which to insert the first element from the specified
-   *     collection
+   * collection
    * @param c collection containing elements to be added to this list
    * @return {@code true} if this list changed as a result of the call
    */
@@ -649,8 +650,8 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
 
   /**
    * Returns {@code true} if this list contains the specified element. More formally,
-   * returns {@code true} if and only if this list contains at least one element
-   * {@code e} such that {@code Objects.equals(o, e)}.
+   * returns {@code true} if and only if this list contains at least one element {@code e}
+   * such that {@code Objects.equals(o, e)}.
    *
    * @param o element whose presence in this list is to be tested
    * @return {@code true} if this list contains the specified element
@@ -666,7 +667,7 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
    *
    * @param c collection to be checked for containment in this list
    * @return {@code true} if this list contains all of the elements of the specified
-   *     collection
+   * collection
    * @see #contains(Object)
    */
   @Override
@@ -692,11 +693,10 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
   }
 
   /**
-   * Returns an {@code Iterator} that traverses the list from the first element to
-   * the last.
+   * Returns an {@code Iterator} that traverses the list from the first element to the
+   * last.
    *
-   * @return an {@code Iterator} that traverses the list's elements from first to the
-   *     last
+   * @return an {@code Iterator} that traverses the list's elements from first to the last
    */
   @Override
   public Iterator<E> iterator() {
@@ -713,8 +713,8 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
       public E next() {
         Check.that(curr).isNot(sameAs(), tail, noSuchElement());
         return Check.that(curr = curr.next)
-            .is(notNull(), concurrentModification())
-            .ok(Node::value);
+              .is(notNull(), concurrentModification())
+              .ok(Node::value);
       }
     };
   }
@@ -733,8 +733,8 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
       public E next() {
         Check.that(curr).isNot(sameAs(), head, noSuchElement());
         return Check.that(curr = curr.prev)
-            .is(notNull(), concurrentModification())
-            .ok(Node::value);
+              .is(notNull(), concurrentModification())
+              .ok(Node::value);
       }
     };
   }
@@ -750,19 +750,18 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
   }
 
   /**
-   * Returns a list iterator over the elements in this list (in proper sequence),
-   * starting at the specified position in the list. The specified index indicates
-   * the first element that would be returned by an initial call to
-   * {@link ListIterator#next next}. An initial call to
-   * {@link ListIterator#previous previous} would return the element with the
-   * specified index minus one.
+   * Returns a list iterator over the elements in this list (in proper sequence), starting
+   * at the specified position in the list. The specified index indicates the first
+   * element that would be returned by an initial call to {@link ListIterator#next next}.
+   * An initial call to {@link ListIterator#previous previous} would return the element
+   * with the specified index minus one.
    *
-   * @param index index of the first element to be returned from the list
-   *     iterator (by a call to {@link ListIterator#next next})
-   * @return a list iterator over the elements in this list (in proper sequence),
-   *     starting at the specified position in the list
+   * @param index index of the first element to be returned from the list iterator (by a
+   * call to {@link ListIterator#next next})
+   * @return a list iterator over the elements in this list (in proper sequence), starting
+   * at the specified position in the list
    * @throws IndexOutOfBoundsException if the index is out of range
-   *     ({@code index < 0 || index > size()})
+   * ({@code index < 0 || index > size()})
    */
   @Override
   public ListIterator<E> listIterator(int index) {
@@ -774,14 +773,13 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
   }
 
   /**
-   * Compares the specified object with this list for equality.  Returns {@code true}
-   * if and only if the specified object is also a list, both lists have the same
-   * size, and all corresponding pairs of elements in the two lists are <i>equal</i>.
-   * (Two elements {@code e1} and {@code e2} are <i>equal</i> if
-   * {@code Objects.equals(e1, e2)}.) In other words, two lists are defined to be
-   * equal if they contain the same elements in the same order.  This definition
-   * ensures that the equals method works properly across different implementations
-   * of the {@code List} interface.
+   * Compares the specified object with this list for equality.  Returns {@code true} if
+   * and only if the specified object is also a list, both lists have the same size, and
+   * all corresponding pairs of elements in the two lists are <i>equal</i>. (Two elements
+   * {@code e1} and {@code e2} are <i>equal</i> if {@code Objects.equals(e1, e2)}.) In
+   * other words, two lists are defined to be equal if they contain the same elements in
+   * the same order.  This definition ensures that the equals method works properly across
+   * different implementations of the {@code List} interface.
    *
    * @param o the object to be compared for equality with this list
    * @return {@code true} if the specified object is equal to this list
@@ -871,9 +869,10 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     ++sz;
   }
 
-  final void replaceAll0(int fromIndex,
-      int toIndex,
-      Collection<? extends E> values) {
+  final void replaceAll0(
+        int fromIndex,
+        int toIndex,
+        Collection<? extends E> values) {
     int len = Check.fromTo(this, fromIndex, toIndex);
     Check.notNull(values, Tag.COLLECTION);
     if (len == 0) {
@@ -967,7 +966,7 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     }
   }
 
-  void moveRight(int from, int to, int newFrom) {
+  final void moveRight(int from, int to, int newFrom) {
     int indexOfLast = to - 1;
     int steps = newFrom - from;
     Node<E> first = nodeAt(from);
@@ -987,7 +986,7 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     }
   }
 
-  void moveLeft(int from, int to, int newFrom) {
+  final void moveLeft(int from, int to, int newFrom) {
     Node<E> first = nodeAt(from);
     Node<E> last = nodeAfter(first, from, to - 1);
     Node<E> insertBefore = nodeBefore(first, from, newFrom);
@@ -1006,8 +1005,8 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
   }
 
   /**
-   * Returns an array containing all elements in this list in proper sequence (from
-   * first to last element).
+   * Returns an array containing all elements in this list in proper sequence (from first
+   * to last element).
    *
    * @return an array containing all elements in this list in proper sequence
    * @see Arrays#asList(Object[])
@@ -1027,16 +1026,16 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
   }
 
   /**
-   * Returns an array containing all elements in this list in proper sequence (from
-   * first to last element); the runtime type of the returned array is that of the
-   * specified array.
+   * Returns an array containing all elements in this list in proper sequence (from first
+   * to last element); the runtime type of the returned array is that of the specified
+   * array.
    *
-   * @param a the array into which the elements of this list are to be stored, if
-   *     it is big enough; otherwise, a new array of the same runtime type is
-   *     allocated for this purpose.
+   * @param a the array into which the elements of this list are to be stored, if it is
+   * big enough; otherwise, a new array of the same runtime type is allocated for this
+   * purpose.
    * @return an array containing the elements of this list
-   * @throws ArrayStoreException if the runtime type of the specified array is
-   *     not a supertype of the runtime type of every element in this list
+   * @throws ArrayStoreException if the runtime type of the specified array is not a
+   * supertype of the runtime type of every element in this list
    * @throws NullPointerException if the specified array is null
    */
   @Override
@@ -1072,10 +1071,11 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
     return result;
   }
 
-  final void regionToArray0(int fromIndex,
-      int toIndex,
-      Object[] target,
-      int offset) {
+  final void regionToArray0(
+        int fromIndex,
+        int toIndex,
+        Object[] target,
+        int offset) {
     int len = Check.fromTo(this, fromIndex, toIndex);
     Check.notNull(target, "target").has(length(), gte(), len + offset);
     Check.that(offset, Tag.OFFSET).is(gte(), 0);
@@ -1175,8 +1175,8 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
    */
   Node<E> node(int index) {
     return Check.that(index)
-        .is(indexExclusiveOf(), this, indexOutOfBounds(index))
-        .mapToObj(this::nodeAt);
+          .is(indexExclusiveOf(), this, indexOutOfBounds(index))
+          .mapToObj(this::nodeAt);
   }
 
   /**
@@ -1200,11 +1200,11 @@ abstract sealed class AbstractLinkedList<E> implements List<E>
   }
 
   /**
-   * Returns a node following another node. Used to minimize the amount of pointers
-   * we need to chase, given that we already have a node in our hands. The startIndex
-   * argument is the index of the node we already have. The index argument is the
-   * index of the node we are interested in. Note that if index is a to-index
-   * (exclusive), this method may return null (namely when index equals sz).
+   * Returns a node following another node. Used to minimize the amount of pointers we
+   * need to chase, given that we already have a node in our hands. The startIndex
+   * argument is the index of the node we already have. The index argument is the index of
+   * the node we are interested in. Note that if index is a to-index (exclusive), this
+   * method may return null (namely when index equals sz).
    */
   // @VisibleForTesting
   Node<E> nodeAfter(Node<E> startNode, int startIndex, int index) {
