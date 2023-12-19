@@ -7,7 +7,7 @@
 
     <groupId>org.klojang</groupId>
     <artifactId>klojang-collections</artifactId>
-    <version>2.0.5</version>
+    <version>2.0.8</version>
     <packaging>jar</packaging>
 
     <name>Klojang Collections</name>
@@ -86,8 +86,8 @@
         <!-- *** Check for updates: mvn versions:display-dependency-updates   *** -->
         <!-- *** Check dependencies: mvn dependency:analyze                   *** -->
         <!-- ==================================================================== -->
-        <klojang-check.version>3.0.0-jdk21</klojang-check.version>
-        <klojang-util.version>1.1.5</klojang-util.version>
+        <klojang-check.version>3.0.2-jdk21</klojang-check.version>
+        <klojang-util.version>1.1.7</klojang-util.version>
         <junit.version>4.13.2</junit.version>
 
 
@@ -233,19 +233,19 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>docs/2/api</directory>
+                            <directory>docs/api</directory>
                             <includes>
                                 <include>**/*</include>
                             </includes>
                         </fileset>
                         <fileset>
-                            <directory>docs/2/coverage</directory>
+                            <directory>docs/coverage</directory>
                             <includes>
                                 <include>**/*</include>
                             </includes>
                         </fileset>
                         <fileset>
-                            <directory>docs/2/vulnerabilities</directory>
+                            <directory>docs/vulnerabilities</directory>
                             <includes>
                                 <include>**/*</include>
                             </includes>
@@ -309,6 +309,7 @@
                 <version>${owasp-plugin.version}</version>
                 <configuration>
                     <failBuildOnCVSS>1</failBuildOnCVSS>
+                    <nvdApiKey>29bb9b20-8dba-4ae7-94b4-6656e154e6e1</nvdApiKey>
                 </configuration>
                 <executions>
                     <execution>
@@ -366,8 +367,8 @@
                             <windowtitle>Klojang Check</windowtitle>
                             <excludePackageNames>org.klojang.collections.x</excludePackageNames>
                             <links>
-                                <link>https://klojang4j.github.io/klojang-check/2/api/</link>
-                                <link>https://klojang4j.github.io/klojang-util/1/api/</link>
+                                <link>https://klojang4j.github.io/klojang-check/api/</link>
+                                <link>https://klojang4j.github.io/klojang-util/api/</link>
                             </links>
                         </configuration>
                         <goals>
@@ -387,7 +388,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>docs/2/api</outputDirectory>
+                            <outputDirectory>docs/api</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>target/apidocs</directory>
@@ -402,7 +403,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>docs/2/coverage</outputDirectory>
+                            <outputDirectory>docs/coverage</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>target/site/jacoco</directory>
@@ -417,7 +418,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>docs/2/vulnerabilities</outputDirectory>
+                            <outputDirectory>docs/vulnerabilities</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>target</directory>
