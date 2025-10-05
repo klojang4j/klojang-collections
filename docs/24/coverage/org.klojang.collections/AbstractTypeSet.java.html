@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractTypeSet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Klojang Collections</a> &gt; <a href="index.source.html" class="el_package">org.klojang.collections</a> &gt; <span class="el_source">AbstractTypeSet.java</span></div><h1>AbstractTypeSet.java</h1><pre class="source lang-java linenums">package org.klojang.collections;
+
+import org.klojang.check.Check;
+
+import java.util.Collection;
+import java.util.Iterator;
+
+import static org.klojang.check.CommonChecks.sameAs;
+import static org.klojang.check.CommonProperties.type;
+
+abstract non-sealed class AbstractTypeSet extends ImmutableSet&lt;Class&lt;?&gt;&gt; implements
+    TypeSet {
+
+  private final TypeMap&lt;Object&gt; map;
+
+<span class="nc" id="L16">  AbstractTypeSet() {</span>
+<span class="nc" id="L17">    this.map = createBackend();</span>
+<span class="nc" id="L18">  }</span>
+
+  abstract TypeMap&lt;Object&gt; createBackend();
+
+  @Override
+  public int size() {
+<span class="nc" id="L24">    return map.size();</span>
+  }
+
+  @Override
+  public boolean isEmpty() {
+<span class="nc" id="L29">    return map.isEmpty();</span>
+  }
+
+  @Override
+  public boolean contains(Object o) {
+<span class="nc" id="L34">    return Check.notNull(o).has(type(), sameAs(), Class.class).ok(map::containsKey);</span>
+  }
+
+  @Override
+  public Iterator&lt;Class&lt;?&gt;&gt; iterator() {
+<span class="nc" id="L39">    return map.keySet().iterator();</span>
+  }
+
+  @Override
+  public Object[] toArray() {
+<span class="nc" id="L44">    return map.keySet().toArray();</span>
+  }
+
+  @Override
+  public &lt;T&gt; T[] toArray(T[] a) {
+<span class="nc" id="L49">    Check.notNull(a);</span>
+<span class="nc" id="L50">    return map.keySet().toArray(a);</span>
+  }
+
+  @Override
+  public boolean containsAll(Collection&lt;?&gt; c) {
+<span class="nc" id="L55">    Check.notNull(c);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">    return c.stream().filter(map::containsKey).count() == c.size();</span>
+  }
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L61">    return map.keySet().hashCode();</span>
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+<span class="nc" id="L66">    return map.keySet().equals(obj);</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L71">    return map.keySet().toString();</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

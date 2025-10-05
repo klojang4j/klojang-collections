@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"m":"org.klojang.collections","l":"org.klojang.collections"}];updateSearchResults();

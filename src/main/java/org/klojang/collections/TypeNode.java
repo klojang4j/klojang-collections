@@ -15,7 +15,8 @@ final class TypeNode {
   final TypeNode[] subclasses;
   final TypeNode[] extensions;
 
-  TypeNode(Class<?> type,
+  TypeNode(
+      Class<?> type,
       Object value,
       TypeNode[] subclasses,
       TypeNode[] extensions) {
@@ -78,28 +79,32 @@ final class TypeNode {
 
   @SuppressWarnings({"unchecked"})
   private <T> T findClass(Class<?> type) {
-    if (!isSupertype(this.type, type)) {
-      return null;
-    }
-    Object val;
-    if ((val = findAsSubclass(type)) == null) {
-      if ((val = findAsImpl(type)) == null) {
-        val = this.value;
+    if (type == this.type) {
+      return (T) this.value;
+    } else if (isSupertype(this.type, type)) {
+      Object val;
+      if ((val = findAsSubclass(type)) == null) {
+        if ((val = findAsImpl(type)) == null) {
+          val = this.value;
+        }
       }
+      return (T) val;
     }
-    return (T) val;
+    return null;
   }
 
   @SuppressWarnings({"unchecked"})
   private <T> T findInterface(Class<?> type) {
-    if (!isSupertype(this.type, type)) {
-      return null;
+    if (type == this.type) {
+      return (T) this.value;
+    } else if (isSupertype(this.type, type)) {
+      Object val;
+      if ((val = findAsExtension(type)) == null) {
+        val = this.value;
+      }
+      return (T) val;
     }
-    Object val;
-    if ((val = findAsExtension(type)) == null) {
-      val = this.value;
-    }
-    return (T) val;
+    return null;
   }
 
   private Object findAsSubclass(Class<?> type) {

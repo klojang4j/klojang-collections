@@ -2,12 +2,12 @@ package org.klojang.collections;
 
 import org.klojang.check.Check;
 import org.klojang.check.Tag;
-import org.klojang.check.aux.DuplicateValueException;
+import org.klojang.check.extra.DuplicateValueException;
 
 import java.util.*;
 
 import static org.klojang.check.CommonChecks.in;
-import static org.klojang.check.aux.DuplicateValueException.Usage.KEY;
+import static org.klojang.check.extra.DuplicateValueException.Usage.KEY;
 import static org.klojang.collections.TypeNode.NO_SUBTYPES;
 import static org.klojang.util.ClassMethods.isSubtype;
 import static org.klojang.util.ClassMethods.isSupertype;

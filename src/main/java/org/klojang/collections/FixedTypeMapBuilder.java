@@ -2,14 +2,14 @@ package org.klojang.collections;
 
 import org.klojang.check.Check;
 import org.klojang.check.Tag;
-import org.klojang.check.aux.DuplicateValueException;
+import org.klojang.check.extra.DuplicateValueException;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.function.Supplier;
 
 import static org.klojang.check.CommonChecks.keyIn;
-import static org.klojang.check.aux.DuplicateValueException.Usage.KEY;
+import static org.klojang.check.extra.DuplicateValueException.Usage.KEY;
 
 final class FixedTypeMapBuilder<V> implements TypeMapBuilder<V> {
 

@@ -1,7 +1,7 @@
 package org.klojang.collections;
 
 import org.klojang.check.Check;
-import org.klojang.util.ArrayType;
+import org.klojang.util.ArrayMetaData;
 import org.klojang.util.Tuple2;
 
 import java.util.*;
@@ -103,14 +103,14 @@ final class GreedyTypeMap<V> extends ImmutableMap<Class<?>, V> implements
   }
 
   private Tuple2<Class<?>, V> findArrayType(Class<?> type) {
-    ArrayType arrayType = ArrayType.forClass(type);
-    if (arrayType.baseType().isPrimitive()) {
+    ArrayMetaData arrayType = ArrayMetaData.of(type);
+    if (arrayType.getBaseType().isPrimitive()) {
       if (autobox) {
-        return find(arrayType.box());
+        return find(arrayType.box().getArrayClass());
       }
     }
     Tuple2<Class<?>, V> result;
-    if (arrayType.baseType().isInterface()) {
+    if (arrayType.getBaseType().isInterface()) {
       if ((result = findInterfaceArray(arrayType)) != null) {
         return result;
       }
@@ -122,13 +122,13 @@ final class GreedyTypeMap<V> extends ImmutableMap<Class<?>, V> implements
     return ifNotNull(backend.get(Object[].class), v -> Tuple2.of(Object[].class, v));
   }
 
-  private Tuple2<Class<?>, V> findSuperClassArray(ArrayType arrayType) {
-    List<Class<?>> supertypes = getAncestors(arrayType.baseType());
+  private Tuple2<Class<?>, V> findSuperClassArray(ArrayMetaData arrayType) {
+    List<Class<?>> supertypes = getAncestors(arrayType.getBaseType());
     for (Class<?> c : supertypes) {
       if (c == Object.class) {
         break;
       }
-      Class<?> arrayClass = arrayType.toClass(c);
+      Class<?> arrayClass = arrayType.withBaseType(c).getArrayClass();
       V val = backend.get(arrayClass);
       if (val != null) {
         return Tuple2.of(arrayClass, val);
@@ -137,10 +137,10 @@ final class GreedyTypeMap<V> extends ImmutableMap<Class<?>, V> implements
     return null;
   }
 
-  private Tuple2<Class<?>, V> findInterfaceArray(ArrayType arrayType) {
-    Set<Class<?>> supertypes = getAllInterfaces(arrayType.baseType());
+  private Tuple2<Class<?>, V> findInterfaceArray(ArrayMetaData arrayType) {
+    Set<Class<?>> supertypes = getAllInterfaces(arrayType.getBaseType());
     for (Class<?> c : supertypes) {
-      Class<?> arrayClass = arrayType.toClass(c);
+      Class<?> arrayClass = arrayType.withBaseType(c).getArrayClass();
       V val = backend.get(arrayClass);
       if (val != null) {
         return Tuple2.of(arrayClass, val);

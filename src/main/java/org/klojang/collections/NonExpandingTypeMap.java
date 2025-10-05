@@ -1,7 +1,7 @@
 package org.klojang.collections;
 
 import org.klojang.check.Check;
-import org.klojang.util.ArrayType;
+import org.klojang.util.ArrayMetaData;
 
 import java.util.List;
 import java.util.Map;
@@ -86,14 +86,14 @@ abstract sealed class NonExpandingTypeMap<V> extends
   }
 
   private V findArrayType(Class<?> type) {
-    ArrayType arrayType = ArrayType.forClass(type);
-    if (arrayType.baseType().isPrimitive()) {
+    ArrayMetaData arrayType = ArrayMetaData.of(type);
+    if (arrayType.getBaseType().isPrimitive()) {
       if (autobox) {
-        return find(arrayType.box());
+        return find(arrayType.box().getArrayClass());
       }
     }
     V result;
-    if (arrayType.baseType().isInterface()) {
+    if (arrayType.getBaseType().isInterface()) {
       if ((result = findInterfaceArray(arrayType)) != null) {
         return result;
       }
@@ -106,13 +106,13 @@ abstract sealed class NonExpandingTypeMap<V> extends
 
   }
 
-  private V findSuperClassArray(ArrayType arrayType) {
-    List<Class<?>> supertypes = getAncestors(arrayType.baseType());
+  private V findSuperClassArray(ArrayMetaData arrayType) {
+    List<Class<?>> supertypes = getAncestors(arrayType.getBaseType());
     for (Class<?> c : supertypes) {
       if (c == Object.class) {
         break;
       }
-      V val = backend().get(arrayType.toClass(c));
+      V val = backend().get(arrayType.withBaseType(c).getArrayClass());
       if (val != null) {
         return val;
       }
@@ -120,10 +120,10 @@ abstract sealed class NonExpandingTypeMap<V> extends
     return null;
   }
 
-  private V findInterfaceArray(ArrayType arrayType) {
-    Set<Class<?>> supertypes = getAllInterfaces(arrayType.baseType());
+  private V findInterfaceArray(ArrayMetaData arrayType) {
+    Set<Class<?>> supertypes = getAllInterfaces(arrayType.getBaseType());
     for (Class<?> c : supertypes) {
-      V val = backend().get(arrayType.toClass(c));
+      V val = backend().get(arrayType.withBaseType(c).getArrayClass());
       if (val != null) {
         return val;
       }

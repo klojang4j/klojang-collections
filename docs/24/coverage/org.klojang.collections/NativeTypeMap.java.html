@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NativeTypeMap.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Klojang Collections</a> &gt; <a href="index.source.html" class="el_package">org.klojang.collections</a> &gt; <span class="el_source">NativeTypeMap.java</span></div><h1>NativeTypeMap.java</h1><pre class="source lang-java linenums">package org.klojang.collections;
+
+import org.klojang.check.Check;
+import org.klojang.util.ArrayMetaData;
+
+import java.util.*;
+
+import static java.util.AbstractMap.SimpleImmutableEntry;
+import static org.klojang.check.CommonChecks.instanceOf;
+import static org.klojang.util.ClassMethods.*;
+import static org.klojang.util.CollectionMethods.implode;
+
+final class NativeTypeMap&lt;V&gt; extends ImmutableMap&lt;Class&lt;?&gt;, V&gt; implements TypeMap&lt;V&gt; {
+
+  private final boolean autobox;
+  private final TypeNode root;
+  private final int size;
+
+  private Set&lt;Class&lt;?&gt;&gt; keys;
+  private Collection&lt;V&gt; values;
+  private Set&lt;Entry&lt;Class&lt;?&gt;, V&gt;&gt; entries;
+
+<span class="fc" id="L23">  NativeTypeMap(TypeNode root, int size, boolean autobox) {</span>
+<span class="fc" id="L24">    this.autobox = autobox;</span>
+<span class="fc" id="L25">    this.root = root;</span>
+<span class="fc" id="L26">    this.size = size;</span>
+<span class="fc" id="L27">  }</span>
+
+  @Override
+  public V get(Object key) {
+<span class="fc" id="L31">    Class&lt;?&gt; type = Check.notNull(key)</span>
+<span class="fc" id="L32">        .is(instanceOf(), Class.class)</span>
+<span class="fc" id="L33">        .ok(Class.class::cast);</span>
+    V val;
+<span class="fc bfc" id="L35" title="All 2 branches covered.">    if (type.isPrimitive()) {</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">      if ((val = root.getPrimitive(type)) == null) {</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (autobox) {</span>
+<span class="fc" id="L38">          val = root.get(box(type));</span>
+        }
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        if (val == null) {</span>
+<span class="fc" id="L41">          val = root.value();</span>
+        }
+      }
+<span class="fc bfc" id="L44" title="All 2 branches covered.">    } else if (hasPrimitiveElements(type)) {</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">      if ((val = root.getPrimitive(type)) == null) {</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        if (autobox) {</span>
+<span class="fc" id="L47">          val = root.get(ArrayMetaData.of(type).box().getArrayClass());</span>
+        }
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        if (val == null) {</span>
+<span class="fc" id="L50">          val = root.value();</span>
+        }
+      }
+    } else {
+<span class="fc" id="L54">      val = root.get(type);</span>
+    }
+<span class="fc" id="L56">    return val;</span>
+  }
+
+  @Override
+  public boolean containsKey(Object key) {
+<span class="fc" id="L61">    Class&lt;?&gt; type = Check.notNull(key)</span>
+<span class="fc" id="L62">        .is(instanceOf(), Class.class)</span>
+<span class="fc" id="L63">        .ok(Class.class::cast);</span>
+    boolean found;
+<span class="fc bfc" id="L65" title="All 2 branches covered.">    if (root.value != null) {</span>
+<span class="fc" id="L66">      found = true;</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">    } else if (type.isPrimitive()) {</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">      if (autobox) {</span>
+<span class="fc" id="L69">        found = containsPrimitiveOrBoxedType(type, box(type));</span>
+      } else {
+<span class="fc" id="L71">        found = containsPrimitiveType(type);</span>
+      }
+<span class="fc bfc" id="L73" title="All 2 branches covered.">    } else if (hasPrimitiveElements(type)) {</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">      if (autobox) {</span>
+<span class="fc" id="L75">        Class&lt;?&gt; boxed = ArrayMetaData.of(type).box().getArrayClass();</span>
+<span class="fc" id="L76">        found = containsPrimitiveOrBoxedType(type, boxed);</span>
+<span class="fc" id="L77">      } else {</span>
+<span class="nc" id="L78">        found = containsPrimitiveType(type);</span>
+      }
+<span class="fc bfc" id="L80" title="All 2 branches covered.">    } else if (!type.isInterface()) {</span>
+<span class="fc" id="L81">      found = containsExactOrSuperType(type, root.subclasses);</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">      if (!found) {</span>
+<span class="fc" id="L83">        found = containsExactOrSuperType(type, root.extensions);</span>
+      }
+    } else {
+<span class="fc" id="L86">      found = containsExactOrSuperType(type, root.extensions);</span>
+    }
+<span class="fc" id="L88">    return found;</span>
+  }
+
+  @Override
+  public boolean containsValue(Object value) {
+<span class="fc" id="L93">    return values().contains(value);</span>
+  }
+
+  /**
+   * Returns a breadth-first view of the type hierarchy within this {@code Map}.
+   *
+   * @return a breadth-first view of the type hierarchy within this {@code Map}
+   */
+  @Override
+  public Set&lt;Class&lt;?&gt;&gt; keySet() {
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">    if (keys == null) {</span>
+<span class="fc" id="L104">      List&lt;Class&lt;?&gt;&gt; bucket = new ArrayList&lt;&gt;(size);</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">      if (root.value() != null) { // map contains Object.class</span>
+<span class="fc" id="L106">        bucket.add(Object.class);</span>
+      }
+<span class="fc" id="L108">      root.collectTypes(bucket);</span>
+<span class="fc" id="L109">      keys = ArraySet.copyOf(bucket);</span>
+    }
+<span class="fc" id="L111">    return keys;</span>
+  }
+
+  @Override
+  public Collection&lt;V&gt; values() {
+<span class="fc bfc" id="L116" title="All 2 branches covered.">    if (values == null) {</span>
+<span class="fc" id="L117">      List&lt;V&gt; bucket = new ArrayList&lt;&gt;(size);</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">      if (root.value() != null) {</span>
+<span class="fc" id="L119">        bucket.add(root.value());</span>
+      }
+<span class="fc" id="L121">      root.collectValues(bucket);</span>
+<span class="fc" id="L122">      values = ArraySet.copyOf(new HashSet&lt;&gt;(bucket));</span>
+    }
+<span class="fc" id="L124">    return values;</span>
+  }
+
+  @Override
+  public Set&lt;Entry&lt;Class&lt;?&gt;, V&gt;&gt; entrySet() {
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">    if (entries == null) {</span>
+<span class="fc" id="L130">      List&lt;Entry&lt;Class&lt;?&gt;, V&gt;&gt; bucket = new ArrayList&lt;&gt;(size);</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">      if (root.value() != null) {</span>
+<span class="fc" id="L132">        bucket.add(new SimpleImmutableEntry&lt;&gt;(Object.class, root.value()));</span>
+      }
+<span class="fc" id="L134">      root.collectEntries(bucket);</span>
+<span class="fc" id="L135">      entries = Set.copyOf(bucket);</span>
+    }
+<span class="fc" id="L137">    return entries;</span>
+  }
+
+  @Override
+  public int size() {
+<span class="fc" id="L142">    return size;</span>
+  }
+
+  @Override
+  public boolean isEmpty() {
+<span class="fc bfc" id="L147" title="All 2 branches covered.">    return size == 0;</span>
+  }
+
+  @Override
+  public boolean equals(Object o) {
+<span class="nc bnc" id="L152" title="All 2 branches missed.">    if (this == o) {</span>
+<span class="nc" id="L153">      return true;</span>
+    }
+<span class="nc bnc" id="L155" title="All 2 branches missed.">    if (o instanceof Map&lt;?, ?&gt; m) {</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">      if (size == m.size()) {</span>
+<span class="nc" id="L157">        return entrySet().equals(m.entrySet());</span>
+      }
+    }
+<span class="nc" id="L160">    return false;</span>
+  }
+
+  private int hash;
+
+  @Override
+  public int hashCode() {
+<span class="nc bnc" id="L167" title="All 2 branches missed.">    if (hash == 0) {</span>
+<span class="nc" id="L168">      hash = entrySet().hashCode();</span>
+    }
+<span class="nc" id="L170">    return hash;</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L175">    return '[' + implode(entrySet()) + ']';</span>
+  }
+
+  private boolean containsPrimitiveType(Class&lt;?&gt; type) {
+<span class="fc bfc" id="L179" title="All 2 branches covered.">    for (var node : root.subclasses) {</span>
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">      if (node.type == type) {</span>
+<span class="nc" id="L181">        return true;</span>
+      }
+    }
+<span class="fc" id="L184">    return false;</span>
+  }
+
+  private boolean containsPrimitiveOrBoxedType(Class&lt;?&gt; primitive, Class&lt;?&gt; boxed) {
+<span class="pc bfc" id="L188" title="All 2 branches covered.">    for (var node : root.subclasses) {</span>
+<span class="pc bpc" id="L189" title="1 of 6 branches missed.">      if (node.type == primitive || node.type == boxed || isSupertype(node.type, boxed)) {</span>
+<span class="fc" id="L190">        return true;</span>
+      }
+    }
+<span class="fc" id="L193">    return false;</span>
+  }
+
+  private boolean containsExactOrSuperType(Class&lt;?&gt; type, TypeNode[] nodes) {
+<span class="fc bfc" id="L197" title="All 2 branches covered.">    for (var node : nodes) {</span>
+<span class="fc bfc" id="L198" title="All 4 branches covered.">      if (node.type == type || isSupertype(node.type, type)) {</span>
+<span class="fc" id="L199">        return true;</span>
+      }
+    }
+<span class="fc" id="L202">    return false;</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

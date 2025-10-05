@@ -1,7 +1,7 @@
 package org.klojang.collections;
 
 import org.junit.Test;
-import org.klojang.check.aux.DuplicateValueException;
+import org.klojang.check.extra.DuplicateValueException;
 
 import java.io.Serializable;
 import java.util.*;
@@ -508,8 +508,7 @@ public class TypeGraphTest {
   @Test
   public void test20() {
     var m = TypeMap.<String>nativeTypeMapBuilder()
-        .add(Object[].class,
-            "Object[]")
+        .add(Object[].class, "Object[]")
         .add(Collection[].class, "Collection[]")
         .add(Set[].class, "Set[]")
         .add(List[].class, "List[]")

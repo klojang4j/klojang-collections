@@ -1,7 +1,7 @@
 package org.klojang.collections;
 
 import org.klojang.check.Check;
-import org.klojang.util.ArrayType;
+import org.klojang.util.ArrayMetaData;
 
 import java.util.*;
 
@@ -41,10 +41,10 @@ final class NativeTypeMap<V> extends ImmutableMap<Class<?>, V> implements TypeMa
           val = root.value();
         }
       }
-    } else if (isDeeplyPrimitiveArray(type)) {
+    } else if (hasPrimitiveElements(type)) {
       if ((val = root.getPrimitive(type)) == null) {
         if (autobox) {
-          val = root.get(ArrayType.forClass(type).box());
+          val = root.get(ArrayMetaData.of(type).box().getArrayClass());
         }
         if (val == null) {
           val = root.value();
@@ -70,9 +70,9 @@ final class NativeTypeMap<V> extends ImmutableMap<Class<?>, V> implements TypeMa
       } else {
         found = containsPrimitiveType(type);
       }
-    } else if (isDeeplyPrimitiveArray(type)) {
+    } else if (hasPrimitiveElements(type)) {
       if (autobox) {
-        Class<?> boxed = ArrayType.forClass(type).box();
+        Class<?> boxed = ArrayMetaData.of(type).box().getArrayClass();
         found = containsPrimitiveOrBoxedType(type, boxed);
       } else {
         found = containsPrimitiveType(type);
@@ -186,7 +186,7 @@ final class NativeTypeMap<V> extends ImmutableMap<Class<?>, V> implements TypeMa
 
   private boolean containsPrimitiveOrBoxedType(Class<?> primitive, Class<?> boxed) {
     for (var node : root.subclasses) {
-      if (node.type == primitive || isSupertype(node.type, boxed)) {
+      if (node.type == primitive || node.type == boxed || isSupertype(node.type, boxed)) {
         return true;
       }
     }
@@ -195,7 +195,7 @@ final class NativeTypeMap<V> extends ImmutableMap<Class<?>, V> implements TypeMa
 
   private boolean containsExactOrSuperType(Class<?> type, TypeNode[] nodes) {
     for (var node : nodes) {
-      if (isSupertype(node.type, type)) {
+      if (node.type == type || isSupertype(node.type, type)) {
         return true;
       }
     }

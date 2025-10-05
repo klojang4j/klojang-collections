@@ -1,7 +1,7 @@
 package org.klojang.collections;
 
 import org.junit.Test;
-import org.klojang.check.aux.DuplicateValueException;
+import org.klojang.check.extra.DuplicateValueException;
 
 import java.io.Serializable;
 import java.util.*;

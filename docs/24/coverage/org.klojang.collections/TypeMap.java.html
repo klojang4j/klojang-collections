@@ -1,4 +1,4 @@
-package org.klojang.collections;
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TypeMap.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Klojang Collections</a> &gt; <a href="index.source.html" class="el_package">org.klojang.collections</a> &gt; <span class="el_source">TypeMap.java</span></div><h1>TypeMap.java</h1><pre class="source lang-java linenums">package org.klojang.collections;
 
 import org.klojang.check.Check;
 
@@ -6,14 +6,14 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * <p>A specialisation of the {@code Map} interface, aimed at providing natural
+ * &lt;p&gt;A specialisation of the {@code Map} interface, aimed at providing natural
  * default values for groups of Java types via a shared supertype. The keys in a type map are always
  * {@link Class} objects. The type of the values is user-defined. One particularly useful application of type
  * maps is to associate types with functions (i.e. lambdas, method references) that operate on those types.
  *
- * <h2 id="behaviour">Behaviour</h2>
+ * &lt;h2 id=&quot;behaviour&quot;&gt;Behaviour&lt;/h2&gt;
  *
- * <p>A {@code TypeMap} behaves as follows: if the type requested via
+ * &lt;p&gt;A {@code TypeMap} behaves as follows: if the type requested via
  * {@link #get(Object) get()} is not present in the map, but one of its supertypes is, then the type map will
  * return the value associated with the supertype. Similarly, {@link #containsKey(Object) containsKey()} will
  * return {@code true} if either the specified type itself or one of its supertypes is a key in the
@@ -22,7 +22,7 @@ import java.util.Map;
  * {@code Number.class} is returned. If there is no entry for {@code Number.class} either, but there is one
  * for {@code Serializable.class}, then the value associated with that type is returned.
  *
- * <p>Regular types take precedence over interface types. If the requested type is
+ * &lt;p&gt;Regular types take precedence over interface types. If the requested type is
  * an implementation of one type within the type map, and a subclass of another, then the value associated
  * with the latter will be returned. The one exception is {@code Object.class}, since any instance of any
  * interface is also an {@code Object}. If {@code Object.class} is present in the map, the {@code get()}
@@ -31,17 +31,17 @@ import java.util.Map;
  * {@code TypeMap} interface is to provide natural default values for groups of types, and
  * {@code Object.class} is the obvious candidate for providing the ultimate, last-resort, fall-back value.
  *
- * <p>Type maps are immutable. All map-altering methods throw an
+ * &lt;p&gt;Type maps are immutable. All map-altering methods throw an
  * {@link UnsupportedOperationException}. The {@link #getOrDefault(Object, Object) getOrDefault()} method also
  * throws an {@code UnsupportedOperationException} as it sidesteps the {@code TypeMap} paradigm. Type maps are
- * also null-repellent &#8212; neither keys nor values are allowed to be {@code null}.
+ * also null-repellent &amp;#8212; neither keys nor values are allowed to be {@code null}.
  *
- * <p>You cannot instantiate a {@code TypeMap} directly. You obtain an instance
+ * &lt;p&gt;You cannot instantiate a {@code TypeMap} directly. You obtain an instance
  * through the various static factory methods on the {@code TypeMap} interface itself.
  *
- * <h2 id="autoboxing">Autoboxing</h2>
+ * &lt;h2 id=&quot;autoboxing&quot;&gt;Autoboxing&lt;/h2&gt;
  *
- * <p>A {@code TypeMap} can be configured to "autobox" the types requested via
+ * &lt;p&gt;A {@code TypeMap} can be configured to &quot;autobox&quot; the types requested via
  * {@code get()} and {@code containsKey()}. For example, if the user makes a request for {@code double.class},
  * but the map only contains an entry for {@code Double.class}, then the value associated with
  * {@code Double.class} is returned. If there is no entry for {@code Double.class} either, but there is one
@@ -49,14 +49,14 @@ import java.util.Map;
  * autoboxing enabled, you need (and should) only add the wrapper types to the map, unless you want the
  * primitive type to be associated with a different value than the wrapper type. This applies not just to
  * primitive types, but also to arrays of a primitive type. Thus, with autoboxing enabled, {@code int[]} will
- * be "autoboxed" to {@code Integer[]}. Note that, irrespective of whether autoboxing is enabled or not, the
- * presence of {@code Object.class} in the map <i>always</i> guarantees that a non-null value will be returned
- * for whatever type is requested, even if it is a primitive type. Autoboxing is <b>enabled</b> by default.
+ * be &quot;autoboxed&quot; to {@code Integer[]}. Note that, irrespective of whether autoboxing is enabled or not, the
+ * presence of {@code Object.class} in the map &lt;i&gt;always&lt;/i&gt; guarantees that a non-null value will be returned
+ * for whatever type is requested, even if it is a primitive type. Autoboxing is &lt;b&gt;enabled&lt;/b&gt; by default.
  *
- * <h2 id="auto-expansion">Auto-expansion</h2>
+ * &lt;h2 id=&quot;auto-expansion&quot;&gt;Auto-expansion&lt;/h2&gt;
  *
- * <p>Even though type maps are specified to be immutable to the outside world, the
- * "{@linkplain #greedyTypeMap(Map) greedy}" {@code TypeMap} will automatically and tacitly absorb subtypes of
+ * &lt;p&gt;Even though type maps are specified to be immutable to the outside world, the
+ * &quot;{@linkplain #greedyTypeMap(Map) greedy}&quot; {@code TypeMap} will automatically and tacitly absorb subtypes of
  * the original types in the map, as and when they are requested via {@code get()} or {@code containsKey()}.
  * It will look up the value for the nearest supertype and associate the subtype with that same value. Thus,
  * the next time the subtype is requested, it will result in a direct hit. Note that an auto-expanding type
@@ -64,61 +64,61 @@ import java.util.Map;
  * types with which the map was seeded. No new branches of the Java type hierarchy will emerge - unless, of
  * course, the original map contained {@code Object.class}.
  *
- * <h2>Implementations</h2>
+ * &lt;h2&gt;Implementations&lt;/h2&gt;
  *
- * <p>Through its static factory methods and {@code Builder} classes, the
+ * &lt;p&gt;Through its static factory methods and {@code Builder} classes, the
  * {@code TypeMap} interface provides access to four different implementations. Which implementation to choose
  * strongly depends on the internal makeup of the map (the interdependencies between the types within the
  * map), the size of the map, and the ratio between the size of the map and the total number of types it is
  * going to be queried for. For high ratios (a small map processing a large variety of types), the
- * "{@link #nativeTypeMap(Map, boolean) native type map}" is the best choice, especially if the types in the
+ * &quot;{@link #nativeTypeMap(Map, boolean) native type map}&quot; is the best choice, especially if the types in the
  * map tend to be base types (like {@code Number} and {@code CharSequence}) while the types requested from it
  * are concrete types (like {@code Integer} and {@code String}). Otherwise any of the other implementations
  * will do, and you will have to test which implementation performs best.
  *
- * @param <V> the type of the values in the map The type of the values in the {@code Map}
+ * @param &lt;V&gt; the type of the values in the map The type of the values in the {@code Map}
  * @author Ayco Holleman
  */
-public sealed interface TypeMap<V> extends Map<Class<?>, V> permits NativeTypeMap,
+public sealed interface TypeMap&lt;V&gt; extends Map&lt;Class&lt;?&gt;, V&gt; permits NativeTypeMap,
     GreedyTypeMap, NonExpandingTypeMap {
 
-  String SOURCE_MAP = "source map";
+  String SOURCE_MAP = &quot;source map&quot;;
 
   /**
    * Returns a {@code TypeMap} that is internally backed by a regular, unmodifiable {@code Map}. Autoboxing is
    * enabled in the returned {@code TypeMap}.
    *
    * @param m the map to convert to a {@code TypeMap}
-   * @param <V> the type of the values in the map
+   * @param &lt;V&gt; the type of the values in the map
    * @return a {@code TypeMap} that performs reliably well in many cases
    */
-  static <V> TypeMap<V> fixedTypeMap(Map<Class<?>, V> m) {
-    return fixedTypeMap(m, true);
+  static &lt;V&gt; TypeMap&lt;V&gt; fixedTypeMap(Map&lt;Class&lt;?&gt;, V&gt; m) {
+<span class="fc" id="L96">    return fixedTypeMap(m, true);</span>
   }
 
   /**
    * Returns a {@code TypeMap} that is internally backed by a regular, unmodifiable {@code Map}.
    *
    * @param m the map to convert to a {@code TypeMap}
-   * @param autobox whether to "autobox" the types requested via {@code get()} and {@code containsKey()}
-   * @param <V> the type of the values in the map
+   * @param autobox whether to &quot;autobox&quot; the types requested via {@code get()} and {@code containsKey()}
+   * @param &lt;V&gt; the type of the values in the map
    * @return a {@code TypeMap} that performs reliably well in many cases
    */
-  static <V> TypeMap<V> fixedTypeMap(Map<Class<?>, V> m, boolean autobox) {
-    Check.notNull(m, SOURCE_MAP);
-    var builder = new FixedTypeMapBuilder<V>().autobox(autobox);
-    m.forEach(builder::add);
-    return builder.freeze();
+  static &lt;V&gt; TypeMap&lt;V&gt; fixedTypeMap(Map&lt;Class&lt;?&gt;, V&gt; m, boolean autobox) {
+<span class="fc" id="L108">    Check.notNull(m, SOURCE_MAP);</span>
+<span class="fc" id="L109">    var builder = new FixedTypeMapBuilder&lt;V&gt;().autobox(autobox);</span>
+<span class="fc" id="L110">    m.forEach(builder::add);</span>
+<span class="fc" id="L111">    return builder.freeze();</span>
   }
 
   /**
-   * Returns a {@code Builder} for "fixed" type maps.
+   * Returns a {@code Builder} for &quot;fixed&quot; type maps.
    *
-   * @param <V> the type of the values in the map
-   * @return a {@code Builder} for "fixed" type maps
+   * @param &lt;V&gt; the type of the values in the map
+   * @return a {@code Builder} for &quot;fixed&quot; type maps
    */
-  static <V> TypeMapBuilder<V> fixedTypeMapBuilder() {
-    return new FixedTypeMapBuilder<>();
+  static &lt;V&gt; TypeMapBuilder&lt;V&gt; fixedTypeMapBuilder() {
+<span class="fc" id="L121">    return new FixedTypeMapBuilder&lt;&gt;();</span>
   }
 
   /**
@@ -132,12 +132,12 @@ public sealed interface TypeMap<V> extends Map<Class<?>, V> permits NativeTypeMa
    * {@code TypeMap}.
    *
    * @param m the map to convert to a {@code TypeMap}
-   * @param <V> the type of the values in the map
+   * @param &lt;V&gt; the type of the values in the map
    * @return a {@code TypeMap} that relies on a data structure similar to the Java type hierarchy itself
    * @see TypeSet#nativeTypeSet(Class[])
    */
-  static <V> TypeMap<V> nativeTypeMap(Map<Class<?>, V> m) {
-    return nativeTypeMap(m, true);
+  static &lt;V&gt; TypeMap&lt;V&gt; nativeTypeMap(Map&lt;Class&lt;?&gt;, V&gt; m) {
+<span class="fc" id="L140">    return nativeTypeMap(m, true);</span>
   }
 
   /**
@@ -150,63 +150,63 @@ public sealed interface TypeMap<V> extends Map<Class<?>, V> permits NativeTypeMa
    * {@code Object.class} will be the first type in the key set.
    *
    * @param m the map to convert to a {@code TypeMap}
-   * @param autobox whether to "autobox" the types requested via {@code get()} and {@code containsKey()}
-   * @param <V> the type of the values in the map
+   * @param autobox whether to &quot;autobox&quot; the types requested via {@code get()} and {@code containsKey()}
+   * @param &lt;V&gt; the type of the values in the map
    * @return a {@code TypeMap} that relies on a data structure similar to the Java type hierarchy itself
    * @see TypeSet#nativeTypeSet(Class[])
    */
-  static <V> TypeMap<V> nativeTypeMap(Map<Class<?>, V> m, boolean autobox) {
-    Check.notNull(m, SOURCE_MAP);
-    var builder = new NativeTypeMapBuilder<V>().autobox(autobox);
-    m.forEach(builder::add);
-    return builder.freeze();
+  static &lt;V&gt; TypeMap&lt;V&gt; nativeTypeMap(Map&lt;Class&lt;?&gt;, V&gt; m, boolean autobox) {
+<span class="fc" id="L159">    Check.notNull(m, SOURCE_MAP);</span>
+<span class="fc" id="L160">    var builder = new NativeTypeMapBuilder&lt;V&gt;().autobox(autobox);</span>
+<span class="fc" id="L161">    m.forEach(builder::add);</span>
+<span class="fc" id="L162">    return builder.freeze();</span>
   }
 
   /**
-   * Returns a {@code Builder} for "native" type maps.
+   * Returns a {@code Builder} for &quot;native&quot; type maps.
    *
-   * @param <V> the type of the values in the map
-   * @return a builder for "native" type maps
+   * @param &lt;V&gt; the type of the values in the map
+   * @return a builder for &quot;native&quot; type maps
    */
-  static <V> TypeMapBuilder<V> nativeTypeMapBuilder() {
-    return new NativeTypeMapBuilder<>();
+  static &lt;V&gt; TypeMapBuilder&lt;V&gt; nativeTypeMapBuilder() {
+<span class="fc" id="L172">    return new NativeTypeMapBuilder&lt;&gt;();</span>
   }
 
   /**
-   * Returns an <a href="#auto-expansion">auto-expanding</a> {@code TypeMap}. Autoboxing is enabled in the
+   * Returns an &lt;a href=&quot;#auto-expansion&quot;&gt;auto-expanding&lt;/a&gt; {@code TypeMap}. Autoboxing is enabled in the
    * returned {@code TypeMap}.
    *
    * @param m the map to convert to a {@code TypeMap}
-   * @param <V> the type of the values in the map
+   * @param &lt;V&gt; the type of the values in the map
    * @return an auto-expanding {@code TypeMap}
    */
-  static <V> TypeMap<V> greedyTypeMap(Map<Class<?>, V> m) {
-    return greedyTypeMap(m, true);
+  static &lt;V&gt; TypeMap&lt;V&gt; greedyTypeMap(Map&lt;Class&lt;?&gt;, V&gt; m) {
+<span class="fc" id="L184">    return greedyTypeMap(m, true);</span>
   }
 
   /**
-   * Returns an <a href="#auto-expansion">auto-expanding</a> {@code TypeMap}.
+   * Returns an &lt;a href=&quot;#auto-expansion&quot;&gt;auto-expanding&lt;/a&gt; {@code TypeMap}.
    *
    * @param m the map to convert to a {@code TypeMap}
-   * @param autobox whether to "autobox" the types requested via {@code get()} and {@code containsKey()}
-   * @param <V> the type of the values in the map
+   * @param autobox whether to &quot;autobox&quot; the types requested via {@code get()} and {@code containsKey()}
+   * @param &lt;V&gt; the type of the values in the map
    * @return an auto-expanding {@code TypeMap}
    */
-  static <V> TypeMap<V> greedyTypeMap(Map<Class<?>, V> m, boolean autobox) {
-    Check.notNull(m, SOURCE_MAP);
-    var builder = new GreedyTypeMapBuilder<V>().autobox(autobox);
-    m.forEach(builder::add);
-    return builder.freeze();
+  static &lt;V&gt; TypeMap&lt;V&gt; greedyTypeMap(Map&lt;Class&lt;?&gt;, V&gt; m, boolean autobox) {
+<span class="fc" id="L196">    Check.notNull(m, SOURCE_MAP);</span>
+<span class="fc" id="L197">    var builder = new GreedyTypeMapBuilder&lt;V&gt;().autobox(autobox);</span>
+<span class="fc" id="L198">    m.forEach(builder::add);</span>
+<span class="fc" id="L199">    return builder.freeze();</span>
   }
 
   /**
-   * Returns a {@code Builder} for "greedy" type maps.
+   * Returns a {@code Builder} for &quot;greedy&quot; type maps.
    *
-   * @param <V> the type of the values in the map
-   * @return a {@code Builder} for "greedy" type maps
+   * @param &lt;V&gt; the type of the values in the map
+   * @return a {@code Builder} for &quot;greedy&quot; type maps
    */
-  static <V> TypeMapBuilder<V> greedyTypeMapBuilder() {
-    return new GreedyTypeMapBuilder<>();
+  static &lt;V&gt; TypeMapBuilder&lt;V&gt; greedyTypeMapBuilder() {
+<span class="fc" id="L209">    return new GreedyTypeMapBuilder&lt;&gt;();</span>
   }
 
   /**
@@ -219,13 +219,13 @@ public sealed interface TypeMap<V> extends Map<Class<?>, V> permits NativeTypeMa
    * {@link TypeSet#prettySort(Collection) TypeSet.prettySort()}, but much more light-weight, and therefore
    * more performant. Autoboxing is enabled in the returned {@code TypeMap}.
    *
-   * @param <V> the type of the values in the map
+   * @param &lt;V&gt; the type of the values in the map
    * @param m the map to convert to a {@code TypeMap}
    * @return a {@code TypeMap} that is backed by a {@code TreeMap}
    * @see TypeSet#treeTypeSet(Class[])
    */
-  static <V> TypeMap<V> treeTypeMap(Map<Class<?>, V> m) {
-    return treeTypeMap(m, true);
+  static &lt;V&gt; TypeMap&lt;V&gt; treeTypeMap(Map&lt;Class&lt;?&gt;, V&gt; m) {
+<span class="fc" id="L228">    return treeTypeMap(m, true);</span>
   }
 
   /**
@@ -239,26 +239,26 @@ public sealed interface TypeMap<V> extends Map<Class<?>, V> permits NativeTypeMa
    * performant.
    *
    * @param m the map to convert to a {@code TypeMap}
-   * @param autobox whether to "autobox" the types requested via {@code get()} and {@code containsKey()}
-   * @param <V> the type of the values in the map
+   * @param autobox whether to &quot;autobox&quot; the types requested via {@code get()} and {@code containsKey()}
+   * @param &lt;V&gt; the type of the values in the map
    * @return a {@code TypeMap} that is backed by a {@code TreeMap}
    * @see TypeSet#treeTypeSet(Class[])
    */
-  static <V> TypeMap<V> treeTypeMap(Map<Class<?>, V> m, boolean autobox) {
-    Check.notNull(m, SOURCE_MAP);
-    var builder = new TreeTypeMapBuilder<V>().autobox(autobox);
-    m.forEach(builder::add);
-    return builder.freeze();
+  static &lt;V&gt; TypeMap&lt;V&gt; treeTypeMap(Map&lt;Class&lt;?&gt;, V&gt; m, boolean autobox) {
+<span class="fc" id="L248">    Check.notNull(m, SOURCE_MAP);</span>
+<span class="fc" id="L249">    var builder = new TreeTypeMapBuilder&lt;V&gt;().autobox(autobox);</span>
+<span class="fc" id="L250">    m.forEach(builder::add);</span>
+<span class="fc" id="L251">    return builder.freeze();</span>
   }
 
   /**
-   * Returns a {@code Builder} for "tree" type maps.
+   * Returns a {@code Builder} for &quot;tree&quot; type maps.
    *
-   * @param <V> the type of the values in the map
-   * @return a {@code Builder} for "tree" type maps
+   * @param &lt;V&gt; the type of the values in the map
+   * @return a {@code Builder} for &quot;tree&quot; type maps
    */
-  static <V> TypeMapBuilder<V> treeTypeMapBuilder() {
-    return new TreeTypeMapBuilder<>();
+  static &lt;V&gt; TypeMapBuilder&lt;V&gt; treeTypeMapBuilder() {
+<span class="fc" id="L261">    return new TreeTypeMapBuilder&lt;&gt;();</span>
   }
 
   /**
@@ -266,7 +266,8 @@ public sealed interface TypeMap<V> extends Map<Class<?>, V> permits NativeTypeMa
    */
   @Override
   default V getOrDefault(Object key, V defaultValue) {
-    throw new UnsupportedOperationException();
+<span class="nc" id="L269">    throw new UnsupportedOperationException();</span>
   }
 
 }
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
